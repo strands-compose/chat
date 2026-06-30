@@ -19,10 +19,24 @@ exclude = [
 name = "strands-compose-chat"
 version = "0.1.0"
 description = "Chat web app for strands-compose"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
 authors = [
     { name = "Michal Galuszka", email = "michal.galuszka1@gmail.com" },
 ]
-requires-python = ">=3.11"
+keywords = ["chat", "ai", "agents", "strands-compose", "web-app", "assistant"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
 
 dependencies = [
     "aiosqlite>=0.22.1",
