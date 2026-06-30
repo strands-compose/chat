@@ -147,5 +147,17 @@ convention = "google"
 [tool.ty.environment]
 root = ["./src", "./"]
 
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "pep621"
+version_files = [
+    "pyproject.toml:^version",
+]
+tag_format = "v$version"
+update_changelog_on_bump = true
+changelog_file = "CHANGELOG.md"
+changelog_incremental = true
+major_version_zero = true
+
 [tool.pyright]
 extraPaths = ["src", "."]
