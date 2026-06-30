@@ -1,0 +1,132 @@
+{% extends "sqladmin_original/layout.html" %}
+
+{% block head %}
+{{ super() }}
+<script>
+  (function () {
+    var stored = sessionStorage.getItem("strands_chat_color_mode");
+    var theme = stored === "dark" || stored === "light"
+      ? stored
+      : window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    document.documentElement.setAttribute("data-bs-theme", theme);
+  })();
+</script>
+<style>
+  /*
+   * Select2 dark mode overrides.
+   *
+   * Select2 renders its own DOM and hardcodes light colours — it does not
+   * respond to Bootstrap's data-bs-theme.  These rules re-skin every Select2
+   * surface to match Tabler's dark palette when data-bs-theme="dark" is on
+   */
+
+  /* Selection box — single and multiple */
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--single,
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--multiple {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #e5e7eb;
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #9ca3af;
+  }
+
+  /* Dropdown arrow */
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #9ca3af transparent transparent transparent;
+  }
+
+  [data-bs-theme="dark"] .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent #9ca3af transparent;
+  }
+
+  /* Selected choice tags (multiple) */
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #9ca3af;
+    border-color: #4b5563;
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    background-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  /* Inline search input inside the multiselect box */
+  [data-bs-theme="dark"] .select2-container--default .select2-search--inline .select2-search__field {
+    color: #e5e7eb;
+    background: transparent;
+  }
+
+  /* Dropdown panel */
+  [data-bs-theme="dark"] .select2-dropdown {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+
+  /* Search box inside the dropdown */
+  [data-bs-theme="dark"] .select2-container--default .select2-search--dropdown .select2-search__field {
+    background-color: #111827;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+
+  /* Result options in the dropdown list */
+  [data-bs-theme="dark"] .select2-container--default .select2-results__option {
+    color: #e5e7eb;
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-results__option[aria-selected="true"] {
+    background-color: #374151;
+    color: #e5e7eb;
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #1d4ed8;
+    color: #ffffff;
+  }
+
+  [data-bs-theme="dark"] .select2-container--default .select2-results__option[aria-disabled="true"] {
+    color: #6b7280;
+  }
+
+  /* Focus ring on the multiple container */
+  [data-bs-theme="dark"] .select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #3b82f6;
+  }
+
+  [data-bs-theme="dark"] .btn-light {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+
+  [data-bs-theme="dark"] .btn-light:hover,
+  [data-bs-theme="dark"] .btn-light:focus,
+  [data-bs-theme="dark"] .btn-light:active,
+  [data-bs-theme="dark"] .btn-light.show {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  [data-bs-theme="dark"] .btn-light:disabled {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #6b7280;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="app-base"  content="{{ url_prefix }}">
+    <meta name="app-title" content="{{ app_title }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_prefix }}/static/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ app_title }}</title>
+    <script type="module" crossorigin src="{{ url_prefix }}/static/js/login.js"></script>
+    <link rel="stylesheet" crossorigin href="{{ url_prefix }}/static/css/login.css">
+  </head>
+  <body>
+    <div id="auth-root"></div>
+  </body>
+</html>

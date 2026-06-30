@@ -1,0 +1,57 @@
+/* ====== TEXT FIELD ======
+   Labelled text input with optional error message. Domain-free primitive. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sc-text-secondary);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--sc-bg-primary);
+  border: 1px solid var(--sc-border-primary);
+  border-radius: 8px;
+  color: var(--sc-text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input::placeholder {
+  color: var(--sc-text-tertiary);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--aws-orange);
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.15);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ====== INVALID ====== */
+.invalid {
+  border-color: #d93025;
+}
+
+.invalid:focus {
+  border-color: #d93025;
+  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.15);
+}
+
+.error {
+  font-size: 0.78rem;
+  color: #d93025;
+}

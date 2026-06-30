@@ -1,0 +1,37 @@
+/* ====== PROFILE PANEL ======
+   Tabbed layout filling the dialog. Each panel scrolls independently; the
+   usage panel fills its height so the charts can stretch. */
+
+.tabs {
+  height: 100%;
+  min-height: 0;
+  background: var(--sc-bg-primary);
+  color: var(--sc-text-primary);
+}
+
+/* Scrolling panel for form/list content. */
+.panel {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem 1rem 1rem 1rem;
+}
+
+/* Usage panel and Account panel fill their height (no outer scroll — children manage their own). */
+.panelFill {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 1rem;
+}
+
+/* ====== LOADING ====== */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  font-size: 0.9rem;
+  color: var(--sc-text-tertiary);
+}

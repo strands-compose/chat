@@ -1,0 +1,226 @@
+/* ====== SIDEBAR SHELL ====== */
+.sidebar {
+  --sidebar-border-color: #d5d5d5;
+  --sidebar-icon-col: 3.25rem;
+  /* fixed icon column width — never changes */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--sc-bg-secondary);
+  border-right: 1px solid var(--sidebar-border-color);
+  overflow: hidden;
+  /* width animates between collapsed and expanded */
+  transition: width 0.22s ease;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .sidebar {
+  --sidebar-border-color: #2a2a2a;
+}
+
+.sidebarExpanded {
+  width: 16rem;
+}
+
+.sidebarCollapsed {
+  width: var(--sidebar-icon-col);
+}
+
+/* ====== NAV SECTION (top actions) ====== */
+.navSection {
+  flex-shrink: 0;
+  padding: 0.5rem 0;
+}
+
+/* ====== NAV ITEM ROW ====== */
+.navItem {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  /* rows are always exactly icon-col wide on the left */
+}
+
+/* ====== NAV BUTTON ====== */
+/*
+ * Key layout trick:
+ *   - The icon lives in a fixed-size 36px square that never moves.
+ *   - The label sits right of the icon and is clipped/revealed via opacity +
+ *     max-width so the icon never shifts position.
+ */
+.navBtn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-family: var(--aws-font-stack);
+  color: var(--sc-text-tertiary);
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.navBtn:hover {
+  background: var(--sc-bg-tertiary);
+  color: var(--sc-text-primary);
+}
+
+[data-theme="dark"] .navBtn {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+[data-theme="dark"] .navBtn:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Fixed icon box — always same position */
+.navBtnIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--sidebar-icon-col);
+  height: 100%;
+}
+
+/* Label — hidden (zero-width, transparent) when collapsed */
+.navBtnLabel {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  /* collapse animation */
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 0.22s ease, opacity 0.18s ease;
+  pointer-events: none;
+}
+
+.sidebarExpanded .navBtnLabel {
+  max-width: 12rem;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ====== HISTORY ====== */
+.history {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-top: 1px solid var(--sidebar-border-color);
+  margin-top: 0.25rem;
+  /* clip content while collapsed */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+[data-theme="dark"] .history {
+  border-top-color: #2a2a2a;
+}
+
+/* Scrollbar handled globally in index.css */
+
+.sidebarExpanded .history {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.historyGroup {
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.historyGroupLabel {
+  padding: 0.6rem 1rem 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(155, 155, 155, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  user-select: none;
+}
+
+[data-theme="dark"] .historyGroupLabel {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.historyRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  margin-bottom: 2px;
+}
+
+.historyRow:hover {
+  background: var(--sc-bg-tertiary);
+}
+
+.historyItem {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 0.8rem;
+  font-family: var(--aws-font-stack);
+  color: var(--sc-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.1s, padding-right 0.12s ease;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.historyItem:hover {
+  color: var(--sc-text-primary);
+}
+
+.historyItemActive {
+  background: var(--sc-bg-tertiary);
+  color: var(--sc-text-primary);
+}
+
+.historyRow:hover .historyItem {
+  padding-right: 4.25rem;
+}
+
+.historyActions {
+  position: absolute;
+  right: 0.35rem;
+  display: none;
+  align-items: center;
+  gap: 0;
+}
+
+.historyRow:hover .historyActions {
+  display: flex;
+}
+
+/* ====== EMPTY / LOADING STATE ====== */
+.historyEmpty {
+  padding: 1rem;
+  font-size: 0.85rem;
+  color: var(--sc-text-tertiary);
+  font-style: italic;
+  user-select: none;
+}
+
+.historyLoading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1rem;
+  font-size: 0.85rem;
+  color: var(--sc-text-tertiary);
+  user-select: none;
+}

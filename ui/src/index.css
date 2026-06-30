@@ -1,0 +1,119 @@
+/* ====== RESET ====== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+/* ====== DESIGN TOKENS ====== */
+:root {
+  /* Brand */
+  --aws-header-bg: #232f3e;
+  --aws-orange: #ff9900;
+  --aws-orange-hover: #ec7211;
+  --aws-squid-ink: #232f3e;
+  --aws-font-stack: 'Amazon Ember', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen, Ubuntu, sans-serif;
+
+  /* Semantic — light mode defaults */
+  --sc-bg-primary: #ffffff;
+  --sc-bg-secondary: #f7f7f7;
+  --sc-bg-tertiary: #eeeeee;
+
+  --sc-text-primary: #1a1a1a;
+  --sc-text-secondary: #444444;
+  --sc-text-tertiary: #777777;
+  --sc-text-attachment: rgba(0, 0, 0, 0.45);
+
+  --sc-border-primary: rgba(0, 0, 0, 0.18);
+  --sc-border-secondary: rgba(0, 0, 0, 0.10);
+  --sc-border-tertiary: rgba(0, 0, 0, 0.06);
+
+  /* Status / semantic feedback */
+  --sc-status-ok: #10b981;
+  --sc-status-warn: #f5a623;
+  --sc-status-danger: #ff4d4f;
+  --sc-text-error: #ff4d4f;
+
+  /* Chart — theme-aware data-series color */
+  --sc-chart-primary: #2563eb;
+}
+
+/* ====== DARK MODE ====== */
+[data-theme="dark"] {
+  --aws-orange: #d3830b;
+
+  --sc-bg-primary: #0f1117;
+  --sc-bg-secondary: #191b22;
+  --sc-bg-tertiary: #25272f;
+
+  --sc-text-primary: #cccccc;
+  --sc-text-secondary: #cdcdcd;
+  --sc-text-tertiary: #7890a3;
+  --sc-text-attachment: rgba(255, 255, 255, 0.45);
+
+  --sc-border-primary: rgba(255, 255, 255, 0.18);
+  --sc-border-secondary: rgba(255, 255, 255, 0.10);
+  --sc-border-tertiary: rgba(255, 255, 255, 0.06);
+
+  /* Status / semantic feedback */
+  --sc-status-ok: #34d399;
+  --sc-status-warn: #fbbf24;
+  --sc-status-danger: #ff6b6b;
+  --sc-text-error: #ff6b6b;
+
+  /* Chart — theme-aware data-series color */
+  --sc-chart-primary: #5b8dee;
+}
+
+/* ====== SCROLLBAR — unified thin style ====== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(160, 160, 160, 0.35);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 160, 160, 0.65);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* ====== BASE STYLES ====== */
+body {
+  font-family: var(--aws-font-stack);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  background: var(--sc-bg-primary);
+  color: var(--sc-text-primary);
+}
+
+/* ====== RADIX POPPER STACKING ====== */
+[data-radix-popper-content-wrapper] {
+  z-index: 1100 !important;
+  pointer-events: auto !important;
+}

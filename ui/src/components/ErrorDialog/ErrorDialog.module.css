@@ -1,0 +1,16 @@
+/* ====== ERROR DIALOG ====== */
+
+.icon {
+  flex-shrink: 0;
+  color: red;
+  width: 25px;
+  height: 25px;
+}
+
+.message {
+  font-size: 0.9rem;
+  color: var(--sc-text-secondary);
+  line-height: 1.55;
+  padding-left: 30px; /* aligns with title text after icon */
+  white-space: pre-line;
+}

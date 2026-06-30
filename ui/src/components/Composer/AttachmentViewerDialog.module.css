@@ -1,0 +1,63 @@
+/* ====== ATTACHMENT PREVIEW PANELS ======
+   Rendered inside the shared Dialog's (floating) body, which is a flex
+   container — each panel stretches to fill it. Top/bottom rules only. */
+.image {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
+  object-fit: contain;
+}
+
+.frame {
+  flex: 1 1 auto;
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--sc-border-primary);
+  border-bottom: 1px solid var(--sc-border-primary);
+  background: var(--sc-bg-primary);
+}
+
+.text {
+  flex: 1 1 auto;
+  overflow: auto;
+  margin: 0;
+  padding: 12px 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--sc-font-mono, monospace);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--sc-text-primary);
+  background: var(--sc-bg-primary);
+  border: none;
+  border-top: 1px solid var(--sc-border-primary);
+  border-bottom: 1px solid var(--sc-border-primary);
+}
+
+.markdown {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 4px 14px;
+  background: var(--sc-bg-primary);
+  border: none;
+  border-top: 1px solid var(--sc-border-primary);
+  border-bottom: 1px solid var(--sc-border-primary);
+}
+
+.download {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--sc-text-secondary);
+}
+
+.downloadName {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: var(--sc-text-primary);
+  word-break: break-all;
+}

@@ -1,0 +1,30 @@
+.claude
+.kiro/specs
+
+.venv/
+venv/
+*.pyc
+*.pyo
+*/__pycache__/
+*.sqlite3
+.*_cache
+.hypothesis
+
+.coverage*
+.req.txt
+
+*.log
+*.ipynb
+
+.env*
+
+# IDE
+.idea/
+.vscode/
+
+proxy.py
+*.sqlite
+seed_dummy_db.py
+
+# Built frontend artifacts — populated by `just build-ui` or Docker build stage.
+src/strands_compose_chat/static/

@@ -1,0 +1,2423 @@
+{
+  "components": {
+    "schemas": {
+      "AgentOut": {
+        "description": "Agent response for the chat UI.\n\nOnly exposes what the UI needs to render the agent selector and start a\nconversation. All internal fields (access_groups, enabled, timestamps)\nand infrastructure details (ARN, region, endpoint) are intentionally omitted.",
+        "properties": {
+          "agent_kind": {
+            "title": "Agent Kind",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "multimodal": {
+            "title": "Multimodal",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "suggested_questions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Questions"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "agent_kind",
+          "multimodal",
+          "suggested_questions"
+        ],
+        "title": "AgentOut",
+        "type": "object"
+      },
+      "AgentRef": {
+        "description": "An agent reference for filter dropdowns.\n\nArgs:\n    id: Agent identifier.\n    name: Display name.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "AgentRef",
+        "type": "object"
+      },
+      "AttachmentMetadataOut": {
+        "description": "A single file attachment descriptor nested inside a ``MessageOut``.\n\nSerialised from the JSON stored in ``chat_messages.attachments``.\n\nArgs:\n    filename: Original upload filename, or ``\"upload\"`` when absent.\n    size: Byte length of the file content (positive integer).\n    type: Either ``\"image\"`` or ``\"document\"``.",
+        "properties": {
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "type": {
+            "enum": [
+              "image",
+              "document"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename",
+          "size",
+          "type"
+        ],
+        "title": "AttachmentMetadataOut",
+        "type": "object"
+      },
+      "AuthProviderInfo": {
+        "description": "One configured OIDC provider as exposed to the SPA.",
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "display_name"
+        ],
+        "title": "AuthProviderInfo",
+        "type": "object"
+      },
+      "AuthProvidersOut": {
+        "description": "Response body for GET /auth/providers.",
+        "properties": {
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/AuthProviderInfo"
+            },
+            "title": "Providers",
+            "type": "array"
+          },
+          "registration_enabled": {
+            "title": "Registration Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "registration_enabled",
+          "providers"
+        ],
+        "title": "AuthProvidersOut",
+        "type": "object"
+      },
+      "BreakdownOut": {
+        "description": "Response body for POST /analytics/breakdown.\n\nArgs:\n    metric: The metric that was aggregated (cost, tokens, hits).\n    category: The category dimension used for ranking (user, agent, group).\n    labels: Ranked category labels in descending total order.\n    series: One or more named data series with values aligned to labels.",
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Labels",
+            "type": "array"
+          },
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/BreakdownSeriesItem"
+            },
+            "title": "Series",
+            "type": "array"
+          }
+        },
+        "required": [
+          "metric",
+          "category",
+          "labels",
+          "series"
+        ],
+        "title": "BreakdownOut",
+        "type": "object"
+      },
+      "BreakdownRequest": {
+        "description": "Request body for POST /analytics/breakdown.\n\nArgs:\n    from_date: Start date (inclusive), aliased as \"from\" in JSON.\n    to_date: End date (inclusive), aliased as \"to\" in JSON.\n    category: Dimension to rank by (user, agent, or group).\n    stack_by: Dimension to split series by (none, user, agent, group).\n    metric: Which metric to aggregate (cost, tokens, hits).\n    filters: Optional filter constraints restricting by user, agent, or group.\n    max_items: Maximum number of ranked category labels before folding into \"Other\".\n    max_series: Maximum number of distinct series before folding into \"Other\".",
+        "properties": {
+          "category": {
+            "enum": [
+              "user",
+              "agent",
+              "group"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiltersIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "from": {
+            "format": "date",
+            "title": "From",
+            "type": "string"
+          },
+          "max_items": {
+            "default": 20,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Max Items",
+            "type": "integer"
+          },
+          "max_series": {
+            "default": 10,
+            "maximum": 25.0,
+            "minimum": 1.0,
+            "title": "Max Series",
+            "type": "integer"
+          },
+          "metric": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "stack_by": {
+            "$ref": "#/components/schemas/Dimension"
+          },
+          "to": {
+            "format": "date",
+            "title": "To",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "category",
+          "stack_by",
+          "metric"
+        ],
+        "title": "BreakdownRequest",
+        "type": "object"
+      },
+      "BreakdownSeriesItem": {
+        "description": "A single named data series in a breakdown response.\n\nArgs:\n    name: Display name of the series (metric name or stack_by dimension value).\n    values: Numeric values aligned positionally with the parent labels array.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "values"
+        ],
+        "title": "BreakdownSeriesItem",
+        "type": "object"
+      },
+      "BudgetItemOut": {
+        "description": "A single user's budget status for the current month.\n\nArgs:\n    user_id: User identifier.\n    username: Display name of the user.\n    spend: Total spend for the current UTC month.\n    budget: User's configured monthly budget.\n    pct_used: Fraction of budget consumed (0.0 when budget is 0).\n    status: Classification \u2014 \"ok\", \"warn\", or \"danger\".\n    is_over: Whether the user has exceeded their budget.",
+        "properties": {
+          "budget": {
+            "title": "Budget",
+            "type": "number"
+          },
+          "is_over": {
+            "title": "Is Over",
+            "type": "boolean"
+          },
+          "pct_used": {
+            "title": "Pct Used",
+            "type": "number"
+          },
+          "spend": {
+            "title": "Spend",
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "warn",
+              "danger"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "username",
+          "spend",
+          "budget",
+          "pct_used",
+          "status",
+          "is_over"
+        ],
+        "title": "BudgetItemOut",
+        "type": "object"
+      },
+      "BudgetStatusFilter": {
+        "description": "Budget table filter options.",
+        "enum": [
+          "all",
+          "approaching",
+          "over"
+        ],
+        "title": "BudgetStatusFilter",
+        "type": "string"
+      },
+      "Dimension": {
+        "description": "Stack-by dimension for time-series and breakdown queries.",
+        "enum": [
+          "none",
+          "user",
+          "agent",
+          "group"
+        ],
+        "title": "Dimension",
+        "type": "string"
+      },
+      "FiltersIn": {
+        "description": "Shared filter object for POST request bodies.\n\nArgs:\n    user_ids: Restrict results to sessions owned by these users.\n    agent_ids: Restrict results to sessions using these agents.\n    group_ids: Restrict results to sessions owned by users in these groups.",
+        "properties": {
+          "agent_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Ids"
+          },
+          "group_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group Ids"
+          },
+          "user_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Ids"
+          }
+        },
+        "title": "FiltersIn",
+        "type": "object"
+      },
+      "FiltersOut": {
+        "description": "Response for GET /analytics/filters.\n\nArgs:\n    users: All users available for filtering.\n    agents: All agents available for filtering.\n    groups: All groups available for filtering.",
+        "properties": {
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentRef"
+            },
+            "title": "Agents",
+            "type": "array"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/GroupRef"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "users": {
+            "items": {
+              "$ref": "#/components/schemas/UserRef"
+            },
+            "title": "Users",
+            "type": "array"
+          }
+        },
+        "required": [
+          "users",
+          "agents",
+          "groups"
+        ],
+        "title": "FiltersOut",
+        "type": "object"
+      },
+      "GroupRef": {
+        "description": "A group reference for filter dropdowns.\n\nArgs:\n    id: Group identifier.\n    name: Display name.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "GroupRef",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Interval": {
+        "description": "Supported time bucket intervals for aggregation.",
+        "enum": [
+          "daily",
+          "weekly",
+          "monthly"
+        ],
+        "title": "Interval",
+        "type": "string"
+      },
+      "LoginIn": {
+        "description": "Request body for POST /auth/login.",
+        "properties": {
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginIn",
+        "type": "object"
+      },
+      "LoginOut": {
+        "description": "Response body for POST /auth/login.",
+        "properties": {
+          "auth_provider": {
+            "title": "Auth Provider",
+            "type": "string"
+          },
+          "budget": {
+            "title": "Budget",
+            "type": "number"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "department": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Department"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "groups": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "is_superuser": {
+            "title": "Is Superuser",
+            "type": "boolean"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "next": {
+            "description": "Validated path to redirect to after login.",
+            "title": "Next",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "usage": {
+            "title": "Usage",
+            "type": "number"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "email",
+          "auth_provider",
+          "groups",
+          "is_active",
+          "is_superuser",
+          "budget",
+          "usage",
+          "created_at",
+          "updated_at",
+          "next"
+        ],
+        "title": "LoginOut",
+        "type": "object"
+      },
+      "MeOut": {
+        "description": "Response body for GET /auth/me and POST /auth/register.",
+        "properties": {
+          "auth_provider": {
+            "title": "Auth Provider",
+            "type": "string"
+          },
+          "budget": {
+            "title": "Budget",
+            "type": "number"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "department": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Department"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "groups": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "is_superuser": {
+            "title": "Is Superuser",
+            "type": "boolean"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "usage": {
+            "title": "Usage",
+            "type": "number"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "email",
+          "auth_provider",
+          "groups",
+          "is_active",
+          "is_superuser",
+          "budget",
+          "usage",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "MeOut",
+        "type": "object"
+      },
+      "MePatchIn": {
+        "description": "Request body for PATCH /auth/me.",
+        "properties": {
+          "company": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "department": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Department"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "maxLength": 256,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          }
+        },
+        "title": "MePatchIn",
+        "type": "object"
+      },
+      "MeUsageOut": {
+        "description": "Response body for GET /users/me/usage.\n\nArgs:\n    interval: The interval used for bucketing (daily, weekly, monthly).\n    points: Ordered list of usage data points covering the full requested range.",
+        "properties": {
+          "interval": {
+            "title": "Interval",
+            "type": "string"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/MeUsagePoint"
+            },
+            "title": "Points",
+            "type": "array"
+          }
+        },
+        "required": [
+          "interval",
+          "points"
+        ],
+        "title": "MeUsageOut",
+        "type": "object"
+      },
+      "MeUsagePoint": {
+        "description": "A single time-bucket data point for per-user usage.\n\nArgs:\n    label: Human-readable bucket label (date, week, or month string).\n    cost: Total cost in this bucket.\n    input_tokens: Total input tokens in this bucket.\n    output_tokens: Total output tokens in this bucket.",
+        "properties": {
+          "cost": {
+            "title": "Cost",
+            "type": "number"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "label",
+          "cost",
+          "input_tokens",
+          "output_tokens"
+        ],
+        "title": "MeUsagePoint",
+        "type": "object"
+      },
+      "MediaCapabilitiesOut": {
+        "description": "Supported attachment formats and configured size/count limits.",
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/MediaCategoryOut"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "max_block_count": {
+            "title": "Max Block Count",
+            "type": "integer"
+          },
+          "max_file_bytes": {
+            "title": "Max File Bytes",
+            "type": "integer"
+          },
+          "max_total_bytes": {
+            "title": "Max Total Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "categories",
+          "max_file_bytes",
+          "max_total_bytes",
+          "max_block_count"
+        ],
+        "title": "MediaCapabilitiesOut",
+        "type": "object"
+      },
+      "MediaCategoryOut": {
+        "description": "A category grouping of supported attachment formats.",
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "formats": {
+            "items": {
+              "$ref": "#/components/schemas/MediaFormatOut"
+            },
+            "title": "Formats",
+            "type": "array"
+          }
+        },
+        "required": [
+          "category",
+          "formats"
+        ],
+        "title": "MediaCategoryOut",
+        "type": "object"
+      },
+      "MediaFormatOut": {
+        "description": "A single supported attachment format.\n\nMirrors one ``strands_compose_agentcore`` media format spec, exposing only\nwhat the UI needs to constrain and validate file selection.",
+        "properties": {
+          "extensions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Extensions",
+            "type": "array"
+          },
+          "format": {
+            "title": "Format",
+            "type": "string"
+          },
+          "mime_type": {
+            "title": "Mime Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "format",
+          "extensions",
+          "mime_type"
+        ],
+        "title": "MediaFormatOut",
+        "type": "object"
+      },
+      "MessageOut": {
+        "description": "Single message item in the GET /api/v1/sessions/{session_id}/messages response.\n\n``is_success`` is ``False`` only for assistant messages that represent an\ninvocation failure; user and normal assistant rows serialize ``True``.\n\n``attachments`` is always present and is an empty list when the message has\nno attachment metadata (column is ``NULL`` or an empty JSON array).",
+        "properties": {
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/AttachmentMetadataOut"
+            },
+            "title": "Attachments",
+            "type": "array"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "is_success": {
+            "title": "Is Success",
+            "type": "boolean"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "seq": {
+            "title": "Seq",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "role",
+          "content",
+          "seq",
+          "is_success"
+        ],
+        "title": "MessageOut",
+        "type": "object"
+      },
+      "Metric": {
+        "description": "Available metrics for timeline and breakdown queries.",
+        "enum": [
+          "cost",
+          "tokens",
+          "hits"
+        ],
+        "title": "Metric",
+        "type": "string"
+      },
+      "RegisterIn": {
+        "description": "Request body for POST /auth/register.",
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 64,
+            "minLength": 3,
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "password"
+        ],
+        "title": "RegisterIn",
+        "type": "object"
+      },
+      "SeriesItem": {
+        "description": "A single named data series in a timeline response.\n\nArgs:\n    name: Display name of the series (metric name or dimension value).\n    data: Numeric values aligned positionally with the parent labels array.",
+        "properties": {
+          "data": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "data"
+        ],
+        "title": "SeriesItem",
+        "type": "object"
+      },
+      "SessionDetailOut": {
+        "description": "Full session detail response for GET /api/v1/sessions/{session_id}.\n\nExtends ``SessionListItemOut`` with the captured SessionManifest JSON\nand the timestamp at which it was first written.\n\n``manifest`` is ``None`` until the first ``event: session_start`` SSE\nmessage is observed for this session.",
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_archived": {
+            "title": "Is Archived",
+            "type": "boolean"
+          },
+          "last_used_at": {
+            "format": "date-time",
+            "title": "Last Used At",
+            "type": "string"
+          },
+          "manifest": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manifest"
+          },
+          "manifest_captured_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manifest Captured At"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "id",
+          "session_id",
+          "agent_id",
+          "title",
+          "created_at",
+          "last_used_at",
+          "is_archived",
+          "manifest",
+          "manifest_captured_at"
+        ],
+        "title": "SessionDetailOut",
+        "type": "object"
+      },
+      "SessionListItemOut": {
+        "description": "Single item in the session list response for GET /api/v1/sessions.\n\nRepresents a chat session row as seen by the owning user.",
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_archived": {
+            "title": "Is Archived",
+            "type": "boolean"
+          },
+          "last_used_at": {
+            "format": "date-time",
+            "title": "Last Used At",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "id",
+          "session_id",
+          "agent_id",
+          "title",
+          "created_at",
+          "last_used_at",
+          "is_archived"
+        ],
+        "title": "SessionListItemOut",
+        "type": "object"
+      },
+      "SessionRenameIn": {
+        "description": "Request body for PATCH /api/v1/sessions/{session_id}.\n\n``title`` is required and must be a non-empty string of at most 255\ncharacters.",
+        "properties": {
+          "title": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "SessionRenameIn",
+        "type": "object"
+      },
+      "SessionUsageSummaryOut": {
+        "description": "Aggregated token usage and inferred cost for a session.\n\nReturned by ``GET /api/v1/sessions/{session_id}/usage``.\nSums all ``token_usage`` rows linked to the session in a single query.\nCost is computed from persisted ``cost`` values \u2014 models without a\npricing entry at invocation time contribute 0.",
+        "properties": {
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "total_cost": {
+            "title": "Total Cost",
+            "type": "number"
+          }
+        },
+        "required": [
+          "input_tokens",
+          "output_tokens",
+          "total_cost"
+        ],
+        "title": "SessionUsageSummaryOut",
+        "type": "object"
+      },
+      "SummaryOut": {
+        "description": "Response body for POST /analytics/summary.\n\nArgs:\n    total_cost: Sum of TokenUsage.cost in the range.\n    input_tokens: Sum of TokenUsage.input_tokens in the range.\n    output_tokens: Sum of TokenUsage.output_tokens in the range.\n    hits: Count of assistant messages that are not errors in the range.\n    active_users: Count of distinct users with token usage in the range.",
+        "properties": {
+          "active_users": {
+            "title": "Active Users",
+            "type": "integer"
+          },
+          "hits": {
+            "title": "Hits",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "total_cost": {
+            "title": "Total Cost",
+            "type": "number"
+          }
+        },
+        "required": [
+          "total_cost",
+          "input_tokens",
+          "output_tokens",
+          "hits",
+          "active_users"
+        ],
+        "title": "SummaryOut",
+        "type": "object"
+      },
+      "SummaryRequest": {
+        "description": "Request body for POST /analytics/summary.\n\nArgs:\n    from_date: Start date (inclusive), aliased as \"from\" in JSON.\n    to_date: End date (inclusive), aliased as \"to\" in JSON.\n    filters: Optional filter constraints restricting by user, agent, or group.",
+        "properties": {
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiltersIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "from": {
+            "format": "date",
+            "title": "From",
+            "type": "string"
+          },
+          "to": {
+            "format": "date",
+            "title": "To",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ],
+        "title": "SummaryRequest",
+        "type": "object"
+      },
+      "TimelineOut": {
+        "description": "Response body for POST /analytics/timeline.\n\nArgs:\n    interval: The interval used for bucketing (daily, weekly, monthly).\n    metric: The metric that was aggregated (cost, tokens, hits).\n    labels: Ordered time-bucket labels aligned with series data arrays.\n    series: One or more named data series.",
+        "properties": {
+          "interval": {
+            "title": "Interval",
+            "type": "string"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Labels",
+            "type": "array"
+          },
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/SeriesItem"
+            },
+            "title": "Series",
+            "type": "array"
+          }
+        },
+        "required": [
+          "interval",
+          "metric",
+          "labels",
+          "series"
+        ],
+        "title": "TimelineOut",
+        "type": "object"
+      },
+      "TimelineRequest": {
+        "description": "Request body for POST /analytics/timeline.\n\nArgs:\n    from_date: Start date (inclusive), aliased as \"from\" in JSON.\n    to_date: End date (inclusive), aliased as \"to\" in JSON.\n    interval: Time bucket granularity (daily, weekly, monthly).\n    metric: Which metric to aggregate (cost, tokens, hits).\n    stack_by: Dimension to split series by (none, user, agent, group).\n    filters: Optional filter constraints.\n    max_series: Maximum number of distinct series before folding into \"Other\".",
+        "properties": {
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiltersIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "from": {
+            "format": "date",
+            "title": "From",
+            "type": "string"
+          },
+          "interval": {
+            "$ref": "#/components/schemas/Interval"
+          },
+          "max_series": {
+            "default": 10,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Max Series",
+            "type": "integer"
+          },
+          "metric": {
+            "$ref": "#/components/schemas/Metric"
+          },
+          "stack_by": {
+            "$ref": "#/components/schemas/Dimension"
+          },
+          "to": {
+            "format": "date",
+            "title": "To",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "interval",
+          "metric",
+          "stack_by"
+        ],
+        "title": "TimelineRequest",
+        "type": "object"
+      },
+      "UserRef": {
+        "description": "A user reference for filter dropdowns.\n\nArgs:\n    id: User identifier.\n    username: Display name.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username"
+        ],
+        "title": "UserRef",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Strands Compose Chat",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/agents": {
+      "get": {
+        "description": "List agents visible to the authenticated user.",
+        "operationId": "list_agents_api_v1_agents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AgentOut"
+                  },
+                  "title": "Response List Agents Api V1 Agents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Agents",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/api/v1/agents/{agent_id}": {
+      "get": {
+        "description": "Return a single agent visible to the authenticated user.",
+        "operationId": "get_agent_api_v1_agents__agent_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Agent",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/api/v1/analytics/breakdown": {
+      "post": {
+        "description": "Return ranked breakdown data for the admin analytics breakdown chart.\n\nArgs:\n    _admin: Authenticated admin user (used for auth gating only).\n    db: Async database session.\n    body: Breakdown request parameters including date range, category, metric,\n        and stack_by dimension.\n\nReturns:\n    BreakdownOut with ranked labels and one or more data series.",
+        "operationId": "breakdown_handler_api_v1_analytics_breakdown_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BreakdownRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BreakdownOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Breakdown Handler",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/budgets": {
+      "get": {
+        "description": "Return per-user budget status for the current UTC month.\n\nArgs:\n    _admin: Authenticated admin user (used for auth gating only).\n    db: Async database session.\n    status: Filter by budget status \u2014 all, approaching, or over.\n    sort: Sort order \u2014 only \"pct_desc\" is accepted (422 otherwise).\n\nReturns:\n    List of BudgetItemOut sorted by pct_used descending.",
+        "operationId": "budgets_handler_api_v1_analytics_budgets_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/BudgetStatusFilter",
+              "default": "all"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "const": "pct_desc",
+              "default": "pct_desc",
+              "title": "Sort",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BudgetItemOut"
+                  },
+                  "title": "Response Budgets Handler Api V1 Analytics Budgets Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Budgets Handler",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/filters": {
+      "get": {
+        "description": "Return all users, agents, and groups for admin filter dropdowns.\n\nArgs:\n    _admin: Authenticated admin user (used for auth gating only).\n    db: Async database session.\n\nReturns:\n    FiltersOut with users, agents, and groups lists.",
+        "operationId": "filters_handler_api_v1_analytics_filters_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FiltersOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Filters Handler",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/summary": {
+      "post": {
+        "description": "Return aggregate KPI totals for the admin analytics summary cards.\n\nArgs:\n    _admin: Authenticated admin user (used for auth gating only).\n    db: Async database session.\n    body: Summary request parameters including date range and optional filters.\n\nReturns:\n    SummaryOut with total_cost, input_tokens, output_tokens, hits,\n    and active_users.",
+        "operationId": "summary_handler_api_v1_analytics_summary_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SummaryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Summary Handler",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/timeline": {
+      "post": {
+        "description": "Return time-series data for the admin analytics timeline chart.\n\nArgs:\n    _admin: Authenticated admin user (used for auth gating only).\n    db: Async database session.\n    body: Timeline request parameters including date range, metric, and interval.\n\nReturns:\n    TimelineOut with labels and one or more data series.",
+        "operationId": "timeline_handler_api_v1_analytics_timeline_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TimelineRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Timeline Handler",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/api/v1/invocations": {
+      "post": {
+        "description": "Forward an agent invocation and stream events back as SSE.",
+        "operationId": "invoke_api_v1_invocations_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Invoke",
+        "tags": [
+          "invocations"
+        ]
+      }
+    },
+    "/api/v1/media/capabilities": {
+      "get": {
+        "description": "Return supported attachment formats and configured size/count limits.",
+        "operationId": "get_capabilities_api_v1_media_capabilities_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaCapabilitiesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Capabilities",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/v1/sessions": {
+      "get": {
+        "description": "Return all non-archived sessions for the authenticated user, newest first.",
+        "operationId": "list_sessions_api_v1_sessions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionListItemOut"
+                  },
+                  "title": "Response List Sessions Api V1 Sessions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Sessions",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/sessions/{session_id}": {
+      "delete": {
+        "description": "Soft-delete (archive) a session owned by the authenticated user.",
+        "operationId": "delete_session_api_v1_sessions__session_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Session",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "get": {
+        "description": "Return the full detail for a single session owned by the authenticated user.",
+        "operationId": "get_session_api_v1_sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Session",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "patch": {
+        "description": "Rename the title of a session owned by the authenticated user.",
+        "operationId": "rename_session_api_v1_sessions__session_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionRenameIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rename Session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/sessions/{session_id}/messages": {
+      "get": {
+        "description": "Return all messages for a session owned by the authenticated user.\n\nMessages are returned in ascending ``seq`` order. An empty list is returned\nwhen the session exists but has no stored messages.\n\nArgs:\n    session_id: The session identifier from the URL path.\n    current_user: The authenticated user resolved by the ``CurrentUser``\n        dependency; raises HTTP 401 when unauthenticated.\n    db: The active async database session.\n\nReturns:\n    A list of :class:`~..schemas.sessions.MessageOut` items ordered by\n    ascending ``seq``.\n\nRaises:\n    ProblemDetailsException: HTTP 404 when the session does not exist or\n        is not owned by the authenticated user.",
+        "operationId": "list_messages_api_v1_sessions__session_id__messages_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MessageOut"
+                  },
+                  "title": "Response List Messages Api V1 Sessions  Session Id  Messages Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Messages",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/sessions/{session_id}/usage": {
+      "get": {
+        "description": "Return the aggregated token usage and total cost for a session.\n\nRuns a single query that sums ``input_tokens``, ``output_tokens``, and\n``cost`` across all ``token_usage`` rows for the session. All fields are\n``0`` / ``0.0`` when no invocations have been recorded yet.\n\nArgs:\n    session_id: The session identifier from the URL path.\n    current_user: The authenticated user resolved by the ``CurrentUser``\n        dependency; raises HTTP 401 when unauthenticated.\n    db: The active async database session.\n\nReturns:\n    A :class:`~..schemas.sessions.SessionUsageSummaryOut` with\n    ``input_tokens``, ``output_tokens``, and ``total_cost``.\n\nRaises:\n    ProblemDetailsException: HTTP 404 when the session does not exist or\n        is not owned by the authenticated user.",
+        "operationId": "get_usage_api_v1_sessions__session_id__usage_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionUsageSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Usage",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/users/me/usage": {
+      "get": {
+        "description": "Return pre-bucketed usage data for the authenticated user.\n\nArgs:\n    current_user: The authenticated user (injected, never from request params).\n    db: Async database session.\n    from_date: Start date (inclusive), parsed from \"from\" query param.\n    to_date: End date (inclusive), parsed from \"to\" query param.\n    interval: Time bucket granularity (daily, weekly, monthly).\n\nReturns:\n    MeUsageOut with interval and ordered list of usage data points.\n\nRaises:\n    ProblemDetailsException: HTTP 422 when from_date > to_date.",
+        "operationId": "me_usage_handler_api_v1_users_me_usage_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "From",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "To",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "interval",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Interval"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeUsageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Me Usage Handler",
+        "tags": [
+          "usage"
+        ]
+      }
+    },
+    "/auth/callback": {
+      "get": {
+        "description": "Complete the OIDC flow, provision the user, and establish the session.\n\nThe identity provider redirects here with ?code=...&state=... after the\nuser authenticates. The backend reads the provider id from the session,\nexchanges the code for tokens via authlib (which validates state, nonce,\nand the ID-token signature), JIT-provisions a User, and redirects to the\nvalidated post-login destination.\n\nArgs:\n    request: The incoming request (carries session and callback query params).\n    db: Injected async database session.\n    settings: Injected application settings.\n    registry: The cached OIDC provider registry.",
+        "operationId": "auth_callback_auth_callback_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Auth Callback",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "description": "Authenticate a local user with username and password.\n\nReturns a single 401 \"Invalid credentials\" for any combination of unknown\nuser / disabled account / wrong password so attackers cannot use response\ntiming or wording to probe state.",
+        "operationId": "login_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/login/{provider_id}": {
+      "get": {
+        "description": "Begin the OIDC Authorization Code Flow for a configured provider.\n\nValidates provider presence before any provider interaction. Stores the\nprovider id and validated next URL in the session, then redirects the user\nto the identity provider's authorization endpoint with PKCE (S256).\n\nArgs:\n    provider_id: The configured OIDC provider identifier.\n    request: The incoming request (used for session and url_for).\n    settings: Injected application settings.\n    registry: The cached OIDC provider registry.\n    next_url: Optional same-origin path to redirect to after login.\n\nReturns:\n    A redirect response to the identity provider's authorization endpoint.\n\nRaises:\n    ProblemDetailsException: 404 when the provider is not configured;\n        502 when the provider is unreachable.",
+        "operationId": "oidc_login_auth_login__provider_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "title": "Provider Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "next",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Next"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Oidc Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "get": {
+        "description": "Clear the session and perform single sign-out per resolution order.\n\nReads the OIDC provider from the session, clears the session unconditionally,\nthen redirects to the provider's end-session endpoint (if available) or the\nlocal SPA login page.",
+        "operationId": "logout_auth_logout_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "description": "Return the authenticated user's profile.",
+        "operationId": "me_auth_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Me",
+        "tags": [
+          "auth"
+        ]
+      },
+      "patch": {
+        "description": "Update the authenticated user's profile fields.\n\nApplies only the non-``None`` fields from the request body to the current\nuser. Unauthenticated requests are rejected with 401 by the ``CurrentUser``\ndependency before this handler runs. Field-length violations are rejected\nwith 422 by Pydantic before this handler runs.\n\nArgs:\n    current_user: The authenticated user, resolved by the ``CurrentUser`` dependency.\n    body: Patch payload containing the optional profile fields to update.\n    db: Injected async database session.\n\nReturns:\n    The updated user profile as a ``MeOut`` response.",
+        "operationId": "patch_me_auth_me_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MePatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Patch Me",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/providers": {
+      "get": {
+        "description": "Public description of available login methods.\n\nReturns the list of configured OIDC providers (id and display_name only),\nwhether self-service registration is enabled, and the default provider id\nfor automatic login (null when not configured). Requires no authentication.",
+        "operationId": "list_providers_auth_providers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthProvidersOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Providers",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "description": "Register a new local user.\n\nGated on AUTH_REGISTRATION_ENABLED (403 when disabled) and PASSWORD_MIN_LENGTH (422).",
+        "operationId": "register_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Register",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Return HTTP 200 when the process is running.",
+        "operationId": "health_check",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Health Check",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/ready": {
+      "get": {
+        "description": "Return HTTP 200 when the database is reachable.\n\nReadiness reflects infrastructure health only (DB reachable), not\nwhether content such as agents has been configured \u2014 gating on agent\ncount would wall off the admin panel on a fresh deploy.",
+        "operationId": "health_ready",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Ready",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  }
+}

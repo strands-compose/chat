@@ -1,0 +1,132 @@
+/* ====== AUTH VIEW ======
+   Full-viewport centered authentication card. */
+
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 24px;
+  background: var(--sc-bg-secondary);
+  user-select: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  background: var(--sc-bg-primary);
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ====== HEADING ====== */
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.headingTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--sc-text-primary);
+}
+
+.headingSubtitle {
+  font-size: 0.85rem;
+  color: var(--sc-text-tertiary);
+}
+
+.accent {
+  color: var(--aws-orange);
+}
+
+/* ====== FORM ====== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formError {
+  padding: 10px 12px;
+  background: rgba(217, 48, 37, 0.08);
+  border: 1px solid rgba(217, 48, 37, 0.3);
+  border-radius: 8px;
+  color: #d93025;
+  font-size: 0.82rem;
+}
+
+.submitButton {
+  padding: 0.5rem;
+}
+
+/* ====== EXTERNAL AUTH PROVIDERS ====== */
+.providersRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* "or continue with" divider */
+.providersDivider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.25rem 0;
+  color: var(--sc-text-tertiary);
+  font-size: 0.8rem;
+}
+
+.providersDivider::before,
+.providersDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--sc-border-primary);
+}
+
+/* Individual provider button — left-aligned with 1rem gap between icon and label */
+.providerButton {
+  padding: 0.55rem 1rem;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+/* Brand icon — currentColor = dark text on orange background */
+.providerIcon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* ====== FOOTER ====== */
+.footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--sc-text-tertiary);
+  margin: 0;
+}
+
+.switchButton {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--aws-orange);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.switchButton:hover {
+  text-decoration: underline;
+}

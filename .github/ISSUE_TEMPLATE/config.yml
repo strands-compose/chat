@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: strands-compose-chat Discussions
+    url: https://github.com/strands-compose/chat/discussions
+    about: Please ask and answer questions here
+  - name: strands-compose-chat Documentation
+    url: https://github.com/strands-compose/chat/tree/main/docs
+    about: Visit the documentation for help

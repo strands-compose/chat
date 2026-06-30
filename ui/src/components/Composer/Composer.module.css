@@ -1,0 +1,181 @@
+/* ====== COMPOSER-STYLE INPUT ====== */
+.inputArea {
+  padding: 14px 16px;
+  background: var(--sc-bg-primary);
+}
+
+/* Rounded composer container */
+.form {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--sc-border-primary);
+  border-radius: 1rem;
+  background: var(--sc-bg-secondary);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.2s;
+}
+
+.form:focus-within {
+  border-color: var(--aws-orange);
+  box-shadow: 0 0 0 1px var(--aws-orange);
+}
+
+/* Textarea — clean, borderless inside the rounded form */
+.textarea {
+  display: block;
+  width: 100%;
+  padding: 14px 18px 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  line-height: 22px;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+  max-height: 40vh;
+  background: transparent;
+  color: var(--sc-text-primary);
+  box-sizing: border-box;
+}
+
+.textarea::placeholder {
+  color: var(--sc-text-tertiary);
+  opacity: 0.6;
+}
+
+.textarea:disabled {
+  opacity: 0.5;
+}
+
+/* Action bar at bottom of composer */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px 10px;
+}
+
+/* Left actions (attachment button) */
+.actionsLeft {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Right actions (send/stop buttons) */
+.actionsRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Circular send button */
+.sendButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--aws-orange);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.sendButton:hover:not(:disabled) {
+  background: var(--aws-orange-hover);
+  transform: scale(1.05);
+}
+
+.sendButton:focus,
+.sendButton:focus-visible {
+  outline: none;
+}
+
+.sendButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.sendButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Circular stop button */
+.stopButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #d13212;
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.stopButton:hover {
+  background: #b02a0f;
+  transform: scale(1.05);
+}
+
+.stopButton:focus,
+.stopButton:focus-visible {
+  outline: none;
+}
+
+.stopButton:active {
+  transform: scale(0.95);
+}
+
+/* Attachment button — icon-only, ghost style */
+.plusButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--sc-text-tertiary);
+  cursor: pointer;
+  font-size: 1.4rem;
+  font-weight: 300;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.plusButton:hover:not(:disabled) {
+  background: var(--sc-bg-tertiary);
+  color: var(--sc-text-primary);
+}
+
+.plusButton:focus,
+.plusButton:focus-visible {
+  outline: none;
+}
+
+.plusButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Visually disabled but still clickable — used when the agent can't accept
+   files so a click can explain why upload is unavailable. */
+.plusButtonBlocked {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.plusButtonBlocked:hover {
+  background: transparent;
+  color: var(--sc-text-tertiary);
+}

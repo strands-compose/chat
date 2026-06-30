@@ -1,0 +1,59 @@
+.splitContainer {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.leftPanel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.splitter {
+  width: 0;
+  cursor: col-resize;
+  background-color: rgba(200, 200, 200, 0.10);
+  flex-shrink: 0;
+  transition: width 0.2s ease, background 0.15s;
+  overflow: hidden;
+  border-left: 1px solid #d5d5d5;
+}
+
+[data-theme="dark"] .splitter {
+  border-left-color: #2a2a2a;
+}
+
+.splitterOpen {
+  width: 0.5rem;
+}
+
+.splitter:hover {
+  background: rgba(160, 160, 160, 0.25);
+}
+
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  background: none;
+  width: 0;
+}
+
+/* Content is hidden instantly (no transition) so text never reflows during the width animation */
+.rightPanelInner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  opacity: 0;
+}
+
+/* When opening: wait for width to finish, then fade in */
+.rightPanelInnerVisible {
+  opacity: 1;
+  transition: opacity 0.2s ease 0.05s;
+}

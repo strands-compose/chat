@@ -1,0 +1,246 @@
+/* ====== DATE RANGE PICKER ======
+   OpenAI-style: trigger button → popover with preset sidebar + two-month grid.
+   No external calendar library — pure CSS Modules + design tokens. */
+
+/* ── Trigger ── */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  font-family: var(--aws-font-stack);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--sc-text-primary);
+  background: var(--sc-bg-primary);
+  border: 1px solid var(--sc-border-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s ease;
+  user-select: none;
+  height: 32px;
+}
+
+.trigger:hover { border-color: var(--sc-text-tertiary); }
+
+.trigger:focus-visible {
+  outline: none;
+  border-color: var(--aws-orange);
+  box-shadow: 0 0 0 2px color-mix(in srgb, transparent 78%, var(--aws-orange) 22%);
+}
+
+.triggerIcon,
+.triggerChevron { color: var(--sc-text-tertiary); flex-shrink: 0; }
+
+/* ── Popover card ── */
+.popover {
+  background: var(--sc-bg-primary);
+  border: 1px solid var(--sc-border-primary);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+  z-index: 1100;
+  overflow: hidden;
+  animation: popIn 0.12s ease-out;
+}
+
+[data-theme='dark'] .popover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.48);
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Panel layout (sidebar | calendar area) ── */
+.panel {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* ── Preset sidebar ── */
+.presets {
+  list-style: none;
+  margin: 0;
+  padding: 12px 8px;
+  border-right: 1px solid var(--sc-border-tertiary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 148px;
+}
+
+.presetBtn {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: var(--sc-text-primary);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.1s ease;
+}
+
+.presetBtn:hover { background: var(--sc-bg-secondary); }
+
+.presetBtn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--aws-orange);
+}
+
+/* ── Calendar area ── */
+.calendarArea {
+  padding: 12px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Nav (prev/next) row — right-aligned ── */
+.navRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--sc-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.navBtn:hover { background: var(--sc-bg-secondary); }
+
+/* ── Two months side by side ── */
+.months {
+  display: flex;
+  gap: 28px;
+}
+
+/* ── Single month grid ── */
+.monthGrid {
+  width: 224px;
+}
+
+.monthLabel {
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--sc-text-primary);
+  text-align: center;
+}
+
+.dowRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.dowCell {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--sc-text-tertiary);
+  text-align: center;
+  padding: 2px 0;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+}
+
+/* ── Day cell (wraps the button for range fill) ── */
+.dayCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+}
+
+/* Mid-range fill spans the full cell width */
+.dayCellInRange::before {
+  content: '';
+  position: absolute;
+  inset: 4px 0;
+  background: color-mix(in srgb, transparent 80%, var(--aws-orange) 20%);
+  z-index: 0;
+}
+
+/* Start cap: fill only right half */
+.dayCellStart::before {
+  content: '';
+  position: absolute;
+  inset: 4px 0 4px 50%;
+  background: color-mix(in srgb, transparent 80%, var(--aws-orange) 20%);
+  z-index: 0;
+}
+
+/* End cap: fill only left half */
+.dayCellEnd::before {
+  content: '';
+  position: absolute;
+  inset: 4px 50% 4px 0;
+  background: color-mix(in srgb, transparent 80%, var(--aws-orange) 20%);
+  z-index: 0;
+}
+
+/* ── Day button ── */
+.dayBtn {
+  position: relative;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 0.82rem;
+  color: var(--sc-text-primary);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayBtn:hover:not(:disabled) {
+  background: var(--sc-bg-tertiary);
+}
+
+.dayBtn:disabled {
+  color: var(--sc-text-tertiary);
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* Selected (start / end): filled circle */
+.dayBtnSelected {
+  background: var(--aws-orange) !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+
+/* Empty cells (leading/trailing) */
+.dayEmpty { height: 32px; }
+
+/* ── Hint text while picking ── */
+.hint {
+  margin: 0;
+  font-size: 0.77rem;
+  color: var(--sc-text-tertiary);
+  text-align: center;
+  padding-top: 4px;
+}

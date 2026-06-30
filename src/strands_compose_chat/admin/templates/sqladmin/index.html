@@ -1,0 +1,45 @@
+{% extends "sqladmin/layout.html" %}
+
+{% block head %}
+<style>
+  /* Remove the page-header container */
+  .page-wrapper > .container-fluid:first-child {
+    display: none;
+  }
+  /* Strip padding from body/row so iframe fills everything */
+  .page-body {
+    padding: 0 !important;
+    overflow: hidden;
+    margin: 0;
+    height: 100vh;
+  }
+  .page-body > .container-fluid {
+    height: 100%;
+    padding: 0;
+    max-width: 100%;
+  }
+  .page-body > .container-fluid > .row {
+    height: 100%;
+    margin: 0;
+  }
+
+  .iframe-admin {
+    width: 100%;
+    height: 100vh;
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content_header %}{% endblock %}
+
+{% block content %}
+<iframe
+  src="{{ admin.base_url }}/dashboard"
+  class="iframe-admin"
+  title="Admin Dashboard"
+  id="admin-app-iframe"
+></iframe>
+{% endblock %}

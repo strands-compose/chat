@@ -1,0 +1,68 @@
+/* ====== DROP OVERLAY ======
+   Full-window blurred backdrop with a centered drop-zone card. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--sc-bg-primary) 55%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  /* The window-level drop listener handles the drop; the overlay must not
+     intercept pointer/drag events. */
+  pointer-events: none;
+  animation: dropOverlayFade 0.12s ease-out;
+}
+
+@keyframes dropOverlayFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 6rem 10rem;
+  border: 2px dashed var(--aws-orange);
+  border-radius: 16px;
+  background: var(--sc-bg-primary);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  max-width: 90vw;
+  animation: dropCardPop 0.14s ease-out;
+}
+
+@keyframes dropCardPop {
+  from {
+    transform: scale(0.96);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.icon {
+  display: flex;
+  color: var(--aws-orange);
+}
+
+.title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--sc-text-primary);
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: var(--sc-text-tertiary);
+}

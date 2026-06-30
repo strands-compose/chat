@@ -1,0 +1,18 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* Each MultiSelect grows to fill available space equally. */
+.selectWrap {
+  flex: 1 1 7.5rem;
+  min-width: 6.25rem;
+}
+
+.error {
+  color: var(--sc-text-error);
+  font-size: 0.85rem;
+}

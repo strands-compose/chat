@@ -1,0 +1,7 @@
+/* ====== ATTACHMENT PREVIEW ====== */
+.preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 18px 0;
+}

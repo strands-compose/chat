@@ -1,0 +1,72 @@
+/* ====== BUTTON ======
+   Text (optionally icon+text) button. Variants cover the app's needs:
+   outline (dropdown triggers) and ghost (list/suggestion rows). */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--sc-text-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ====== VARIANT: outline ====== */
+.outline {
+  border-color: rgba(100, 100, 100, 0.2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.outline:hover:not(:disabled) {
+  background: var(--sc-bg-tertiary);
+  border-color: rgba(100, 100, 100, 0.4);
+}
+
+[data-theme="dark"] .outline {
+  border-color: rgba(200, 200, 200, 0.2);
+}
+
+[data-theme="dark"] .outline:hover:not(:disabled) {
+  border-color: rgba(200, 200, 200, 0.35);
+}
+
+/* ====== VARIANT: ghost ====== */
+.ghost:hover:not(:disabled) {
+  background: var(--sc-bg-tertiary);
+}
+
+/* ====== VARIANT: primary ====== */
+.primary {
+  justify-content: center;
+  background: var(--aws-orange);
+  border-color: var(--aws-orange);
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--aws-orange-hover);
+  border-color: var(--aws-orange-hover);
+}
+
+/* ====== FULL WIDTH / TEXT ALIGN ====== */
+.fullWidth {
+  width: 100%;
+}
+
+.alignStart {
+  justify-content: flex-start;
+  text-align: left;
+}

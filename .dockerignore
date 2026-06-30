@@ -1,0 +1,30 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.ruff_cache/
+.coverage
+*.egg-info/
+dist/
+build/
+*cache
+
+# Node
+*/node_modules/
+*/dist/
+
+# Dev / tooling
+.git/
+.kiro/
+.env
+*.sqlite
+*.db
+tasks
+
+# Tests
+tests/
+.pytest_cache/
+
+# Docs / misc
+*.md

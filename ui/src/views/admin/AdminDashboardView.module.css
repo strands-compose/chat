@@ -1,0 +1,60 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  overflow: auto;
+  max-height: 100vh;
+}
+
+.titleRoot {
+  padding: 1.5rem;
+  background-color: var(--sc-bg-secondary);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--sc-text-primary);
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--sc-text-tertiary);
+  margin-bottom: 1rem;
+}
+
+.shell {
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  border-top: 1px solid var(--sc-border-primary);
+}
+
+/* Breakdown chart (left) + Budget table (right) sit side by side.
+   The chart takes 3× more space. At narrow widths they stack vertically. */
+.breakdownLayout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.breakdownChart {
+  flex: 3 1 30rem;
+  min-width: 0;
+}
+
+.budgetPanel {
+  flex: 1 1 15rem;
+  min-width: 30rem;
+}

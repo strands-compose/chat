@@ -1,0 +1,30 @@
+/* ====== TRIGGER ====== */
+.trigger {
+  min-width: 12rem;
+  padding: 8px 12px;
+  justify-content: space-between;
+}
+
+.chevron {
+  color: var(--sc-text-tertiary);
+  flex-shrink: 0;
+}
+
+/* ====== ITEMS ====== */
+.agentName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sc-text-primary);
+}
+
+.agentDesc {
+  font-size: 0.75rem;
+  color: var(--sc-text-tertiary);
+}
+
+.dropdownMsg {
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  color: var(--sc-text-tertiary);
+  cursor: default;
+}

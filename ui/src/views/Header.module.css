@@ -1,0 +1,127 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  padding-right: 8px;
+  background: var(--aws-header-bg);
+  color: #fff;
+  user-select: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+}
+
+.accent {
+  color: var(--aws-orange);
+}
+
+/* ====== ACTIONS ROW ====== */
+.actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* ====== USER TRIGGER ====== */
+.userTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.userTrigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.userTrigger:focus {
+  outline: none;
+}
+
+.userTrigger[data-state='open'] {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.userIcon {
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.username {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  opacity: 0.7;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.userTrigger[data-state='open'] .chevron {
+  transform: rotate(180deg);
+}
+
+/* ====== DROPDOWN HEADER ====== */
+.menuHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px 8px;
+}
+
+.menuUsername {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sc-text-primary);
+}
+
+.menuEmail {
+  font-size: 0.78rem;
+  color: var(--sc-text-tertiary);
+}
+
+.separator {
+  margin: none;
+}
+
+/* ====== BUDGET PROGRESS BAR ====== */
+.headerBudget {
+  min-width: 16rem;
+  margin-right: 4px;
+}
+
+/* ====== MENU ITEM ROW ====== */
+.menuItemRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+/* ====== DANGER ITEM (passed as className to DropdownMenuItem) ====== */
+.itemDanger {
+  color: #d93025;
+}

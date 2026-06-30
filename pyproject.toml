@@ -1,0 +1,151 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/strands_compose_chat"]
+# Include pre-built frontend assets when present (populated by CI before `hatch build`).
+# Absent in sdist / local editable installs — that's intentional.
+artifacts = ["src/strands_compose_chat/static/**"]
+
+[tool.hatch.build.targets.sdist]
+# Exclude the frontend source tree and its dependencies from the sdist.
+# The wheel bundles only the compiled assets.
+exclude = [
+    "ui/",
+]
+
+[project]
+name = "strands-compose-chat"
+version = "0.1.0"
+description = "Chat web app for strands-compose"
+authors = [
+    { name = "Michal Galuszka", email = "michal.galuszka1@gmail.com" },
+]
+requires-python = ">=3.11"
+
+dependencies = [
+    "aiosqlite>=0.22.1",
+    "alembic>=1.18,<2.0",
+    "argon2-cffi>=25.1",
+    "authlib>=1.3,<2.0",
+    "fastapi>=0.138,<1.0",
+    "httpx>=0.27",
+    "itsdangerous>=2.2,<3.0",
+    "markupsafe>=2.0",
+    "pydantic[email]>=2.13,<3.0",
+    "pydantic-settings>=2.14,<3.0",
+    "sqlalchemy[asyncio]>=2.0,<3.0",
+    "sqladmin>=0.27,<0.28",
+    "strands-compose-agentcore>=0.9.0,<1.0.0",
+    "structlog>=26.1",
+    "uvicorn>=0.49,<1.0",
+    "wtforms>=3.1,<3.2",
+]
+
+[project.scripts]
+strands-compose-chat = "strands_compose_chat.cli:main"
+scc = "strands_compose_chat.cli:main"
+
+[dependency-groups]
+check = [
+    "bandit>=1.9.4",
+    "ty>=0.0.55",
+    "ruff>=0.15.14",
+    "rust-just>=1.50.0",
+]
+commit = ["commitizen>=4.15.0", "pre-commit>=4.6.0"]
+dev = [
+    "hypothesis>=6.155.7",
+    "pytest>=9.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=7.1.0",
+    "pytest-mock>=3.15.1",
+    "pytest-randomly>=3.15.0",
+    "pytest-socket>=0.7.0",
+    "pytest-xdist>=3.5.0",
+    "time-machine>=3.2.0",
+]
+
+[project.optional-dependencies]
+postgres = [
+    "psycopg[binary]>=3.3.4",
+]
+
+[tool.bandit]
+targets = ["src"]
+severity = "all"
+exclude_dirs = ["src/strands_compose_chat/static"]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = [
+    "*/__init__.py",
+    "*/__main__.py",
+    # CLI entry point — not in test-suite scope
+    "*/cli.py",
+    # Application bootstrap/startup — not in test-suite scope
+    "*/bootstrap.py",
+    # Static-file frontend serving — not in test-suite scope
+    "*/frontend.py",
+    # Logging configuration — not in test-suite scope
+    "*/logging.py",
+    # sqladmin admin views — no public API
+    "*/admin/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+norecursedirs = ["__pycache__", ".*"]
+python_files = ["test_*.py"]
+addopts = "--verbosity=2 --disable-socket --allow-unix-socket --allow-hosts=127.0.0.1"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "postgres: dialect-sensitive test; runs on the Postgres tier",
+    "property: Hypothesis property-based test (>= 100 examples)",
+]
+
+[tool.hypothesis]
+max_examples = 100
+derandomize = false
+database = ".hypothesis"
+
+[tool.ruff]
+fix = true
+indent-width = 4
+line-length = 100
+target-version = "py313"
+src = ["src"]
+exclude = [
+    "__pycache__",
+    "*.pyc",
+    "src/strands_compose_chat/static",
+]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["D100", "D103"]
+
+[tool.ty.environment]
+root = ["./src", "./"]
+
+[tool.pyright]
+extraPaths = ["src", "."]

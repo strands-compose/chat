@@ -1,0 +1,30 @@
+/* ====== CONFIRM DIALOG ======
+   Overrides and specific styling for ConfirmDialog. */
+
+.icon {
+  flex-shrink: 0;
+  color: var(--aws-orange);
+  width: 20px;
+  height: 20px;
+}
+
+.message {
+  font-size: 0.9rem;
+  color: var(--sc-text-secondary);
+  line-height: 1.55;
+  padding-left: 30px; /* aligns with title text after icon */
+  white-space: pre-line;
+}
+
+.confirmBtn {
+  min-width: 90px;
+  justify-content: center;
+  background: #d63031;
+  border-color: #d63031;
+  color: #ffffff;
+}
+
+.confirmBtn:hover:not(:disabled) {
+  background: #b52828;
+  border-color: #b52828;
+}

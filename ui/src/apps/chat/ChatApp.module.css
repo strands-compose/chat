@@ -1,0 +1,14 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin: 0;
+  background: var(--sc-bg-primary);
+}
+
+/* ====== BODY (below header) ====== */
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}

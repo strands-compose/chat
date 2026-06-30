@@ -1,0 +1,32 @@
+/* ====== TOKEN BADGES ======
+   Lives on themed subheader surfaces; styled purely via color-mode tokens. */
+
+.root {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.groupLabel {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--sc-text-tertiary);
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.badge {
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  background: var(--sc-bg-tertiary);
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: 10px;
+  color: var(--sc-text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.badgeLabel {
+  color: var(--sc-text-tertiary);
+  font-weight: 500;
+}

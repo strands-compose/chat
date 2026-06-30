@@ -1,0 +1,123 @@
+# Continuous Integration — runs on every push and pull request.
+
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Quality checks
+  check:
+    name: Quality checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: true
+
+      - name: Install dev deps
+        run: uv sync --all-groups --all-extras
+
+      - name: Ruff — format check
+        run: uv run just check-format
+
+      - name: Ruff — lint
+        run: uv run just check-code
+
+      - name: ty — type check
+        run: uv run just check-type
+
+      - name: Bandit — security scan
+        run: uv run just check-security
+
+  # Fast tier: unit + SQLite-backed
+  test-fast:
+    name: Fast tier (Python ${{ matrix.python-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dev deps
+        run: uv sync --all-groups --all-extras
+
+      - name: Run tests
+        run: uv run just test-fast
+
+  # Postgres tier: dialect-sensitive tests + migration guard
+  test-postgres:
+    name: Postgres tier
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword  # pragma: allowlist secret
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d testdb"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: "postgresql+psycopg://testuser:testpassword@localhost:5432/testdb"  # pragma: allowlist secret
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: true
+
+      - name: Install dev deps
+        run: uv sync --all-groups --all-extras
+
+      - name: Verify Postgres is reachable
+        run: |
+          uv run python - <<'EOF'
+          import sys
+          import psycopg
+
+          try:
+              with psycopg.connect(
+                  "postgresql://testuser:testpassword@localhost:5432/testdb",
+                  connect_timeout=10,
+              ) as conn:
+                  conn.execute("SELECT 1")
+          except Exception as exc:
+              print(f"ERROR: database connection failed — {exc}", file=sys.stderr)
+              sys.exit(1)
+          EOF
+
+      - name: Run tests
+        run: uv run just test-postgres db_host=localhost

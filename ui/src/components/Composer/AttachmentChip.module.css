@@ -1,0 +1,88 @@
+/* ====== ATTACHMENT CHIP ====== */
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 10rem;
+  border: 1px solid var(--sc-border-primary);
+  border-radius: 0.625rem;
+  background: var(--sc-bg-secondary);
+  overflow: hidden;
+}
+
+/* Clickable content area opening the preview */
+.open {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  min-width: 0;
+  color: inherit;
+  font: inherit;
+}
+
+.open:focus,
+.open:focus-visible {
+  outline: none;
+}
+
+/* Image thumbnail fills the chip */
+.thumbnail {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+}
+
+/* Document chip: icon + file name */
+.document {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+.documentIcon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--sc-text-tertiary);
+}
+
+.name {
+  font-size: 0.8rem;
+  color: var(--sc-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Remove control, top-right */
+.remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--sc-bg-primary);
+  color: var(--sc-text-secondary);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: background 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.remove:hover {
+  background: var(--sc-bg-tertiary);
+  color: var(--sc-text-primary);
+  opacity: 1;
+}

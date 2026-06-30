@@ -1,0 +1,55 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 56.25rem) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 37.5rem) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: var(--sc-bg-secondary);
+  border: 1px solid var(--sc-border-tertiary);
+}
+
+.tileLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sc-text-tertiary);
+  margin: 0;
+}
+
+.tileValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--sc-text-primary);
+  margin: 0;
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.error {
+  color: var(--sc-text-error);
+  font-size: 0.85rem;
+  padding: 0.75rem;
+  background: var(--sc-bg-secondary);
+  border: 1px solid var(--sc-border-tertiary);
+  border-radius: 0.5rem;
+}

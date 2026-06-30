@@ -1,0 +1,88 @@
+/* ====== AGENTS LIST (accordion) ======
+   One collapsible row per agent; expanding reveals a markdown description.
+   Colors use design tokens only. */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* ====== ROW ====== */
+.row {
+  border: 1px solid var(--sc-border-tertiary);
+  border-radius: 10px;
+  background: var(--sc-bg-secondary);
+  overflow: hidden;
+}
+
+.rowHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+  transition: background-color 0.12s ease;
+}
+
+.rowHeader:hover {
+  background: var(--sc-bg-tertiary);
+}
+
+.rowHeader:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--aws-orange);
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--sc-text-tertiary);
+  transition: transform 0.15s ease;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.agentName {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--sc-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ====== BODY ====== */
+.rowBody {
+  padding: 0 16px 16px 42px;
+  border-top: 1px solid var(--sc-border-tertiary);
+}
+
+.description {
+  padding-top: 12px;
+  font-size: 0.875rem;
+}
+
+.noDescription {
+  margin: 12px 0 0 0;
+  font-size: 0.85rem;
+  color: var(--sc-text-tertiary);
+  font-style: italic;
+}
+
+/* ====== EMPTY STATE ====== */
+.emptyState {
+  height: 100%;
+  font-size: 1rem;
+  color: var(--sc-text-tertiary);
+  text-align: center;
+  align-content: center;
+}

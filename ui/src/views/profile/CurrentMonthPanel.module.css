@@ -1,0 +1,92 @@
+/* ====== CURRENT MONTH PANEL ======
+   Budget progress bar and two compact daily line charts for the current month.
+   All colors use design tokens — no hardcoded hex or rgb values. */
+
+/* ====== CONTAINER ====== */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  user-select: none;
+}
+
+/* ====== SECTION TITLES ====== */
+.sectionTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-text-tertiary);
+  margin: 0 0 8px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--sc-border-tertiary);
+}
+
+.chartTitle {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sc-text-tertiary);
+  margin: 0 0 4px 0;
+}
+
+/* ====== BUDGET SECTION ====== */
+.budgetSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spendRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.spendLabel {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sc-text-primary);
+  line-height: 1.2;
+}
+
+.budgetLabel {
+  font-size: 0.82rem;
+  color: var(--sc-text-tertiary);
+}
+
+/* ====== CHART SECTION ====== */
+.chartSection {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  gap: 2px;
+}
+
+/* The ReactECharts component wrapper */
+.chart {
+  width: 100% !important;
+  flex: 1 1 0;
+  min-height: 0;
+  height: unset !important;
+}
+
+/* ====== NO DATA ====== */
+.noData {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-height: 80px;
+  font-size: 0.82rem;
+  color: var(--sc-text-tertiary);
+  background: var(--sc-bg-secondary);
+  border-radius: 6px;
+  border: 1px dashed var(--sc-border-tertiary);
+}

@@ -1,0 +1,280 @@
+/* ====== CODE BLOCK WITH HEADER ====== */
+.codeBlockWrapper {
+  border: 1px solid var(--sc-border-primary);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 8px 0;
+  font-size: 0.82rem;
+}
+
+.codeBlockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+  background: var(--sc-bg-secondary);
+  border-bottom: 1px solid var(--sc-border-primary);
+  user-select: none;
+}
+
+.codeBlockLang {
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--sc-text-tertiary);
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
+
+.codeBlockCopy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--sc-text-tertiary);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+
+.codeBlockCopy:hover {
+  background: var(--sc-bg-tertiary);
+  color: var(--sc-text-primary);
+}
+
+/* Strip the highlighter's own chrome — wrapper owns border-radius and border */
+.codeBlockWrapper :global(div) {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+/* Fallback pre while highlighter lazy-loads */
+.codeBlockFallback {
+  margin: 0;
+  padding: 10px 14px;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  white-space: pre;
+  overflow-x: auto;
+  background: var(--sc-bg-secondary);
+  color: var(--sc-text-primary);
+}
+
+.markdownBody .codeBlockFallback code {
+  background: none !important;
+  padding: 0;
+  border-radius: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* ====== PRISM TOKEN COLORS (One Light / One Dark) ======
+   Applied to refractor's token spans so theming is pure CSS. */
+.codeTokens :global(.token.comment),
+.codeTokens :global(.token.prolog),
+.codeTokens :global(.token.doctype),
+.codeTokens :global(.token.cdata) { color: #2563a8; font-style: italic; }
+
+.codeTokens :global(.token.punctuation) { color: #383a42; }
+
+.codeTokens :global(.token.property),
+.codeTokens :global(.token.tag),
+.codeTokens :global(.token.boolean),
+.codeTokens :global(.token.number),
+.codeTokens :global(.token.constant),
+.codeTokens :global(.token.symbol),
+.codeTokens :global(.token.deleted) { color: #986801; }
+
+.codeTokens :global(.token.selector),
+.codeTokens :global(.token.attr-name),
+.codeTokens :global(.token.string),
+.codeTokens :global(.token.char),
+.codeTokens :global(.token.builtin),
+.codeTokens :global(.token.inserted) { color: #50a14f; }
+
+.codeTokens :global(.token.operator),
+.codeTokens :global(.token.entity),
+.codeTokens :global(.token.url) { color: #0184bc; }
+
+.codeTokens :global(.token.atrule),
+.codeTokens :global(.token.attr-value),
+.codeTokens :global(.token.keyword) { color: #a626a4; }
+
+.codeTokens :global(.token.function),
+.codeTokens :global(.token.class-name) { color: #4078f2; }
+
+.codeTokens :global(.token.regex),
+.codeTokens :global(.token.important),
+.codeTokens :global(.token.variable) { color: #e45649; }
+
+[data-theme="dark"] .codeTokens :global(.token.comment),
+[data-theme="dark"] .codeTokens :global(.token.prolog),
+[data-theme="dark"] .codeTokens :global(.token.doctype),
+[data-theme="dark"] .codeTokens :global(.token.cdata) { color: #6ab0f5; }
+
+[data-theme="dark"] .codeTokens :global(.token.punctuation) { color: #abb2bf; }
+
+[data-theme="dark"] .codeTokens :global(.token.property),
+[data-theme="dark"] .codeTokens :global(.token.tag),
+[data-theme="dark"] .codeTokens :global(.token.boolean),
+[data-theme="dark"] .codeTokens :global(.token.number),
+[data-theme="dark"] .codeTokens :global(.token.constant),
+[data-theme="dark"] .codeTokens :global(.token.symbol),
+[data-theme="dark"] .codeTokens :global(.token.deleted) { color: #d19a66; }
+
+[data-theme="dark"] .codeTokens :global(.token.selector),
+[data-theme="dark"] .codeTokens :global(.token.attr-name),
+[data-theme="dark"] .codeTokens :global(.token.string),
+[data-theme="dark"] .codeTokens :global(.token.char),
+[data-theme="dark"] .codeTokens :global(.token.builtin),
+[data-theme="dark"] .codeTokens :global(.token.inserted) { color: #98c379; }
+
+[data-theme="dark"] .codeTokens :global(.token.operator),
+[data-theme="dark"] .codeTokens :global(.token.entity),
+[data-theme="dark"] .codeTokens :global(.token.url) { color: #56b6c2; }
+
+[data-theme="dark"] .codeTokens :global(.token.atrule),
+[data-theme="dark"] .codeTokens :global(.token.attr-value),
+[data-theme="dark"] .codeTokens :global(.token.keyword) { color: #c678dd; }
+
+[data-theme="dark"] .codeTokens :global(.token.function),
+[data-theme="dark"] .codeTokens :global(.token.class-name) { color: #61afef; }
+
+[data-theme="dark"] .codeTokens :global(.token.regex),
+[data-theme="dark"] .codeTokens :global(.token.important),
+[data-theme="dark"] .codeTokens :global(.token.variable) { color: #e06c75; }
+
+/* ====== MARKDOWN PROSE BODY ======
+   Shared prose styling for rendered markdown. Owned by the Markdown primitive
+   and applied to its wrapper by default, so any view (chat bubble, workflow
+   panel) gets identical styling without importing another view's stylesheet. */
+.markdownBody {
+  color: var(--sc-text-primary);
+  line-height: 1.6;
+  white-space: unset !important;
+  max-width: 100%;
+}
+
+.markdownBody ol,
+.markdownBody ul {
+  margin: 0;
+  margin-top: 12px;
+  padding-left: 24px;
+}
+
+.markdownBody ol li,
+.markdownBody ul li {
+  margin: 0;
+  margin-bottom: 8px;
+}
+
+.markdownBody li p {
+  margin: 0;
+  margin-bottom: 6px;
+  line-height: 1.6;
+}
+
+.markdownBody li p:last-child {
+  margin-bottom: 12px;
+}
+
+.markdownBody li p br {
+  content: "";
+  display: block;
+  margin-bottom: 4px;
+}
+
+.markdownBody strong {
+  font-weight: 600;
+}
+
+.markdownBody table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+  font-size: 0.9em;
+}
+
+.markdownBody table th,
+.markdownBody table td {
+  border: 1px solid var(--sc-border-primary);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdownBody table th {
+  background-color: var(--sc-bg-secondary);
+  font-weight: 600;
+}
+
+.markdownBody table tr:nth-child(even) {
+  background-color: var(--sc-bg-secondary);
+}
+
+.markdownBody code {
+  background-color: var(--sc-bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+[data-theme="dark"] .markdownBody code {
+  background-color: rgba(255, 255, 255, 0.09);
+  color: #d4d4d4;
+}
+
+.markdownBody p {
+  margin: 0 !important;
+}
+
+.markdownBody hr {
+  border: 1px solid #e2e2e2;
+  margin: 12px 0px;
+}
+
+/* ====== HEADING SIZE OVERRIDES ====== */
+.markdownBody h1 {
+  font-size: 1.4rem;
+  margin: 16px 0 8px;
+}
+
+.markdownBody h2 {
+  font-size: 1.15rem;
+  margin: 14px 0 6px;
+}
+
+.markdownBody h3 {
+  font-size: 1rem;
+  margin: 12px 0 4px;
+}
+
+.markdownBody h4 {
+  font-size: 0.92rem;
+  margin: 10px 0 4px;
+}
+
+.markdownBody h5 {
+  font-size: 0.85rem;
+  margin: 8px 0 4px;
+}
+
+.markdownBody h6 {
+  font-size: 0.8rem;
+  margin: 8px 0 4px;
+}
+
+.markdownBody ol {
+  list-style-position: outside;
+}
+
+.markdownBody ul {
+  list-style-position: outside;
+}

@@ -1,0 +1,17 @@
+# Minimal project that installs strands-compose-chat for local use.
+# This project is not itself a package; it only declares the dependency.
+[project]
+name = "my-chat-app"
+version = "0.1.0"
+description = "Local deployment of strands-compose-chat"
+requires-python = ">=3.11"
+dependencies = [
+    # Pin to the version you want to run.
+    "strands-compose-chat==0.1.0",
+    # To use Postgres instead of the default SQLite, swap the line above for:
+    # "strands-compose-chat[postgres]==0.1.0",
+]
+
+[tool.uv]
+# Install only the dependencies above; do not try to build this folder.
+package = false

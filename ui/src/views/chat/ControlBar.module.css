@@ -1,0 +1,62 @@
+/* ====== CHAT CONTROL BAR ======
+   Supplementary styles for the right slot in the chat control bar.
+   The overall bar layout is handled by SubheaderBar. */
+
+.rightSlot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.agentLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sc-text-primary);
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.agentName {
+  color: var(--aws-orange);
+  margin-left: 4px;
+}
+
+/* ====== SUBHEADER BUTTON GROUP ======
+   Collapse/expand toggles in the control bar's leading slot. */
+
+.subheaderGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subheaderBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  color: var(--sc-text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.subheaderBtn:hover {
+  background: var(--sc-bg-tertiary);
+  color: var(--sc-text-primary);
+  border-color: rgba(100, 100, 100, 0.4);
+}
+
+[data-theme="dark"] .subheaderBtn {
+  border-color: rgba(200, 200, 200, 0.2);
+}
+
+[data-theme="dark"] .subheaderBtn:hover {
+  border-color: rgba(200, 200, 200, 0.35);
+}
