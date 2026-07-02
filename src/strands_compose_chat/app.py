@@ -8,7 +8,6 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from sqladmin import Admin
 from sqlalchemy import select
@@ -39,7 +38,7 @@ from .errors import register_exception_handlers
 from .frontend import mount_frontend
 from .logging import configure_logging
 from .media.routes import router as media_router
-from .middleware import SecurityHeadersMiddleware
+from .middleware import HealthExemptTrustedHostMiddleware, SecurityHeadersMiddleware
 from .sessions.routes import router as sessions_router
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
@@ -94,7 +93,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         same_site="lax",
     )
     app.add_middleware(SecurityHeadersMiddleware)
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.TRUSTED_HOSTS)
+    app.add_middleware(
+        HealthExemptTrustedHostMiddleware,
+        allowed_hosts=settings.TRUSTED_HOSTS,
+        exempt_paths=frozenset(
+            {
+                f"{prefix}/health",
+                f"{prefix}/ready",  # routes mounted under the URL prefix
+                "/health",
+                "/ready",  # fallback when ASGI root_path is used
+            }
+        ),
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ALLOWED_ORIGINS,

@@ -21,6 +21,8 @@ WORKDIR /app
 
 COPY pyproject.toml .
 COPY uv.lock .
+COPY LICENSE .
+COPY README.md .
 COPY src/ src/
 
 # Copy pre-built frontend assets (required for wheel artifacts).
@@ -41,8 +43,6 @@ RUN groupadd --gid 1001 app && \
 WORKDIR /app
 
 COPY --from=builder /app/.venv .venv
-COPY entrypoint.sh .
-RUN chmod +x /app/entrypoint.sh
 
 ENV PATH="/app/.venv/bin:$PATH"
 
