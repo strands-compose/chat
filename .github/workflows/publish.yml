@@ -56,7 +56,12 @@ jobs:
           npm run build:backend
 
       - name: Build wheel + sdist
-        run: uv build --out-dir dist/
+        # Build both distributions directly from the source tree. A bare
+        # `uv build` builds the wheel *from the sdist*, and the sdist excludes
+        # the pre-built `static/` assets (gitignored, wheel-only artifacts) —
+        # so the published wheel would ship without the frontend. Passing both
+        # targets explicitly builds each from source, keeping static/ in the wheel.
+        run: uv build --sdist --wheel --out-dir dist/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7

@@ -13,7 +13,7 @@ database, so it is the fastest way to try the app or develop against it.
 1. **Configure environment.** Copy the template and set the required values:
 
    ```bash
-   cp .env.example .env
+   cp example.env .env
    ```
 
    Open `.env` and set `SESSION_SECRET_KEY` (the file shows the command to

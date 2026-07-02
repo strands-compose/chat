@@ -15,7 +15,7 @@ needed.
 1. **Configure environment.** Copy the template and set the required values:
 
    ```bash
-   cp .env.example .env
+   cp example.env .env
    ```
 
    Open `.env` and set `SESSION_SECRET_KEY` (the file shows the command to
@@ -53,7 +53,7 @@ docker compose down -v             # stop and delete the database volume
   `CORS_ALLOWED_ORIGINS`, and (if using SSO) `OIDC_REDIRECT_URI` to your public
   domain, and serve over HTTPS behind a reverse proxy. In `prod` the session
   cookie is HTTPS-only, so signing in over plain HTTP will not work — HTTPS is
-  required. See `.env.example` and the [examples overview](../README.md) for
+  required. See `example.env` and the [examples overview](../README.md) for
   ECS / Kubernetes guidance.
 
 ## Next steps
