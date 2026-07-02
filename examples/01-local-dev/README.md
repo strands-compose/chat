@@ -32,7 +32,7 @@ database, so it is the fastest way to try the app or develop against it.
    ```bash
    python -m venv .venv
    source .venv/bin/activate      # Windows: .venv\Scripts\activate
-   pip install "strands-compose-chat==0.1.0"
+   pip install "strands-compose-chat==0.1.3"
    ```
 
    With the pip path, keep this virtual environment activated for the remaining
