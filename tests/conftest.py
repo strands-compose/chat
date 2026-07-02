@@ -8,7 +8,6 @@ that reason; the third-party imports below are ordinary top-of-file imports.
 
 import asyncio
 import inspect
-import sys
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 
@@ -17,12 +16,6 @@ import time_machine
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
-
-# Windows' default Proactor loop mismanages aiosqlite's worker-thread
-# connections (and noisily fails to close itself). The Selector loop matches
-# Linux/macOS behaviour and works cleanly with aiosqlite.
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # ty: ignore
 
 from strands_compose_chat import config
 

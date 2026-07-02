@@ -13,6 +13,7 @@ from strands_compose_chat.schemas.media import MediaCapabilitiesOut
 _SESSION_SECRET = "t" * 43
 
 _SETTINGS = Settings(
+    APP_ENV="dev",
     SESSION_SECRET_KEY=_SESSION_SECRET,
     CHAT_MEDIA_MAX_FILE_BYTES=5 * 1024 * 1024,
     CHAT_MEDIA_MAX_TOTAL_BYTES=20 * 1024 * 1024,
@@ -29,6 +30,7 @@ def test_build_capabilities_result_is_valid_schema() -> None:
 
 def test_build_capabilities_limit_fields_reflect_custom_settings() -> None:
     custom = Settings(
+        APP_ENV="dev",
         SESSION_SECRET_KEY=_SESSION_SECRET,
         CHAT_MEDIA_MAX_FILE_BYTES=1 * 1024 * 1024,
         CHAT_MEDIA_MAX_TOTAL_BYTES=4 * 1024 * 1024,
