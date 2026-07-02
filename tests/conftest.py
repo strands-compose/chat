@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # connections (and noisily fails to close itself). The Selector loop matches
 # Linux/macOS behaviour and works cleanly with aiosqlite.
 if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # ty: ignore
 
 from strands_compose_chat import config
 
