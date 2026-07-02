@@ -10,7 +10,7 @@ these examples only provide the deployment glue around it.
 | [`02-docker`](02-docker) | Run a production-like stack on one host | PostgreSQL |
 
 Each example contains its own README with step-by-step instructions and an
-`.env.example` you copy to `.env`. The `.env` files are grouped into
+`example.env` you copy to `.env`. The `.env` files are grouped into
 **mandatory**, **common**, and **optional** settings.
 
 ## Configuration at a glance
