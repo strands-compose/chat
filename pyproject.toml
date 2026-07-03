@@ -17,7 +17,7 @@ exclude = [
 
 [project]
 name = "strands-compose-chat"
-version = "0.1.4"
+version = "0.1.5"
 description = "Chat web app for strands-compose"
 readme = "README.md"
 requires-python = ">=3.11"
