@@ -69,6 +69,10 @@ export interface ChatStore {
   sessions: Session[];
   agents: Agent[];
   sessionsLoading: boolean;
+  /** True while a session's thread is being fetched on switch. Drives the
+   *  blur-out / fade-in reveal so switching feels smooth instead of a hard
+   *  swap once the fetch (which can take ~1s) resolves. */
+  restoringSession: boolean;
   /** True while the one-time agent list fetch is in flight. */
   agentsLoading: boolean;
   /** True once the agent list fetch has settled at least once (success or error).
@@ -222,6 +226,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     sessions: [],
     agents: [],
     sessionsLoading: false,
+    restoringSession: false,
     agentsLoading: false,
     agentsLoaded: false,
     agentsError: false,
@@ -284,6 +289,10 @@ export const useChatStore = create<ChatStore>((set, get) => {
       // them so the workflow panel isn't wiped on a no-op reload.
       const isSameSession = get().sessionId === sessionId;
 
+      // Blur the outgoing thread while the (potentially ~1s) fetch is in flight,
+      // then clear the flag together with the new thread so it fades in.
+      set({ restoringSession: true });
+
       // Request timeout is enforced inside the api layer (fetchWithTimeout).
       try {
         const msgs = await fetchSessionMessages(sessionId);
@@ -294,6 +303,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
           messages: newMessages,
           messageOrder: newMessageOrder,
           sessionId,
+          restoringSession: false,
           sessionInputTokens: undefined,
           sessionOutputTokens: undefined,
           sessionCost: undefined,
@@ -349,6 +359,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         });
       } catch (err) {
         // Leave existing state unchanged on failure or timeout.
+        set({ restoringSession: false });
         console.error('[chatStore] restoreSession failed:', err);
       }
     },

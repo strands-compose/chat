@@ -37,8 +37,7 @@ def serve(host: str = _DEFAULT_HOST, port: int = _DEFAULT_PORT) -> None:
     """Run the web server.
 
     Args:
-        host: Interface to bind. Defaults to loopback; pass ``0.0.0.0`` to
-            expose the server inside a container.
+        host: Interface to bind (default: loopback; use ``0.0.0.0`` in containers).
         port: TCP port to listen on.
     """
     import uvicorn  # noqa: PLC0415 — deferred so `migrate` does not import the server stack
@@ -50,6 +49,8 @@ def serve(host: str = _DEFAULT_HOST, port: int = _DEFAULT_PORT) -> None:
         timeout_keep_alive=30,
         proxy_headers=True,
         forwarded_allow_ips="*",
+        limit_max_requests=500,
+        limit_max_requests_jitter=50,
     )
 
 

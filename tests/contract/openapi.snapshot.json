@@ -2231,7 +2231,7 @@
     },
     "/auth/logout": {
       "get": {
-        "description": "Clear the session and perform single sign-out per resolution order.\n\nReads the OIDC provider from the session, clears the session unconditionally,\nthen redirects to the provider's end-session endpoint (if available) or the\nlocal SPA login page.",
+        "description": "Clear the local session and redirect to the SPA login page.\n\nTerminates only the application session \u2014 the IdP SSO session is left\nintact so other services sharing the same identity provider are unaffected.",
         "operationId": "logout_auth_logout_get",
         "responses": {
           "200": {

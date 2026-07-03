@@ -7,11 +7,13 @@ import type { ReactElement } from 'react';
 import { memo } from 'react';
 import { useChatStore } from '@/store';
 import { useAutoScroll } from '@/hooks';
+import { cn } from '@/services';
 import { ChatMessage } from './Message';
 import styles from './ChatView.module.css';
 
 const MessageListComponent = (): ReactElement => {
   const messageOrder = useChatStore((s) => s.messageOrder);
+  const restoringSession = useChatStore((s) => s.restoringSession);
 
   // Drive auto-scroll on the streaming tail. Both pieces of data come from the
   // store — no need to pass them down through props.
@@ -24,7 +26,7 @@ const MessageListComponent = (): ReactElement => {
 
   return (
     <main className={styles.chatContainer} ref={containerRef}>
-      <div className={styles.messages}>
+      <div className={cn(styles.messages, restoringSession && styles.messagesRestoring)}>
         {messageOrder.map((msgId) => (
           <ChatMessage key={msgId} messageId={msgId} />
         ))}

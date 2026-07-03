@@ -45,7 +45,7 @@ docker compose down -v             # stop and delete the database volume
 
 ## Notes
 
-- **Pin the version.** The image installs `strands-compose-chat==0.1.3`. Change
+- **Pin the version.** The image installs `strands-compose-chat==0.1.5`. Change
   it by editing the `STRANDS_COMPOSE_CHAT_VERSION` build arg in `Dockerfile`,
   or pass `--build-arg STRANDS_COMPOSE_CHAT_VERSION=X.Y.Z` to `docker build`.
 - **Database data** persists in the `pgdata` volume across restarts.

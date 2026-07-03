@@ -23,6 +23,17 @@
   margin: 0;
   padding: 0 8px;
   user-select: none;
+  /* Smoothly return to sharp/opaque when the restoring class clears, so a
+   * switched-to session fades in instead of hard-swapping. */
+  transition: filter 0.28s ease, opacity 0.28s ease;
+}
+
+/* While a session's thread is being fetched: lightly blur and dim the outgoing
+ * content and block interaction. Clearing this class reveals the new thread. */
+.messagesRestoring {
+  filter: blur(4px);
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 /* Scrollbar handled globally in index.css */

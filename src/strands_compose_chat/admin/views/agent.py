@@ -12,11 +12,39 @@ from ...db.models import Agent
 from ...deps import get_settings
 from .base import BaseModelView, _badge
 
+_PRE_STYLE = (
+    "margin:0;padding:8px;background:var(--tblr-secondary-bg);"
+    "border:1px solid var(--tblr-border-color);"
+    "border-radius:4px;max-height:400px;overflow:auto;color:var(--tblr-body-color);"
+    "font-size:0.8em;white-space:pre;"
+)
+
 
 def _format_description(model: Any, _prop: Any) -> str:
     """Truncate agent description to 60 characters in the list view."""
     desc: str = getattr(model, "description", "") or ""
     return desc[:60] + "…" if len(desc) > 60 else desc
+
+
+def _format_description_detail(model: Any, _prop: Any) -> Markup:
+    """Render the full agent description in a scrollable <pre> block."""
+    desc: str = getattr(model, "description", "") or ""
+    if not desc:
+        return Markup("")
+    return Markup(  # nosec B704 — description is operator-supplied text, not user HTML
+        f'<pre style="{_PRE_STYLE}">{desc}</pre>'
+    )
+
+
+def _format_suggested_questions_detail(model: Any, _prop: Any) -> Markup:
+    """Render suggested_questions as one question per line in a <pre> block."""
+    value: list[str] | None = getattr(model, "suggested_questions", None)
+    if not value:
+        return Markup("")
+    text = "\n".join(str(q) for q in value)
+    return Markup(  # nosec B704 — questions are operator-supplied text, not user HTML
+        f'<pre style="{_PRE_STYLE}">{text}</pre>'
+    )
 
 
 def _format_agent_kind(model: Any, _prop: Any) -> Markup:
@@ -121,8 +149,9 @@ class AgentAdmin(BaseModelView, model=Agent):
         Agent.agent_kind: _format_agent_kind,
     }
     column_formatters_detail = {  # type: ignore[assignment]
-        Agent.description: _format_description,
+        Agent.description: _format_description_detail,
         Agent.agent_kind: _format_agent_kind,
+        Agent.suggested_questions: _format_suggested_questions_detail,
     }
 
     form_overrides = {

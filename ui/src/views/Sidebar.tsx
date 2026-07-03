@@ -4,7 +4,7 @@
 
 import type { ReactElement } from 'react';
 import { memo, useEffect, useState } from 'react';
-import { FiEdit, FiTrash2, FiChevronsLeft, FiChevronsRight, FiSearch } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { useChatStore } from '@/store';
 import { cn } from '@/services/utils';
 import type { Session } from '@/services/api';
@@ -202,9 +202,10 @@ const SidebarComponent = (): ReactElement => {
         <NavButton onClick={handleNewChat} label="New chat" title="New chat">
           <FiEdit size={17} />
         </NavButton>
-        <NavButton label="Search" title="Search chats (coming soon)" disabled>
+        {/* TODO: enable when implemented */}
+        {/* <NavButton label="Search" title="Search chats (coming soon)" disabled>
           <FiSearch size={17} />
-        </NavButton>
+        </NavButton> */}
       </nav>
       <div className={styles.history} aria-label="Chat history">
         {renderHistory()}

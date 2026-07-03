@@ -54,6 +54,14 @@ doubt, apply them in order.
 
 ---
 
+## Communication Style — Apply Everywhere
+
+- **Short and essential by default.** Answer directly. No preamble, no storytelling, no background context unless explicitly asked.
+- **Explain only when asked.** If the user asks "why" or "explain", provide detail. Otherwise, give the result.
+- **No filler.** No "Great question!", no "As you can see…", no summaries restating what was just done.
+
+---
+
 ## Behaviour Rules — Apply Everywhere
 
 - **Smallest reasonable change.** Don't refactor unrelated code to land a

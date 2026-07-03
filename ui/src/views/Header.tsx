@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { lazy, memo, Suspense, useEffect, useState } from 'react';
-import { FiSun, FiMoon, FiUser, FiChevronDown, FiLogOut, FiSettings, FiShield } from 'react-icons/fi';
+import { FiSun, FiMoon, FiUser, FiChevronDown, FiLogOut, FiShield } from 'react-icons/fi';
 import {
   IconButton,
   DropdownMenu,
@@ -102,12 +102,13 @@ const HeaderComponent = (): ReactElement => {
                 Profile
               </span>
             </DropdownMenuItem>
-            <DropdownMenuItem disabled title="Coming soon">
+            {/* TODO: enable when implemented */}
+            {/* <DropdownMenuItem disabled title="Coming soon">
               <span className={styles.menuItemRow}>
                 <FiSettings size={14} />
                 Settings
               </span>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             {user.is_superuser && (
               <>
                 <DropdownMenuSeparator />

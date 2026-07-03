@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Pin the version to deploy. Override at build time with:
 #   docker build --build-arg STRANDS_COMPOSE_CHAT_VERSION=X.Y.Z .
-ARG STRANDS_COMPOSE_CHAT_VERSION=0.1.3
+ARG STRANDS_COMPOSE_CHAT_VERSION=0.1.5
 
 RUN uv venv "$VIRTUAL_ENV" && \
     uv pip install "strands-compose-chat[postgres]==${STRANDS_COMPOSE_CHAT_VERSION}"

@@ -67,25 +67,6 @@ def _build_callback_redirect_uri(request: Request, settings: Settings) -> str:
     return redirect_uri
 
 
-def _absolute_login_url(request: Request, settings: Settings) -> str:
-    """Absolute URL of the SPA login page for post-logout redirects.
-
-    Derived from OIDC_REDIRECT_URI by replacing the trailing ``/auth/callback`` with
-    ``/login`` when set; otherwise derived from the request base URL combined with
-    URL_PREFIX and ``/login``.
-
-    Args:
-        request: The current Starlette request.
-        settings: Application settings.
-
-    Returns:
-        The absolute SPA login page URL.
-    """
-    if settings.OIDC_REDIRECT_URI:
-        return settings.OIDC_REDIRECT_URI.removesuffix("/auth/callback") + "/login"
-    return f"{str(request.base_url).rstrip('/')}{settings.URL_PREFIX}/login"
-
-
 # ---------------------------------------------------------------------------
 # Provider discovery
 # ---------------------------------------------------------------------------
@@ -139,7 +120,7 @@ async def register(
     now = datetime.now(UTC)
     user = User(
         username=body.username,
-        email=str(body.email),
+        email=body.email,
         auth_provider="local",
         external_subject=None,
         password_hash=password_hash,
@@ -205,25 +186,14 @@ async def login(
 async def logout(
     request: Request,
     settings: AppSettings,
-    registry: OidcRegistry,
 ) -> Response:
-    """Clear the session and perform single sign-out per resolution order.
+    """Clear the local session and redirect to the SPA login page.
 
-    Reads the OIDC provider from the session, clears the session unconditionally,
-    then redirects to the provider's end-session endpoint (if available) or the
-    local SPA login page.
+    Terminates only the application session — the IdP SSO session is left
+    intact so other services sharing the same identity provider are unaffected.
     """
-    provider_id = request.session.get(_OIDC_PROVIDER_SESSION_KEY)
-    provider = registry.get(provider_id) if provider_id else None
-    login_page = f"{settings.URL_PREFIX}/login"
     request.session.clear()
-
-    if provider is not None:
-        end_session_url = await provider.resolve_logout_url(_absolute_login_url(request, settings))
-        if end_session_url:
-            return RedirectResponse(url=end_session_url, status_code=302)
-
-    return RedirectResponse(url=login_page, status_code=302)
+    return RedirectResponse(url=f"{settings.URL_PREFIX}/login", status_code=302)
 
 
 # ---------------------------------------------------------------------------
