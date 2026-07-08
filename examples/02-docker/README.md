@@ -45,10 +45,39 @@ docker compose down -v             # stop and delete the database volume
 
 ## Notes
 
-- **Pin the version.** The image installs `strands-compose-chat==0.1.5`. Change
+- **Why gunicorn, not `serve`.**
+
+  CLI command `serve` is a single unmanaged uvicorn process meant for local
+  development — if it exits (crash, or hitting a request limit) the container
+  dies and the health check fails.
+
+  In production, we recommend **Gunicorn** as process manager: it recycles
+  its worker after `max_requests` to bound memory growth from slow leaks,
+  and replaces a crashed worker without terminating the container. This matters
+  on small tasks (e.g. 0.25 vCPU / 512 MB) where an unbounded process gets OOM-killed.
+  Tune it with the `GUNICORN_*` / `WEB_CONCURRENCY` environment variables —
+  see `gunicorn.conf.py`
+- **Pin the version.** The image installs `strands-compose-chat==0.1.6`. Change
   it by editing the `STRANDS_COMPOSE_CHAT_VERSION` build arg in `Dockerfile`,
   or pass `--build-arg STRANDS_COMPOSE_CHAT_VERSION=X.Y.Z` to `docker build`.
 - **Database data** persists in the `pgdata` volume across restarts.
+- **Read-only root filesystem?** If you lock the container's root filesystem
+  (e.g. AWS ECS `readonlyRootFilesystem: true`), mount **one writable volume at
+  `/tmp`** — that is the only writable path the app needs. Gunicorn's control
+  socket (`HOME`) and file-upload spillover (`TMPDIR`) are both pinned to `/tmp`
+  in the `Dockerfile`. FastAPI buffers uploads in memory up to 1 MB and rolls
+  larger attachments over to `TMPDIR`, so without a writable `/tmp` uploads over
+  1 MB fail. On Fargate use a task `volumes` entry mounted at `/tmp` (backed by
+  task ephemeral storage); `linuxParameters.tmpfs` is EC2-only. No broader
+  filesystem access is required.
+
+  ```json
+  "containerDefinitions": [{
+    "readonlyRootFilesystem": true,
+    "mountPoints": [{ "sourceVolume": "tmp", "containerPath": "/tmp" }]
+  }],
+  "volumes": [{ "name": "tmp" }]
+  ```
 - **Deploying to a real server?** Set `APP_ENV=prod`, set `TRUSTED_HOSTS`,
   `CORS_ALLOWED_ORIGINS`, and (if using SSO) `OIDC_REDIRECT_URI` to your public
   domain, and serve over HTTPS behind a reverse proxy. In `prod` the session

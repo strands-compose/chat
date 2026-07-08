@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Pin the version to deploy. Override at build time with:
 #   docker build --build-arg STRANDS_COMPOSE_CHAT_VERSION=X.Y.Z .
-ARG STRANDS_COMPOSE_CHAT_VERSION=0.1.5
+ARG STRANDS_COMPOSE_CHAT_VERSION=0.1.6
 
 RUN uv venv "$VIRTUAL_ENV" && \
     uv pip install "strands-compose-chat[postgres]==${STRANDS_COMPOSE_CHAT_VERSION}"
@@ -33,11 +33,21 @@ RUN groupadd --gid 1001 app && \
 WORKDIR /app
 
 COPY --from=builder /app/.venv /app/.venv
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/app/.venv/bin:$PATH" \
+    HOME="/tmp" \
+    TMPDIR="/tmp"
+
+# Gunicorn process-manager config (worker recycling, timeouts, forwarded IPs).
+COPY gunicorn.conf.py /app/gunicorn.conf.py
 
 USER app
 
 EXPOSE 8000
 
-# Apply migrations, then start the server bound to all interfaces in the container.
-CMD ["sh", "-c", "strands-compose-chat migrate && strands-compose-chat serve --host 0.0.0.0 --port 8000"]
+# Apply migrations, then start under gunicorn. Gunicorn is the process manager:
+# `exec` makes it PID 1 so it receives SIGTERM directly for a clean drain,
+# and it recycles the worker to bound memory growth without killing the container.
+CMD ["sh", "-c", "\
+  strands-compose-chat migrate && \
+  exec gunicorn -c /app/gunicorn.conf.py strands_compose_chat.app:app \
+"]

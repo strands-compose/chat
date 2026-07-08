@@ -1,10 +1,11 @@
 """Shared base view and common helpers for all admin ModelViews."""
 
 from datetime import datetime
-from typing import Any, Tuple
+from typing import Any
 
 from markupsafe import Markup
 from sqladmin import ModelView
+from starlette.requests import Request
 
 
 def _format_datetime(value: datetime) -> Any:
@@ -67,17 +68,21 @@ class BaseModelView(ModelView):
         # Rebuild the reverse lookup that sqladmin maintains alongside the forward map.
         self._column_labels_value_by_key = {v: k for k, v in self._column_labels.items()}
 
-    async def get_list_value(self, obj: Any, prop: str) -> Tuple[Any, Any]:
+    async def get_list_value(
+        self, obj: Any, prop: str, request: Request | None = None
+    ) -> tuple[Any, Any]:
         """Return badge list as formatted_value for declared relation props."""
-        value, formatted_value = await super().get_list_value(obj, prop)
+        value, formatted_value = await super().get_list_value(obj, prop, request)
         if prop in self._badge_relation_props and isinstance(value, list):
             color = self._badge_relation_props[prop]
             formatted_value = _relation_badge_list(value, color)
         return value, formatted_value
 
-    async def get_detail_value(self, obj: Any, prop: str) -> Tuple[Any, Any]:
+    async def get_detail_value(
+        self, obj: Any, prop: str, request: Request | None = None
+    ) -> tuple[Any, Any]:
         """Return badge list as formatted_value for declared relation props."""
-        value, formatted_value = await super().get_detail_value(obj, prop)
+        value, formatted_value = await super().get_detail_value(obj, prop, request)
         if prop in self._badge_relation_props and isinstance(value, list):
             color = self._badge_relation_props[prop]
             formatted_value = _relation_badge_list(value, color)
