@@ -3,10 +3,15 @@
 Exposes the ``strands-compose-chat`` console script with two subcommands:
 
 - ``migrate`` — apply all pending database migrations (``alembic upgrade head``).
-- ``serve`` — run the ASGI application with uvicorn.
+- ``serve`` — run the ASGI application under plain uvicorn (single process).
+
+``serve`` is a convenience runner aimed at local development. It has no worker
+recycling and no memory bounding, which is fine for dev but not for a
+long-lived production container — for that, run under gunicorn with a
+process manager (see the docker example's ``gunicorn.conf.py``).
 
 The commands are intentionally separate and composable: a container or init
-job runs ``migrate`` once, then ``serve`` starts the web process.
+job runs ``migrate`` once, then ``serve`` (or gunicorn) starts the web process.
 """
 
 import argparse
@@ -21,6 +26,7 @@ _ALEMBIC_INI = Path(__file__).parent / "alembic.ini"
 
 _DEFAULT_HOST = "127.0.0.1"
 _DEFAULT_PORT = 8000
+_KEEPALIVE = 30
 
 
 def _alembic_config() -> Config:
@@ -34,7 +40,11 @@ def migrate() -> None:
 
 
 def serve(host: str = _DEFAULT_HOST, port: int = _DEFAULT_PORT) -> None:
-    """Run the web server.
+    """Run the web server under plain uvicorn (single process).
+
+    Intended for local development. For production, run under gunicorn with a
+    recycling uvicorn worker so memory growth is bounded and a crashed worker
+    is replaced without killing the container.
 
     Args:
         host: Interface to bind (default: loopback; use ``0.0.0.0`` in containers).
@@ -46,11 +56,9 @@ def serve(host: str = _DEFAULT_HOST, port: int = _DEFAULT_PORT) -> None:
         "strands_compose_chat.app:app",
         host=host,
         port=port,
-        timeout_keep_alive=30,
+        timeout_keep_alive=_KEEPALIVE,
         proxy_headers=True,
         forwarded_allow_ips="*",
-        limit_max_requests=500,
-        limit_max_requests_jitter=50,
     )
 
 

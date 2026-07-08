@@ -1,7 +1,7 @@
 """Admin view for the ChatSession model."""
 
 import json
-from typing import Any, Tuple
+from typing import Any
 
 from fastapi import Request
 from markupsafe import Markup
@@ -136,7 +136,9 @@ class ChatSessionAdmin(BaseModelView, model=ChatSession):
         """Eagerly load token_usage to avoid DetachedInstanceError."""
         return super().details_query(request).options(selectinload(ChatSession.token_usage))
 
-    async def get_detail_value(self, obj: Any, prop: str) -> Tuple[Any, Any]:
+    async def get_detail_value(
+        self, obj: Any, prop: str, request: Request | None = None
+    ) -> tuple[Any, Any]:
         """Render token_usage as a summarised total string."""
         if prop == "token_usage":
             try:
@@ -145,4 +147,4 @@ class ChatSessionAdmin(BaseModelView, model=ChatSession):
                 rows = []
             value = _summarise_token_usage(rows) if rows else "—"
             return value, value
-        return await super().get_detail_value(obj, prop)
+        return await super().get_detail_value(obj, prop, request)
