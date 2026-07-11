@@ -9,7 +9,7 @@ never breaks an in-flight stream.
 import asyncio
 import json
 from collections.abc import AsyncGenerator
-from contextlib import aclosing
+from contextlib import suppress
 from datetime import UTC, datetime
 from typing import Any
 
@@ -385,17 +385,25 @@ async def stream_turn(
     seen_error_texts: list[str] = []
 
     events = client.invoke(prompt, session_id=session_id)
-    async with aclosing(events):
-        aiter = events.__aiter__()
+    aiter = events.__aiter__()
+    # Uses asyncio.wait (not wait_for) so the in-flight pull is never cancelled
+    # on heartbeat timeout — a slow model keeps the upstream connection alive.
+    pending: asyncio.Task[Any] | None = None
+    try:
         while True:
-            try:
-                event = await asyncio.wait_for(aiter.__anext__(), timeout=_HEARTBEAT_INTERVAL)
-            except asyncio.TimeoutError:
-                # Send a keep-alive
+            if pending is None:
+                pending = asyncio.ensure_future(aiter.__anext__())
+            done, _ = await asyncio.wait({pending}, timeout=_HEARTBEAT_INTERVAL)
+            if not done:
                 yield _SSE_HEARTBEAT
                 continue
+
+            try:
+                event = pending.result()
             except StopAsyncIteration:
                 break
+            finally:
+                pending = None
 
             if event is None:
                 continue
@@ -426,3 +434,10 @@ async def stream_turn(
                     await save_assistant_message(chat_session_id, event)
 
             yield format_sse(event)
+    finally:
+        # Cancel pending pull before aclose() to avoid "async generator already running".
+        if pending is not None:
+            pending.cancel()
+            with suppress(BaseException):
+                await pending
+        await events.aclose()

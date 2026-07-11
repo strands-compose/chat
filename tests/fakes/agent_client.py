@@ -11,6 +11,7 @@ Inject via::
     )
 """
 
+import asyncio
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -30,6 +31,15 @@ class FakeAgentClient:
             to yield from ``invoke``.
         raise_after: When given, raise a ``RuntimeError`` after emitting this
             many events (0-indexed). Useful for error-path streaming tests.
+        gate_before: When given, block on the provided ``asyncio.Event`` before
+            yielding the event at this index, simulating a frozen model.  The
+            test sets the event to unblock the stream.  Using a gate instead of
+            a sleep keeps the test deterministic and clock-free.
+        blocked_at: Optional companion to ``gate_before``. Maps the same event
+            indices to a second ``asyncio.Event`` that is **set** by the fake
+            immediately before it starts waiting on the gate. This lets a
+            releasing task know the fake is genuinely blocked (and at least one
+            heartbeat has fired) before it opens the gate.
     """
 
     def __init__(
@@ -37,9 +47,13 @@ class FakeAgentClient:
         events: list[StreamEvent],
         *,
         raise_after: int | None = None,
+        gate_before: dict[int, asyncio.Event] | None = None,
+        blocked_at: dict[int, asyncio.Event] | None = None,
     ) -> None:
         self._events = list(events)
         self._raise_after = raise_after
+        self._gate_before = gate_before or {}
+        self._blocked_at = blocked_at or {}
 
         # Recorded so tests can inspect teardown behaviour.
         self.aclose_called: bool = False
@@ -47,12 +61,16 @@ class FakeAgentClient:
         self.stop_session_calls: list[str] = []
 
     async def invoke(self, prompt: Any, *, session_id: str) -> AsyncIterator[StreamEvent]:  # type: ignore[override]
-        """Yield the scripted events, raising after ``raise_after`` if set."""
+        """Yield the scripted events, honouring gates and ``raise_after``."""
         for i, event in enumerate(self._events):
             if self._raise_after is not None and i >= self._raise_after:
                 raise RuntimeError(
                     f"FakeAgentClient: raise_after={self._raise_after} reached at event index {i}"
                 )
+            if i in self._gate_before:
+                if i in self._blocked_at:
+                    self._blocked_at[i].set()   # signal: "I am now blocked on the gate"
+                await self._gate_before[i].wait()
             yield event
 
     async def aclose(self) -> None:

@@ -6,6 +6,7 @@ resets the schema per test instead of relying on transaction rollback.
 
 from collections.abc import AsyncIterator
 
+import asyncio
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -163,6 +164,103 @@ async def test_streaming_success_persists_one_assistant_turn(
         f"expected {assistant_text!r}, got {assistant_messages[0].content!r}"
     )
     assert assistant_messages[0].is_success is True
+
+
+async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
+    client: AsyncClient,
+    db: AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A slow/frozen model triggers heartbeats without dropping the stream."""
+    agent_id, headers = await _setup_user_agent_group(db)
+
+    # Shrink heartbeat to 0 so the first asyncio.wait() timeout fires on the
+    # very next event-loop tick — no wall-clock wait needed.
+    monkeypatch.setattr(
+        "strands_compose_chat.agents.streaming._HEARTBEAT_INTERVAL",
+        0,
+    )
+
+    assistant_text = "Answer after a long think"
+    scripted_events = [
+        StreamEvent(
+            type=EventType.SESSION_START,
+            agent_name="test-agent",
+            data={"manifest": None},
+        ),
+        StreamEvent(
+            type=EventType.AGENT_COMPLETE,
+            agent_name="test-agent",
+            data={
+                "text": assistant_text,
+                "usage": {"input_tokens": 10, "output_tokens": 5},
+            },
+        ),
+        StreamEvent(
+            type=EventType.SESSION_END,
+            agent_name="test-agent",
+            data={"text": assistant_text},
+        ),
+    ]
+
+    # Two events co-ordinate the timing deterministically — no sleep, no clock:
+    #
+    #   blocked:  set by the fake the moment it starts waiting on the gate, i.e.
+    #             the stream is genuinely frozen at SESSION_END.
+    #   gate:     set by _unblock only AFTER it sees `blocked`, so the heartbeat
+    #             loop has already fired at least one ping before the stream
+    #             continues.
+    blocked = asyncio.Event()
+    gate = asyncio.Event()
+    fake = FakeAgentClient(events=scripted_events, gate_before={2: gate}, blocked_at={2: blocked})
+    monkeypatch.setattr(
+        "strands_compose_chat.agents.invocation.build_client",
+        lambda agent: fake,
+    )
+
+    # Unblock the gate after a short yield so the heartbeat has a chance to
+    # fire first. asyncio.sleep(0) yields control once without any wall-clock
+    # wait — it is the minimum deterministic way to let the event loop tick.
+    async def _unblock() -> None:
+        await blocked.wait()   # fake is now parked at the gate
+        gate.set()             # let it continue
+
+    asyncio.create_task(_unblock())
+
+    resp = await client.post(
+        "/api/v1/invocations",
+        json={
+            "agent_id": agent_id,
+            "prompt": "Take your time",
+        },
+        headers=headers,
+    )
+
+    assert resp.status_code == 200
+
+    # At least one keep-alive comment must have been emitted during the stall.
+    assert b": ping" in resp.content, (
+        "expected at least one SSE heartbeat during the slow-agent stall"
+    )
+
+    # The post-stall SESSION_END must still be delivered — the stream survived.
+    frames = _parse_sse_frames(resp.content)
+    event_types = [f.get("event") for f in frames]
+    assert event_types[-1] == str(EventType.SESSION_END), (
+        f"SESSION_END must survive the heartbeat and be the last event; got {event_types}"
+    )
+
+    # And the assistant turn from the post-stall event must be persisted.
+    async with AsyncSessionLocal() as read_session:
+        result = await read_session.execute(
+            select(ChatMessage).where(ChatMessage.role == "assistant")
+        )
+        assistant_messages = list(result.scalars().all())
+
+    assert len(assistant_messages) == 1, (
+        f"expected one assistant ChatMessage after a slow turn; found {len(assistant_messages)}"
+    )
+    assert assistant_messages[0].content == assistant_text
 
 
 async def test_streaming_mid_stream_error_persists_no_assistant_turn(
