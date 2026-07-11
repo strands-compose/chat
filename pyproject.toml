@@ -20,7 +20,7 @@ name = "strands-compose-chat"
 version = "0.1.6"
 description = "Chat web app for strands-compose"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.15"
 license = { file = "LICENSE" }
 authors = [
     { name = "Michal Galuszka", email = "michal.galuszka1@gmail.com" },
@@ -34,7 +34,12 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python :: 3.14",
+    "Environment :: Web Environment",
+    "Framework :: FastAPI",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
     "Typing :: Typed",
 ]
 
@@ -143,7 +148,7 @@ database = ".hypothesis"
 fix = true
 indent-width = 4
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 src = ["src"]
 exclude = [
     "__pycache__",
