@@ -171,20 +171,7 @@ async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
     db: AsyncSession,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A slow/frozen model triggers heartbeats but the stream is NOT dropped.
-
-    Regression for the SSE-drop bug: ``stream_turn`` previously used
-    ``asyncio.wait_for(aiter.__anext__(), timeout=_HEARTBEAT_INTERVAL)``. On
-    timeout ``wait_for`` cancelled the in-flight pull, which propagated
-    ``CancelledError`` into the upstream client generator, closed it, and ended
-    the stream after a single ``: ping``. The event emitted once the model
-    "unfroze" was never delivered.
-
-    The fake blocks on a gate before the final SESSION_END. With the heartbeat
-    interval set to zero the loop fires a ping on the very first tick while the
-    gate is still closed. The test then sets the gate so the stream can finish.
-    No wall-clock sleeps; timing is controlled entirely by the gate.
-    """
+    """A slow/frozen model triggers heartbeats without dropping the stream."""
     agent_id, headers = await _setup_user_agent_group(db)
 
     # Shrink heartbeat to 0 so the first asyncio.wait() timeout fires on the
