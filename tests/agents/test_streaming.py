@@ -165,6 +165,100 @@ async def test_streaming_success_persists_one_assistant_turn(
     assert assistant_messages[0].is_success is True
 
 
+async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
+    client: AsyncClient,
+    db: AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A slow/frozen model triggers a heartbeat but the stream is NOT dropped.
+
+    Regression for the SSE-drop bug: ``stream_turn`` previously used
+    ``asyncio.wait_for(aiter.__anext__(), timeout=_HEARTBEAT_INTERVAL)``. On
+    timeout ``wait_for`` cancelled the in-flight pull, which propagated
+    ``CancelledError`` into the upstream client generator, closed it, and ended
+    the stream after a single ``: ping``. The event emitted once the model
+    "unfroze" was never delivered.
+
+    This test stalls the client longer than the heartbeat interval before the
+    final event and asserts that (a) at least one heartbeat is emitted and
+    (b) the post-stall SESSION_END still arrives and is persisted.
+    """
+    agent_id, headers = await _setup_user_agent_group(db)
+
+    # Shrink the heartbeat interval so the test runs fast.
+    monkeypatch.setattr(
+        "strands_compose_chat.agents.streaming._HEARTBEAT_INTERVAL",
+        0.05,
+    )
+
+    assistant_text = "Answer after a long think"
+    scripted_events = [
+        StreamEvent(
+            type=EventType.SESSION_START,
+            agent_name="test-agent",
+            data={"manifest": None},
+        ),
+        StreamEvent(
+            type=EventType.AGENT_COMPLETE,
+            agent_name="test-agent",
+            data={
+                "text": assistant_text,
+                "usage": {"input_tokens": 10, "output_tokens": 5},
+            },
+        ),
+        StreamEvent(
+            type=EventType.SESSION_END,
+            agent_name="test-agent",
+            data={"text": assistant_text},
+        ),
+    ]
+    # Stall for 0.25s (5x the heartbeat interval) before the final SESSION_END,
+    # simulating a frozen model mid-turn.
+    fake = FakeAgentClient(
+        events=scripted_events,
+        delays=[0.0, 0.0, 0.25],
+    )
+    monkeypatch.setattr(
+        "strands_compose_chat.agents.invocation.build_client",
+        lambda agent: fake,
+    )
+
+    resp = await client.post(
+        "/api/v1/invocations",
+        json={
+            "agent_id": agent_id,
+            "prompt": "Take your time",
+        },
+        headers=headers,
+    )
+
+    assert resp.status_code == 200
+
+    # At least one keep-alive comment must have been emitted during the stall.
+    assert b": ping" in resp.content, (
+        "expected at least one SSE heartbeat during the slow-agent stall"
+    )
+
+    # The post-stall SESSION_END must still be delivered — the stream survived.
+    frames = _parse_sse_frames(resp.content)
+    event_types = [f.get("event") for f in frames]
+    assert event_types[-1] == str(EventType.SESSION_END), (
+        f"SESSION_END must survive the heartbeat and be the last event; got {event_types}"
+    )
+
+    # And the assistant turn from the post-stall event must be persisted.
+    async with AsyncSessionLocal() as read_session:
+        result = await read_session.execute(
+            select(ChatMessage).where(ChatMessage.role == "assistant")
+        )
+        assistant_messages = list(result.scalars().all())
+
+    assert len(assistant_messages) == 1, (
+        f"expected one assistant ChatMessage after a slow turn; found {len(assistant_messages)}"
+    )
+    assert assistant_messages[0].content == assistant_text
+
+
 async def test_streaming_mid_stream_error_persists_no_assistant_turn(
     client: AsyncClient,
     db: AsyncSession,

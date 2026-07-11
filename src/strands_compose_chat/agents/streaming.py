@@ -9,7 +9,7 @@ never breaks an in-flight stream.
 import asyncio
 import json
 from collections.abc import AsyncGenerator
-from contextlib import aclosing
+from contextlib import suppress
 from datetime import UTC, datetime
 from typing import Any
 
@@ -385,17 +385,33 @@ async def stream_turn(
     seen_error_texts: list[str] = []
 
     events = client.invoke(prompt, session_id=session_id)
-    async with aclosing(events):
-        aiter = events.__aiter__()
+    aiter = events.__aiter__()
+    # Pull the next upstream event with a *persistent* task. A heartbeat is
+    # emitted whenever the pull hasn't completed within _HEARTBEAT_INTERVAL,
+    # but the same in-flight pull is preserved across heartbeats. This is
+    # deliberately NOT asyncio.wait_for: wait_for cancels the pull on timeout,
+    # which propagates CancelledError into the upstream client generator, runs
+    # its finally (closing the stream) and terminates it — so a slow/frozen
+    # model would drop the whole stream after a single ping. asyncio.wait
+    # returns on timeout without cancelling, keeping the upstream alive.
+    pending: asyncio.Task[Any] | None = None
+    try:
         while True:
-            try:
-                event = await asyncio.wait_for(aiter.__anext__(), timeout=_HEARTBEAT_INTERVAL)
-            except asyncio.TimeoutError:
-                # Send a keep-alive
+            if pending is None:
+                pending = asyncio.ensure_future(aiter.__anext__())
+            done, _ = await asyncio.wait({pending}, timeout=_HEARTBEAT_INTERVAL)
+            if not done:
+                # Upstream still working (e.g. model generating). Send a
+                # keep-alive and keep waiting on the same pull.
                 yield _SSE_HEARTBEAT
                 continue
+
+            try:
+                event = pending.result()
             except StopAsyncIteration:
                 break
+            finally:
+                pending = None
 
             if event is None:
                 continue
@@ -426,3 +442,12 @@ async def stream_turn(
                     await save_assistant_message(chat_session_id, event)
 
             yield format_sse(event)
+    finally:
+        # Cancel any in-flight pull before closing the generator. Closing while
+        # a __anext__ task is still pending raises "async generator is already
+        # running" (e.g. client disconnects mid-stream during a heartbeat).
+        if pending is not None:
+            pending.cancel()
+            with suppress(BaseException):
+                await pending
+        await events.aclose()

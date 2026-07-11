@@ -11,6 +11,7 @@ Inject via::
     )
 """
 
+import asyncio
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -30,6 +31,10 @@ class FakeAgentClient:
             to yield from ``invoke``.
         raise_after: When given, raise a ``RuntimeError`` after emitting this
             many events (0-indexed). Useful for error-path streaming tests.
+        delays: Optional per-event pre-yield delays in seconds, parallel to
+            ``events``. ``delays[i]`` is awaited *before* yielding ``events[i]``,
+            simulating a slow/frozen model (e.g. a stalled Bedrock stream). Used
+            to exercise the SSE heartbeat path in ``stream_turn``.
     """
 
     def __init__(
@@ -37,9 +42,11 @@ class FakeAgentClient:
         events: list[StreamEvent],
         *,
         raise_after: int | None = None,
+        delays: list[float] | None = None,
     ) -> None:
         self._events = list(events)
         self._raise_after = raise_after
+        self._delays = list(delays) if delays is not None else None
 
         # Recorded so tests can inspect teardown behaviour.
         self.aclose_called: bool = False
@@ -47,12 +54,14 @@ class FakeAgentClient:
         self.stop_session_calls: list[str] = []
 
     async def invoke(self, prompt: Any, *, session_id: str) -> AsyncIterator[StreamEvent]:  # type: ignore[override]
-        """Yield the scripted events, raising after ``raise_after`` if set."""
+        """Yield the scripted events, honouring per-event delays and ``raise_after``."""
         for i, event in enumerate(self._events):
             if self._raise_after is not None and i >= self._raise_after:
                 raise RuntimeError(
                     f"FakeAgentClient: raise_after={self._raise_after} reached at event index {i}"
                 )
+            if self._delays is not None and i < len(self._delays) and self._delays[i] > 0:
+                await asyncio.sleep(self._delays[i])
             yield event
 
     async def aclose(self) -> None:
