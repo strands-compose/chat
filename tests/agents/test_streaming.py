@@ -6,6 +6,7 @@ resets the schema per test instead of relying on transaction rollback.
 
 from collections.abc import AsyncIterator
 
+import asyncio
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -170,7 +171,7 @@ async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
     db: AsyncSession,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A slow/frozen model triggers a heartbeat but the stream is NOT dropped.
+    """A slow/frozen model triggers heartbeats but the stream is NOT dropped.
 
     Regression for the SSE-drop bug: ``stream_turn`` previously used
     ``asyncio.wait_for(aiter.__anext__(), timeout=_HEARTBEAT_INTERVAL)``. On
@@ -179,16 +180,18 @@ async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
     the stream after a single ``: ping``. The event emitted once the model
     "unfroze" was never delivered.
 
-    This test stalls the client longer than the heartbeat interval before the
-    final event and asserts that (a) at least one heartbeat is emitted and
-    (b) the post-stall SESSION_END still arrives and is persisted.
+    The fake blocks on a gate before the final SESSION_END. With the heartbeat
+    interval set to zero the loop fires a ping on the very first tick while the
+    gate is still closed. The test then sets the gate so the stream can finish.
+    No wall-clock sleeps; timing is controlled entirely by the gate.
     """
     agent_id, headers = await _setup_user_agent_group(db)
 
-    # Shrink the heartbeat interval so the test runs fast.
+    # Shrink heartbeat to 0 so the first asyncio.wait() timeout fires on the
+    # very next event-loop tick — no wall-clock wait needed.
     monkeypatch.setattr(
         "strands_compose_chat.agents.streaming._HEARTBEAT_INTERVAL",
-        0.05,
+        0,
     )
 
     assistant_text = "Answer after a long think"
@@ -212,16 +215,30 @@ async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
             data={"text": assistant_text},
         ),
     ]
-    # Stall for 0.25s (5x the heartbeat interval) before the final SESSION_END,
-    # simulating a frozen model mid-turn.
-    fake = FakeAgentClient(
-        events=scripted_events,
-        delays=[0.0, 0.0, 0.25],
-    )
+
+    # Two events co-ordinate the timing deterministically — no sleep, no clock:
+    #
+    #   blocked:  set by the fake the moment it starts waiting on the gate, i.e.
+    #             the stream is genuinely frozen at SESSION_END.
+    #   gate:     set by _unblock only AFTER it sees `blocked`, so the heartbeat
+    #             loop has already fired at least one ping before the stream
+    #             continues.
+    blocked = asyncio.Event()
+    gate = asyncio.Event()
+    fake = FakeAgentClient(events=scripted_events, gate_before={2: gate}, blocked_at={2: blocked})
     monkeypatch.setattr(
         "strands_compose_chat.agents.invocation.build_client",
         lambda agent: fake,
     )
+
+    # Unblock the gate after a short yield so the heartbeat has a chance to
+    # fire first. asyncio.sleep(0) yields control once without any wall-clock
+    # wait — it is the minimum deterministic way to let the event loop tick.
+    async def _unblock() -> None:
+        await blocked.wait()   # fake is now parked at the gate
+        gate.set()             # let it continue
+
+    asyncio.create_task(_unblock())
 
     resp = await client.post(
         "/api/v1/invocations",

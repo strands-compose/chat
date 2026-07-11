@@ -31,10 +31,15 @@ class FakeAgentClient:
             to yield from ``invoke``.
         raise_after: When given, raise a ``RuntimeError`` after emitting this
             many events (0-indexed). Useful for error-path streaming tests.
-        delays: Optional per-event pre-yield delays in seconds, parallel to
-            ``events``. ``delays[i]`` is awaited *before* yielding ``events[i]``,
-            simulating a slow/frozen model (e.g. a stalled Bedrock stream). Used
-            to exercise the SSE heartbeat path in ``stream_turn``.
+        gate_before: When given, block on the provided ``asyncio.Event`` before
+            yielding the event at this index, simulating a frozen model.  The
+            test sets the event to unblock the stream.  Using a gate instead of
+            a sleep keeps the test deterministic and clock-free.
+        blocked_at: Optional companion to ``gate_before``. Maps the same event
+            indices to a second ``asyncio.Event`` that is **set** by the fake
+            immediately before it starts waiting on the gate. This lets a
+            releasing task know the fake is genuinely blocked (and at least one
+            heartbeat has fired) before it opens the gate.
     """
 
     def __init__(
@@ -42,11 +47,13 @@ class FakeAgentClient:
         events: list[StreamEvent],
         *,
         raise_after: int | None = None,
-        delays: list[float] | None = None,
+        gate_before: dict[int, asyncio.Event] | None = None,
+        blocked_at: dict[int, asyncio.Event] | None = None,
     ) -> None:
         self._events = list(events)
         self._raise_after = raise_after
-        self._delays = list(delays) if delays is not None else None
+        self._gate_before = gate_before or {}
+        self._blocked_at = blocked_at or {}
 
         # Recorded so tests can inspect teardown behaviour.
         self.aclose_called: bool = False
@@ -54,14 +61,16 @@ class FakeAgentClient:
         self.stop_session_calls: list[str] = []
 
     async def invoke(self, prompt: Any, *, session_id: str) -> AsyncIterator[StreamEvent]:  # type: ignore[override]
-        """Yield the scripted events, honouring per-event delays and ``raise_after``."""
+        """Yield the scripted events, honouring gates and ``raise_after``."""
         for i, event in enumerate(self._events):
             if self._raise_after is not None and i >= self._raise_after:
                 raise RuntimeError(
                     f"FakeAgentClient: raise_after={self._raise_after} reached at event index {i}"
                 )
-            if self._delays is not None and i < len(self._delays) and self._delays[i] > 0:
-                await asyncio.sleep(self._delays[i])
+            if i in self._gate_before:
+                if i in self._blocked_at:
+                    self._blocked_at[i].set()   # signal: "I am now blocked on the gate"
+                await self._gate_before[i].wait()
             yield event
 
     async def aclose(self) -> None:
