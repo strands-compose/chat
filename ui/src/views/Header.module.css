@@ -125,3 +125,19 @@
 .itemDanger {
   color: #d93025;
 }
+
+/* ====== MOBILE OVERRIDES ====== */
+@media (max-width: 768px) {
+  /* Hide the username text — keep just the user icon and dropdown chevron. */
+  .username {
+    display: none;
+  }
+
+  /* Shrink the budget bar: fixed ~5rem track beside the cost label. */
+  .headerBudget {
+    min-width: unset;
+    width: fit-content;
+    flex: 0 0 auto;
+    --pb-track-basis: 5rem;
+  }
+}

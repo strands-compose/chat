@@ -87,6 +87,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      host: '0.0.0.0',
       proxy: {
         // Regex keys (starting with ^) let us use negative lookaheads.
         // /auth/ covers all backend auth endpoints: /auth/login, /auth/logout, etc.

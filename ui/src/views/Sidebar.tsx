@@ -11,6 +11,14 @@ import type { Session } from '@/services/api';
 import { IconButton, ConfirmDialog, RenameSessionDialog } from '@/components';
 import styles from './Sidebar.module.css';
 
+// ====== CONSTANTS ======
+
+// Viewport at or below this width is treated as mobile — the sidebar starts collapsed.
+const MOBILE_BREAKPOINT = 768;
+
+const isMobileViewport = (): boolean =>
+  typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
+
 // ====== TIME BUCKET HELPERS ======
 
 type Bucket = 'Today' | 'Yesterday' | 'This week' | 'Older';
@@ -122,7 +130,8 @@ const SidebarComponent = (): ReactElement => {
   // ======================
   // STATE, HOOKS & REFS
   // ======================
-  const [expanded, setExpanded] = useState(true);
+  // Collapsed by default on mobile viewports; expanded on larger screens.
+  const [expanded, setExpanded] = useState(() => !isMobileViewport());
   const [renameTarget, setRenameTarget] = useState<{ sessionId: string; title: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 

@@ -10,6 +10,75 @@ html, body, #root {
   width: 100%;
 }
 
+/* ====== FONTS ======
+   Amazon Ember is not installed on most devices (notably iOS), so it is bundled
+   and self-hosted here. Each weight maps into a single 'Amazon Ember' family so
+   `font-weight` resolves correctly; `local()` reuses an installed copy first. */
+@font-face {
+  font-family: 'Amazon Ember';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: local('Amazon Ember Light'), url('./fonts/amazon-ember-webfont/Amazon Ember Light.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Amazon Ember';
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+  src: local('Amazon Ember Light Italic'), url('./fonts/amazon-ember-webfont/Amazon Ember Light Italic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Amazon Ember';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Amazon Ember'), url('./fonts/amazon-ember-webfont/Amazon Ember.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Amazon Ember';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Amazon Ember Italic'), url('./fonts/amazon-ember-webfont/Amazon Ember Italic.woff') format('woff');
+}
+
+/* Covers 500 and 600 (no dedicated semibold ships with the family). */
+@font-face {
+  font-family: 'Amazon Ember';
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src: local('Amazon Ember Medium'), url('./fonts/amazon-ember-webfont/Amazon Ember Medium.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Amazon Ember';
+  font-style: italic;
+  font-weight: 500 600;
+  font-display: swap;
+  src: local('Amazon Ember Medium Italic'), url('./fonts/amazon-ember-webfont/Amazon Ember Medium Italic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Amazon Ember';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Amazon Ember Bold'), url('./fonts/amazon-ember-webfont/Amazon Ember Bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Amazon Ember';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Amazon Ember Bold Italic'), url('./fonts/amazon-ember-webfont/Amazon Ember Bold Italic.woff') format('woff');
+}
+
 /* ====== DESIGN TOKENS ====== */
 :root {
   /* Brand */
@@ -101,6 +170,15 @@ html, body, #root {
 [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.35);
 }
+
+/* ====== RESPONSIVE CONVENTION ======
+   Styles are authored desktop-first. Mobile is treated as a single breakpoint at
+   768px (matching MOBILE_BREAKPOINT in the UI). To adjust anything for mobile,
+   override the desktop rule inside:
+
+       @media (max-width: 768px) { ... }
+
+   Keep the desktop rule as the default and layer mobile overrides on top. */
 
 /* ====== BASE STYLES ====== */
 body {
