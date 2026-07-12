@@ -5,6 +5,29 @@ import { readdirSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /**
+ * Vite plugin that redirects every import of the real `services/api` module to
+ * `services/demoApi` so the app runs against recorded fixtures with no backend.
+ *
+ * Applied only in mode `demo`. Because production builds never register this
+ * plugin, nothing imports `demoApi` (or its fixtures) there, so Rollup leaves
+ * both out of the shipped bundle entirely.
+ */
+function demoApiSwap(): Plugin {
+  const realApi = fileURLToPath(new URL('./src/services/api.ts', import.meta.url));
+  const demoApi = fileURLToPath(new URL('./src/services/demoApi.ts', import.meta.url));
+  return {
+    name: 'demo-api-swap',
+    enforce: 'pre',
+    async resolveId(source, importer, options) {
+      // Let demoApi itself pull the real api module (mapBackendEvent, LOGIN_URL).
+      if (importer?.endsWith('demoApi.ts')) return null;
+      const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
+      return resolved?.id === realApi ? demoApi : null;
+    },
+  };
+}
+
+/**
  * Vite plugin that deletes all emitted HTML files and the leftover admin
  * directory after the build completes.
  */
@@ -41,9 +64,22 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, rootDir, '');
   const p = env.URL_PREFIX ?? '';
 
+  // Demo mode ships a fully static site (GitHub Pages): no backend, fixtures
+  // swapped in, HTML kept, and a relative base so it works under any subpath.
+  const isDemo = mode === 'demo';
+
+  // Demo has no backend, so it drops the login and admin entries.
+  const input: Record<string, string> = {
+    index: fileURLToPath(new URL('./index.html', import.meta.url)),
+  };
+  if (!isDemo) {
+    input.login = fileURLToPath(new URL('./login.html', import.meta.url));
+    input.admin = fileURLToPath(new URL('./admin/dashboard.html', import.meta.url));
+  }
+
   return {
-    plugins: [react(), noHtmlEmit()],
-    base: '',
+    plugins: [react(), ...(isDemo ? [demoApiSwap()] : [noHtmlEmit()])],
+    base: isDemo ? './' : '',
     optimizeDeps: {
       include: ['echarts', 'echarts/core', 'echarts-for-react/lib/core'],
     },
@@ -58,11 +94,7 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       minify: true,
       rollupOptions: {
-        input: {
-          index: fileURLToPath(new URL('./index.html', import.meta.url)),
-          login: fileURLToPath(new URL('./login.html', import.meta.url)),
-          admin: fileURLToPath(new URL('./admin/dashboard.html', import.meta.url)),
-        },
+        input,
         output: {
           entryFileNames: 'js/[name].js',
           chunkFileNames: 'js/[name].js',
@@ -87,6 +119,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      host: '0.0.0.0',
       proxy: {
         // Regex keys (starting with ^) let us use negative lookaheads.
         // /auth/ covers all backend auth endpoints: /auth/login, /auth/logout, etc.

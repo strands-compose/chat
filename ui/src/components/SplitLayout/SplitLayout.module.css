@@ -57,3 +57,21 @@
   opacity: 1;
   transition: opacity 0.2s ease 0.05s;
 }
+
+/* ====== MOBILE OVERRIDES ======
+   On mobile the panels don't sit side by side: when the right panel is open it
+   takes the full width and the left panel is hidden. `!important` is required
+   because the panel widths are set via inline styles for the desktop splitter. */
+@media (max-width: 768px) {
+  .splitOpen .leftPanel {
+    width: 0 !important;
+  }
+
+  .splitOpen .splitter {
+    display: none;
+  }
+
+  .splitOpen .rightPanel {
+    width: 100% !important;
+  }
+}

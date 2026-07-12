@@ -6,7 +6,7 @@ import type { ReactElement } from 'react';
 import { memo, useEffect, useState } from 'react';
 import { FiEdit, FiTrash2, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { useChatStore } from '@/store';
-import { cn } from '@/services/utils';
+import { cn, isMobileViewport } from '@/services/utils';
 import type { Session } from '@/services/api';
 import { IconButton, ConfirmDialog, RenameSessionDialog } from '@/components';
 import styles from './Sidebar.module.css';
@@ -122,7 +122,8 @@ const SidebarComponent = (): ReactElement => {
   // ======================
   // STATE, HOOKS & REFS
   // ======================
-  const [expanded, setExpanded] = useState(true);
+  // Collapsed by default on mobile viewports; expanded on larger screens.
+  const [expanded, setExpanded] = useState(() => !isMobileViewport());
   const [renameTarget, setRenameTarget] = useState<{ sessionId: string; title: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
@@ -143,8 +144,14 @@ const SidebarComponent = (): ReactElement => {
   // HANDLERS
   // ======================
   const toggleSidebar = (): void => setExpanded((prev) => !prev);
-  const handleNewChat = (): void => guardInterrupt(() => clearChat());
-  const handleSelectSession = (sid: string): void => guardInterrupt(() => restoreSession(sid));
+  const handleNewChat = (): void => guardInterrupt(() => {
+    clearChat();
+    if (isMobileViewport()) setExpanded(false);
+  });
+  const handleSelectSession = (sid: string): void => guardInterrupt(() => {
+    restoreSession(sid);
+    if (isMobileViewport()) setExpanded(false);
+  });
 
   const handleRenameSession = (newTitle: string): void => {
     if (!renameTarget) return;

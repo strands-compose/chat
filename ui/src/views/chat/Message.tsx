@@ -34,6 +34,8 @@ const ChatMessageComponent = ({
   // Atomic selectors for workflow panel
   const selectedWorkflowSeq = useChatStore((s) => s.selectedWorkflowSeq);
   const setSelectedWorkflowSeq = useChatStore((s) => s.setSelectedWorkflowSeq);
+  const openWorkflowPanel = useChatStore((s) => s.openWorkflowPanel);
+  const workflowPanelClosed = useChatStore((s) => s.workflowPanelClosed);
   const workflowTraces = useChatStore((s) => s.workflowTraces);
   // While a turn streams, the panel is pinned to the live trace, so workflow
   // buttons on other messages are non-functional and must be disabled.
@@ -83,10 +85,17 @@ const ChatMessageComponent = ({
   }, [messageId, resendMessage]);
 
   const handleShowWorkflow = useCallback(() => {
-    if (!message || message.isStreaming || isLoading) return;
+    if (!message) return;
+    // The in-flight turn: reopen the panel, which shows the live streaming trace.
+    if (message.isStreaming) {
+      openWorkflowPanel();
+      return;
+    }
+    // Other messages stay non-functional while a different turn is streaming.
+    if (isLoading) return;
     if (message.seq == null) return;
     setSelectedWorkflowSeq(message.seq);
-  }, [message, isLoading, setSelectedWorkflowSeq]);
+  }, [message, isLoading, setSelectedWorkflowSeq, openWorkflowPanel]);
 
   // Guard: message might have been removed (e.g. during regeneration)
   if (!message) return null;
@@ -115,40 +124,53 @@ const ChatMessageComponent = ({
   };
 
   /**
+   * Workflow button — assistant only. Shown while the turn streams (reopens the
+   * live panel) and afterwards when a stored trace exists for this turn.
+   */
+  const renderWorkflowButton = (): ReactElement | null => {
+    if (message.role !== 'assistant') return null;
+    const seq = message.seq;
+    const hasTrace = seq != null && (workflowTraces[seq]?.length ?? 0) > 0;
+    if (!hasTrace && !message.isStreaming) return null;
+
+    const disabled = isLoading && !message.isStreaming;
+    const isActive = message.isStreaming
+      ? !workflowPanelClosed
+      : !disabled && !workflowPanelClosed && selectedWorkflowSeq === seq;
+    const title = disabled
+      ? 'Available when the agent finishes'
+      : isActive
+        ? 'Workflow panel open'
+        : 'Show workflow in panel';
+    return (
+      <button
+        className={cn(styles.showWorkflowButton, isActive && styles.showWorkflowButtonActive)}
+        onClick={handleShowWorkflow}
+        type="button"
+        disabled={disabled}
+        title={title}
+      >
+        <FiActivity size={13} />
+        <span>Workflow</span>
+      </button>
+    );
+  };
+
+  /**
    * Top-right header actions bar — copy, resend, and (assistant-only) workflow.
-   * Hidden when collapsed or while content is streaming/revealing.
+   * While streaming, only the workflow toggle shows (copy/resend act on final
+   * content); otherwise it's hidden until the content-reveal settles.
    */
   const renderHeaderActions = (): ReactElement | null => {
     if (collapsed) return null;
-    if (message.isStreaming || isRevealing) return null;
 
-    // Workflow button — assistant only, only when a trace exists.
-    let workflowButton: ReactElement | null = null;
-    if (message.role === 'assistant') {
-      const seq = message.seq;
-      const hasTrace = seq != null && (workflowTraces[seq]?.length ?? 0) > 0;
-      if (hasTrace || message.isStreaming) {
-        const disabled = isLoading && !message.isStreaming;
-        const isActive = message.isStreaming ? true : !disabled && selectedWorkflowSeq === seq;
-        const title = disabled
-          ? 'Available when the agent finishes'
-          : isActive
-            ? 'Workflow panel open'
-            : 'Show workflow in panel';
-        workflowButton = (
-          <button
-            className={cn(styles.showWorkflowButton, isActive && styles.showWorkflowButtonActive)}
-            onClick={handleShowWorkflow}
-            type="button"
-            disabled={disabled}
-            title={title}
-          >
-            <FiActivity size={13} />
-            <span>Workflow</span>
-          </button>
-        );
-      }
+    if (message.isStreaming) {
+      const workflowButton = renderWorkflowButton();
+      if (!workflowButton) return null;
+      return <div className={styles.headerActions}>{workflowButton}</div>;
     }
+
+    if (isRevealing) return null;
 
     return (
       <div className={styles.headerActions}>
@@ -160,7 +182,7 @@ const ChatMessageComponent = ({
             <FiArrowUp size={14} />
           </IconButton>
         )}
-        {workflowButton}
+        {renderWorkflowButton()}
       </div>
     );
   };

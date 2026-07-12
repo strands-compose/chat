@@ -4,9 +4,9 @@ The streaming persistence helpers commit on their own sessions, so this module
 resets the schema per test instead of relying on transaction rollback.
 """
 
+import asyncio
 from collections.abc import AsyncIterator
 
-import asyncio
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -222,8 +222,8 @@ async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
     # fire first. asyncio.sleep(0) yields control once without any wall-clock
     # wait — it is the minimum deterministic way to let the event loop tick.
     async def _unblock() -> None:
-        await blocked.wait()   # fake is now parked at the gate
-        gate.set()             # let it continue
+        await blocked.wait()  # fake is now parked at the gate
+        gate.set()  # let it continue
 
     asyncio.create_task(_unblock())
 

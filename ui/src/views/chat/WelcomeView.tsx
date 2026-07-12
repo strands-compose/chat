@@ -74,7 +74,7 @@ const WelcomeViewComponent = (): ReactElement => {
   // ======================
   const renderTitle = (): ReactElement => (
     <h2 className={styles.title}>
-      Welcome to <span className={styles.accent}>{title ?? 'Strands Compose'}</span>
+      Welcome to <div className={styles.accent}>{title ?? 'Strands Compose'}</div>
     </h2>
   );
 

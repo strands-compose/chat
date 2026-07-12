@@ -15,8 +15,11 @@ const AppShell = (): ReactElement => {
   const { user, isLoading, authError } = useAuth();
   // Open while a turn is selected or running, and across the brief gap after a
   // turn ends (buffer still set) until the refetch restores selectedWorkflowSeq.
+  // The user can close it explicitly (workflowPanelClosed), which overrides all.
   const workflowOpen = useChatStore(
-    (s) => s.selectedWorkflowSeq !== null || s.isLoading || s.activeWorkflowItems.length > 0,
+    (s) =>
+      !s.workflowPanelClosed &&
+      (s.selectedWorkflowSeq !== null || s.isLoading || s.activeWorkflowItems.length > 0),
   );
   const { interruptConfirmOpen, confirmInterrupt, cancelInterrupt } = useChatStore(
     useShallow((s) => ({

@@ -36,6 +36,7 @@
   background: transparent;
   color: var(--sc-text-primary);
   box-sizing: border-box;
+  user-select: none;
 }
 
 .textarea::placeholder {
@@ -46,6 +47,17 @@
 .textarea:disabled {
   opacity: 0.5;
 }
+
+/* Prevent iOS Safari from auto-zooming the page when the textarea is focused.
+   Safari zooms any input with font-size < 16px; setting it to exactly 16px on
+   mobile stops the zoom without disabling user pinch-zoom (unlike user-scalable=no). */
+@media (max-width: 768px) {
+  .textarea {
+    max-height: 2.5rem;
+    font-size: 16px;
+  }
+}
+
 
 /* Action bar at bottom of composer */
 .actions {
