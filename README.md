@@ -11,6 +11,8 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License"></a>
 </p>
 
+### [Explore the live demo](https://strands-compose.github.io/chat/)
+
 </div>
 
 > [!IMPORTANT]
@@ -37,6 +39,15 @@ Where it fits in the ecosystem:
 | Define the agents | [strands-compose](https://github.com/strands-compose/sdk-python) | Developers |
 | Run / deploy the agents | [strands-compose-agentcore](https://github.com/strands-compose/bedrock-agentcore) | Developers, operations |
 | **Put the agents in front of people** | [**strands-compose-chat**](https://github.com/strands-compose/chat-ui) | **End users** |
+
+---
+
+### Chat UI for any strands-compose agent
+![Chat demo](https://raw.githubusercontent.com/strands-compose/.github/refs/heads/main/img/chat-demo.png)
+
+### Admin Panel - manage access, users and resources
+https://github.com/user-attachments/assets/4ecafdce-16e9-488b-b389-71be92d23aa3
+
 
 ## What's included
 
