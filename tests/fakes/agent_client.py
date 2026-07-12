@@ -69,7 +69,7 @@ class FakeAgentClient:
                 )
             if i in self._gate_before:
                 if i in self._blocked_at:
-                    self._blocked_at[i].set()   # signal: "I am now blocked on the gate"
+                    self._blocked_at[i].set()  # signal: "I am now blocked on the gate"
                 await self._gate_before[i].wait()
             yield event
 
