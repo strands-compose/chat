@@ -275,7 +275,7 @@ const extractUsage = (data: Record<string, unknown>): { input_tokens?: number; o
  * Map a raw backend StreamEvent to the normalised ChatStreamEvent
  * consumed by the frontend hooks.
  */
-const mapBackendEvent = (raw: BackendStreamEvent): ChatStreamEvent | null => {
+export const mapBackendEvent = (raw: BackendStreamEvent): ChatStreamEvent | null => {
   const { type, agent_name, data } = raw;
 
   switch (type) {
