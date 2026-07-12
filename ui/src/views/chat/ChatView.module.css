@@ -1,6 +1,6 @@
 /* ====== CHAT CONTAINER (message list) ====== */
 .chatContainer {
-  flex: 1;
+  flex-grow: 1;
   overflow-y: auto;
   padding: 0 16px;
   background: var(--sc-bg-primary);

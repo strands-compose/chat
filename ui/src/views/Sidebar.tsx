@@ -6,18 +6,10 @@ import type { ReactElement } from 'react';
 import { memo, useEffect, useState } from 'react';
 import { FiEdit, FiTrash2, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
 import { useChatStore } from '@/store';
-import { cn } from '@/services/utils';
+import { cn, isMobileViewport } from '@/services/utils';
 import type { Session } from '@/services/api';
 import { IconButton, ConfirmDialog, RenameSessionDialog } from '@/components';
 import styles from './Sidebar.module.css';
-
-// ====== CONSTANTS ======
-
-// Viewport at or below this width is treated as mobile — the sidebar starts collapsed.
-const MOBILE_BREAKPOINT = 768;
-
-const isMobileViewport = (): boolean =>
-  typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
 
 // ====== TIME BUCKET HELPERS ======
 
@@ -152,8 +144,14 @@ const SidebarComponent = (): ReactElement => {
   // HANDLERS
   // ======================
   const toggleSidebar = (): void => setExpanded((prev) => !prev);
-  const handleNewChat = (): void => guardInterrupt(() => clearChat());
-  const handleSelectSession = (sid: string): void => guardInterrupt(() => restoreSession(sid));
+  const handleNewChat = (): void => guardInterrupt(() => {
+    clearChat();
+    if (isMobileViewport()) setExpanded(false);
+  });
+  const handleSelectSession = (sid: string): void => guardInterrupt(() => {
+    restoreSession(sid);
+    if (isMobileViewport()) setExpanded(false);
+  });
 
   const handleRenameSession = (newTitle: string): void => {
     if (!renameTarget) return;

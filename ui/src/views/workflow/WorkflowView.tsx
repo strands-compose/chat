@@ -122,11 +122,11 @@ const WorkflowViewComponent = (): ReactElement => {
     }),
   );
 
-  const setSelectedWorkflowSeq = useChatStore((s) => s.setSelectedWorkflowSeq);
+  const closeWorkflowPanel = useChatStore((s) => s.closeWorkflowPanel);
 
   const handleClose = useCallback(() => {
-    setSelectedWorkflowSeq(null);
-  }, [setSelectedWorkflowSeq]);
+    closeWorkflowPanel();
+  }, [closeWorkflowPanel]);
 
   const hasAssistantMessages = useChatStore((s) =>
     s.messageOrder.some((id) => s.messages[id]?.role === 'assistant'),

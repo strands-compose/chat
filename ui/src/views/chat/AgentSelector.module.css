@@ -3,6 +3,7 @@
   min-width: 12rem;
   padding: 8px 12px;
   justify-content: space-between;
+  flex-grow: 1;
 }
 
 .chevron {

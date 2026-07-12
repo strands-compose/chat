@@ -23,7 +23,7 @@ const SplitLayoutComponent = ({ rightOpen, left, right }: SplitLayoutProps): Rea
   const { leftPercent, containerRef, onSplitterMouseDown } = useSplitter();
 
   return (
-    <div className={styles.splitContainer} ref={containerRef}>
+    <div className={cn(styles.splitContainer, rightOpen && styles.splitOpen)} ref={containerRef}>
       <div
         className={styles.leftPanel}
         style={{ width: `${rightOpen ? leftPercent : 100}%` }}

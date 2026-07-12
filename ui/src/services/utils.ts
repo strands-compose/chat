@@ -146,3 +146,9 @@ export function toDateParam(d: Date): string {
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+// Viewport at or below this width is treated as mobile — the sidebar starts collapsed.
+const MOBILE_BREAKPOINT = 768;
+
+export const isMobileViewport = (): boolean =>
+  typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;

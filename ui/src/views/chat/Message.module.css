@@ -1,5 +1,6 @@
 /* ====== LAYOUT — Bedrock-style flat rows ====== */
 .message {
+  position: relative;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -261,4 +262,19 @@
 
 [data-theme="dark"] .showWorkflowButton:hover {
   border-color: rgba(200, 200, 200, 0.35);
+}
+
+/* ============================== */
+/* MOBILE */
+
+@media (max-width: 768px) {
+  .avatar {
+    position: absolute;
+    z-index: 10;
+  }
+
+  .senderLabel {
+    margin-left: 3rem;
+    margin-bottom: 1rem;
+  }
 }

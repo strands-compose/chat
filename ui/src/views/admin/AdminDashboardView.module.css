@@ -3,7 +3,7 @@
   flex-direction: column;
   user-select: none;
   overflow: auto;
-  max-height: 100vh;
+  max-height: 100svh;
 }
 
 .titleRoot {

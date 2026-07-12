@@ -313,6 +313,7 @@ const ComposerComponent = ({
     (e: SyntheticEvent): void => {
       e.preventDefault();
       submit();
+      window.scrollTo(0, 0)
     },
     [submit]
   );
@@ -330,6 +331,7 @@ const ComposerComponent = ({
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         submit();
+        window.scrollTo(0, 0)
       }
     },
     [submit]
@@ -431,6 +433,7 @@ const ComposerComponent = ({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          onBlur={() => window.scrollTo(0, 0)}
           placeholder="Ask anything..."
           disabled={isLoading || disabled}
           className={styles.textarea}

@@ -15,7 +15,8 @@ import {
   fetchSessionUsage,
   fetchAgents,
   renameSession as renameSessionApi,
-  deleteSession as deleteSessionApi
+  deleteSession as deleteSessionApi,
+  isMobileViewport,
 } from '../services';
 import type { Session, Agent, SessionMessage } from '../services';
 import {
@@ -102,6 +103,10 @@ export interface ChatStore {
   activeWorkflowTokens: { input: number; output: number };
   /** Selected assistant seq for the workflow panel; null = auto (latest). */
   selectedWorkflowSeq: number | null;
+  /** True when the user has explicitly closed the workflow panel. Overrides the
+   *  auto-open conditions (selection / streaming / live buffer) so the panel
+   *  stays shut until the user reopens it or a new turn starts. */
+  workflowPanelClosed: boolean;
   /** Backend seq of the assistant turn that completed in this session this
    *  load. Used to play the content reveal once for a fresh answer while
    *  restored history renders instantly. Null until a turn completes; reset
@@ -113,6 +118,10 @@ export interface ChatStore {
   clearChat: () => void;
   restoreSession: (sessionId: string) => Promise<void>;
   setSelectedWorkflowSeq: (seq: number | null) => void;
+  /** Explicitly close the workflow panel (user action). */
+  closeWorkflowPanel: () => void;
+  /** Reopen the workflow panel after the user closed it. */
+  openWorkflowPanel: () => void;
   setSelectedAgent: (id: string, label: string, questions: string[], description: string, multimodal: boolean) => void;
   /** Fetch the agent list once and auto-select a default. Idempotent. */
   loadAgents: () => Promise<void>;
@@ -189,7 +198,10 @@ export const useChatStore = create<ChatStore>((set, get) => {
                 ? { ...state.workflowTokens, [lastAssistantSeq]: tokens }
                 : state.workflowTokens,
             // Keep the panel open and pointing at the just-completed turn.
+            // On mobile the panel takes full width, so close it automatically
+            // after the refetch so the chat thread is visible again.
             selectedWorkflowSeq: lastAssistantSeq >= 0 ? lastAssistantSeq : state.selectedWorkflowSeq,
+            workflowPanelClosed: state.workflowPanelClosed || isMobileViewport(),
             // Remember the just-completed turn so its answer reveals once while
             // restored history renders instantly.
             lastCompletedSeq: lastAssistantSeq >= 0 ? lastAssistantSeq : state.lastCompletedSeq,
@@ -239,6 +251,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
     activeWorkflowItems: [],
     activeWorkflowTokens: { input: 0, output: 0 },
     selectedWorkflowSeq: null,
+    workflowPanelClosed: false,
     lastCompletedSeq: null,
 
     loadSessions: async (): Promise<void> => {
@@ -308,6 +321,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
           sessionOutputTokens: undefined,
           sessionCost: undefined,
           lastCompletedSeq: null,
+          workflowPanelClosed: false,
           ...(isSameSession
             ? {}
             : {
@@ -408,6 +422,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
         },
         messageOrder: [...state.messageOrder, userMsgId, assistantMsgId],
         isLoading: true,
+        // A new turn reopens the workflow panel unless the user closes it again.
+        workflowPanelClosed: false,
       }));
 
       const effects = buildEffects(assistantMsgId, isNewSession);
@@ -483,12 +499,23 @@ export const useChatStore = create<ChatStore>((set, get) => {
         activeWorkflowItems: [],
         activeWorkflowTokens: { input: 0, output: 0 },
         selectedWorkflowSeq: null,
+        workflowPanelClosed: false,
         lastCompletedSeq: null,
       });
     },
 
     setSelectedWorkflowSeq: (seq: number | null): void => {
-      set({ selectedWorkflowSeq: seq });
+      set(seq === null
+        ? { selectedWorkflowSeq: seq }
+        : { selectedWorkflowSeq: seq, workflowPanelClosed: false });
+    },
+
+    closeWorkflowPanel: (): void => {
+      set({ workflowPanelClosed: true });
+    },
+
+    openWorkflowPanel: (): void => {
+      set({ workflowPanelClosed: false });
     },
 
     setSelectedAgent: (id: string, label: string, questions: string[], description: string, multimodal: boolean): void => {

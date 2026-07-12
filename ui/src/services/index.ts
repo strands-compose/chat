@@ -52,6 +52,7 @@ export {
   validateAttachments,
   startOfCurrentMonth,
   endOfCurrentMonth,
+  isMobileViewport,
 } from './utils';
 
 export type { AttachmentValidation } from './utils';
