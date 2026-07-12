@@ -1,5 +1,5 @@
 const description = `
-This is a **mocked** agent for the **Strands Compose Chat** showcase. 
+This is a **mocked** agent for the **Strands Compose Chat** showcase.
 It runs entirely in your browser with no backend, so it always replies with the
 **same pre-recorded answer** no matter what you ask.
 
