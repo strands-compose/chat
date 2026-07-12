@@ -13,7 +13,11 @@ import { resolve } from 'node:path';
  * both out of the shipped bundle entirely.
  */
 function demoApiSwap(): Plugin {
-  const realApi = fileURLToPath(new URL('./src/services/api.ts', import.meta.url));
+  // Normalize to forward slashes: fileURLToPath yields backslashes on Windows
+  // while Rollup/Vite module ids always use forward slashes, so a raw string
+  // compare would never match on Windows.
+  const norm = (p: string) => p.replace(/\\/g, '/');
+  const realApi = norm(fileURLToPath(new URL('./src/services/api.ts', import.meta.url)));
   const demoApi = fileURLToPath(new URL('./src/services/demoApi.ts', import.meta.url));
   return {
     name: 'demo-api-swap',
@@ -22,7 +26,7 @@ function demoApiSwap(): Plugin {
       // Let demoApi itself pull the real api module (mapBackendEvent, LOGIN_URL).
       if (importer?.endsWith('demoApi.ts')) return null;
       const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
-      return resolved?.id === realApi ? demoApi : null;
+      return resolved && norm(resolved.id) === realApi ? demoApi : null;
     },
   };
 }

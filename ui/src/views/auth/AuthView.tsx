@@ -23,8 +23,6 @@ import {
   SiGoogle,
   SiKeycloak,
   SiOkta,
-  SiSalesforce,
-  SiSlack,
 } from 'react-icons/si';
 import { Button, TextField } from '@/components';
 import { useAppConfig } from '@/contexts';
@@ -51,8 +49,6 @@ const resolveProviderIcon = (id: string, displayName: string): IconType => {
   if (/okta/.test(haystack)) return SiOkta;
   if (/auth0/.test(haystack)) return SiAuth0;
   if (/keycloak/.test(haystack)) return SiKeycloak;
-  if (/slack/.test(haystack)) return SiSlack;
-  if (/salesforce/.test(haystack)) return SiSalesforce;
   return FiKey;
 };
 
