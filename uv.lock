@@ -151,7 +151,7 @@ wheels = [
 
 [[package]]
 name = "bedrock-agentcore"
-version = "1.17.0"
+version = "1.18.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3" },
@@ -163,9 +163,9 @@ dependencies = [
     { name = "uvicorn" },
     { name = "websockets" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2d/ae/38e870cd7f73ba41ab78ca1fef9b40e0b8a486498e8978965ce65bde61f3/bedrock_agentcore-1.17.0.tar.gz", hash = "sha256:dc237d313ffd6b1fc5547ff334ed7aa160b469bc086b20f0f8679d18d75cf20d", size = 939469, upload-time = "2026-07-02T15:42:27.032Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/e8/8149bb168ef3825884685eb98ef868f5bb5f796e4ea58eb98e8df3248937/bedrock_agentcore-1.18.1.tar.gz", hash = "sha256:ed4aa8822e39aa5846b9d68d1461afee19f2f795c1f6d71a61bc650ecc00ee31", size = 1030729, upload-time = "2026-07-17T19:55:21.354Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d2/c7/d80bcb9ba295485f27affe3405a45c71ad4bf82d547715b82ae47206d478/bedrock_agentcore-1.17.0-py3-none-any.whl", hash = "sha256:ef1c3acd3f1bd2bd5a01b0cd70510a4c8ca999abe87f9c43fa52e68484776815", size = 431835, upload-time = "2026-07-02T15:42:25.209Z" },
+    { url = "https://files.pythonhosted.org/packages/45/fe/26cc0a66920035d2740c062bd46df252b15708b7723e13ccae0ab7b334db/bedrock_agentcore-1.18.1-py3-none-any.whl", hash = "sha256:6d8001f09cdfca0a20650ea691426149f521037d8d56917057fc191c00801086", size = 450684, upload-time = "2026-07-17T19:55:19.334Z" },
 ]
 
 [[package]]
@@ -1909,7 +1909,7 @@ wheels = [
 
 [[package]]
 name = "sqladmin"
-version = "0.28.0"
+version = "0.29.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jinja2" },
@@ -1918,9 +1918,9 @@ dependencies = [
     { name = "starlette" },
     { name = "wtforms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/46/c5/8980099072a70bc8238fb8358aca206fd14ede87b081c4ee7291d099e5c1/sqladmin-0.28.0.tar.gz", hash = "sha256:bbc44890f196134521697331b0c630db88f3e7b31c297340b914b97cf6609be3", size = 979545, upload-time = "2026-07-04T20:35:01.791Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/17/b7/47f955c5f4cbf61b48900f2f77dcff44dec39cab4b8d557567ebf8fc404f/sqladmin-0.29.0.tar.gz", hash = "sha256:901f0c0c11ea29748b997053d77984664abc32be0ee1edcd91b300fce0dcf51c", size = 994200, upload-time = "2026-07-13T10:29:55.386Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9c/e4/2d2a478c2d4b062c43e43d03f5ebde29f8206100747a2894d3284106cdae/sqladmin-0.28.0-py3-none-any.whl", hash = "sha256:158beae7c6a5bd3512ee84a99995f9179b9dde348ee21792ec146d6964a8ca55", size = 998078, upload-time = "2026-07-04T20:35:00.318Z" },
+    { url = "https://files.pythonhosted.org/packages/87/d5/72dff3db2ff23ec553bcabe220d1ece0ee2d364eaf776a40e26a7c25f9d8/sqladmin-0.29.0-py3-none-any.whl", hash = "sha256:bbace5509f763e313708db01edd3053dacc878dcb09e7cace27dc355d31de41f", size = 1013301, upload-time = "2026-07-13T10:29:53.539Z" },
 ]
 
 [[package]]
@@ -2065,7 +2065,7 @@ wheels = [
 
 [[package]]
 name = "strands-compose-chat"
-version = "0.2.0"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiosqlite" },
@@ -2130,7 +2130,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.3.4" },
     { name = "pydantic", extras = ["email"], specifier = ">=2.13,<3.0" },
     { name = "pydantic-settings", specifier = ">=2.14,<3.0" },
-    { name = "sqladmin", specifier = ">=0.28,<0.29" },
+    { name = "sqladmin", specifier = ">=0.29,<0.30" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0,<3.0" },
     { name = "strands-compose-agentcore", specifier = ">=0.9.0,<1.0.0" },
     { name = "structlog", specifier = ">=26.1" },
