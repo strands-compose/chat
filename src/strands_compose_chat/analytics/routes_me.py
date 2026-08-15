@@ -1,6 +1,7 @@
 """Per-user usage router — authenticated user's own usage data."""
 
 from datetime import date
+from typing import Annotated
 
 from fastapi import APIRouter, Query
 
@@ -17,9 +18,9 @@ router = APIRouter(prefix="/users/me/usage", tags=["usage"])
 async def me_usage_handler(
     current_user: CurrentUser,
     db: DbSession,
-    from_date: date = Query(alias="from"),
-    to_date: date = Query(alias="to"),
-    interval: Interval = Query(),
+    from_date: Annotated[date, Query(alias="from")],
+    to_date: Annotated[date, Query(alias="to")],
+    interval: Annotated[Interval, Query()],
 ) -> MeUsageOut:
     """Return pre-bucketed usage data for the authenticated user.
 

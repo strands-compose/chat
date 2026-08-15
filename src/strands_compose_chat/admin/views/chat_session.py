@@ -1,7 +1,7 @@
 """Admin view for the ChatSession model."""
 
 import json
-from typing import Any
+from typing import Any, ClassVar
 
 from fastapi import Request
 from markupsafe import Markup
@@ -60,7 +60,7 @@ class ChatSessionAdmin(BaseModelView, model=ChatSession):
     can_edit = False
     can_delete = False
 
-    column_list = [
+    column_list: ClassVar[list[Any]] = [
         ChatSession.title,
         ChatSession.user,
         ChatSession.agent,
@@ -68,7 +68,7 @@ class ChatSessionAdmin(BaseModelView, model=ChatSession):
         ChatSession.last_used_at,
         ChatSession.is_archived,
     ]
-    column_details_list = [
+    column_details_list: ClassVar[list[Any]] = [
         ChatSession.session_id,
         ChatSession.user,
         ChatSession.agent,
@@ -83,10 +83,10 @@ class ChatSessionAdmin(BaseModelView, model=ChatSession):
 
     # Needs at least one entry so sqladmin renders the search bar.
     # Actual search logic is in search_query — this list is not used for querying.
-    column_searchable_list = [ChatSession.session_id]
-    column_default_sort = [(ChatSession.last_used_at, True)]
+    column_searchable_list: ClassVar[list[Any]] = [ChatSession.session_id]
+    column_default_sort: ClassVar[list[Any]] = [(ChatSession.last_used_at, True)]
 
-    column_formatters_detail = {ChatSession.manifest: _format_manifest}
+    column_formatters_detail: ClassVar[dict[Any, Any]] = {ChatSession.manifest: _format_manifest}
 
     def search_placeholder(self) -> str:  # type: ignore[override]
         """Return a human-readable placeholder describing what can be searched."""

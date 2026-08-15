@@ -49,7 +49,7 @@ def _document_name(filename: str) -> str:
     stem = _CONSECUTIVE_WHITESPACE.sub(" ", stem).strip()
     if not stem:
         stem = "document"
-    return "%s-%s" % (stem, uuid.uuid4().hex[:8])
+    return f"{stem}-{uuid.uuid4().hex[:8]}"
 
 
 def resolve_format(filename: str, content_type: str | None = None) -> MediaFormatSpec:

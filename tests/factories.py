@@ -128,20 +128,24 @@ _T3 = TypeVar("_T3")
 _T4 = TypeVar("_T4")
 
 
+# PEP 695 type-parameter syntax (ruff UP047) requires Python 3.12+; this project
+# supports 3.11, so the classic TypeVar form below is kept intentionally.
 @overload
-async def persist(db: AsyncSession, obj1: _T1, /) -> tuple[_T1]: ...
-
-
-@overload
-async def persist(db: AsyncSession, obj1: _T1, obj2: _T2, /) -> tuple[_T1, _T2]: ...
+async def persist(db: AsyncSession, obj1: _T1, /) -> tuple[_T1]: ...  # noqa: UP047
 
 
 @overload
-async def persist(db: AsyncSession, obj1: _T1, obj2: _T2, obj3: _T3, /) -> tuple[_T1, _T2, _T3]: ...
+async def persist(db: AsyncSession, obj1: _T1, obj2: _T2, /) -> tuple[_T1, _T2]: ...  # noqa: UP047
 
 
 @overload
-async def persist(
+async def persist(  # noqa: UP047
+    db: AsyncSession, obj1: _T1, obj2: _T2, obj3: _T3, /
+) -> tuple[_T1, _T2, _T3]: ...
+
+
+@overload
+async def persist(  # noqa: UP047
     db: AsyncSession, obj1: _T1, obj2: _T2, obj3: _T3, obj4: _T4, /
 ) -> tuple[_T1, _T2, _T3, _T4]: ...
 

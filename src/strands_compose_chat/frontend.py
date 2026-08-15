@@ -1,7 +1,8 @@
 """FastAPI frontend serving: Jinja2 shell template, static assets, and cache headers."""
 
+from collections.abc import MutableMapping
 from pathlib import Path
-from typing import Any, MutableMapping
+from typing import Any
 
 import structlog
 from fastapi import FastAPI, Request

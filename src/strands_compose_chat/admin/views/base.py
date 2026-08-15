@@ -1,7 +1,7 @@
 """Shared base view and common helpers for all admin ModelViews."""
 
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 from markupsafe import Markup
 from sqladmin import ModelView
@@ -30,7 +30,7 @@ def _relation_badge_list(items: list[Any], color: str = "#d79750") -> list[Marku
             f'<span style="display:inline-block;padding:2px 9px;border-radius:4px;'
             f"background:{color};color:#fff;font-size:0.78em;font-weight:600;"
             f'white-space:nowrap;text-decoration:none;">'
-            f"{str(item)}"
+            f"{item!s}"
             f'<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"'
             f' fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"'
             f' stroke-linejoin="round" style="margin-left:4px;vertical-align:middle;opacity:0.85;">'
@@ -46,7 +46,10 @@ def _relation_badge_list(items: list[Any], color: str = "#d79750") -> list[Marku
 class BaseModelView(ModelView):
     """ModelView base class with consistent formatters for all admin views."""
 
-    column_type_formatters = {**ModelView.column_type_formatters, datetime: _format_datetime}
+    column_type_formatters: ClassVar[dict[type, Any]] = {
+        **ModelView.column_type_formatters,
+        datetime: _format_datetime,
+    }
 
     # Render relation lists without the compact (item) wrapping parens.
     show_compact_lists = False
@@ -54,7 +57,7 @@ class BaseModelView(ModelView):
     # Subclasses declare which relation props should render as badge lists so
     # get_list_value / get_detail_value can intercept them.  Each entry maps a
     # prop name (str) to a badge color.
-    _badge_relation_props: dict[str, str] = {}
+    _badge_relation_props: ClassVar[dict[str, str]] = {}
 
     def __init__(self) -> None:
         """Auto-fill column labels for list/detail headers using the same underscore→space

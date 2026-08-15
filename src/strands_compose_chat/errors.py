@@ -143,7 +143,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
         "Unhandled exception",
         method=request.method,
         path=request.url.path,
-        exc_info=True,
+        exc_info=exc,
     )
     return _problem_response(
         status_code=500,

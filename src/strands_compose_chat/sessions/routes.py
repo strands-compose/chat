@@ -116,7 +116,6 @@ async def delete_session(
     deleted = await archive_user_session(db, current_user.id, session_id)
     if not deleted:
         raise _not_found(session_id)
-    return None
 
 
 @router.get("/{session_id}/usage", response_model=SessionUsageSummaryOut)

@@ -1,7 +1,7 @@
 """Admin view for the ApiKey model."""
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 from fastapi.responses import RedirectResponse
 from sqladmin import action
@@ -41,7 +41,7 @@ class ApiKeyAdmin(BaseModelView, model=ApiKey):
     name_plural = "API Keys"
     icon = "fa-solid fa-key"
 
-    column_list = [
+    column_list: ClassVar[list[Any]] = [
         ApiKey.name,
         ApiKey.user,
         ApiKey.created_at,
@@ -49,7 +49,7 @@ class ApiKeyAdmin(BaseModelView, model=ApiKey):
         ApiKey.last_used_at,
         ApiKey.revoked_at,
     ]
-    column_details_list = [
+    column_details_list: ClassVar[list[Any]] = [
         ApiKey.name,
         ApiKey.user,
         ApiKey.key_prefix,
@@ -58,16 +58,16 @@ class ApiKeyAdmin(BaseModelView, model=ApiKey):
         ApiKey.last_used_at,
         ApiKey.revoked_at,
     ]
-    form_columns = [
+    form_columns: ClassVar[list[Any]] = [
         ApiKey.name,
         ApiKey.user,
         ApiKey.expires_at,
     ]
 
-    column_searchable_list = [ApiKey.name, ApiKey.key_prefix]
-    column_default_sort = [(ApiKey.created_at, True)]
+    column_searchable_list: ClassVar[list[Any]] = [ApiKey.name, ApiKey.key_prefix]
+    column_default_sort: ClassVar[list[Any]] = [(ApiKey.created_at, True)]
 
-    form_args = {
+    form_args: ClassVar[dict[str, Any]] = {
         "user": {
             "validators": [DataRequired(message="An owning user is required.")],
         },
@@ -80,7 +80,7 @@ class ApiKeyAdmin(BaseModelView, model=ApiKey):
         },
     }
 
-    form_ajax_refs = {
+    form_ajax_refs: ClassVar[dict[str, Any]] = {
         "user": {
             "fields": ("username",),
             "order_by": "username",

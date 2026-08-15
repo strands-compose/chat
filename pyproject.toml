@@ -71,7 +71,7 @@ scc = "strands_compose_chat.cli:main"
 check = [
     "bandit>=1.9.4",
     "ty>=0.0.55",
-    "ruff>=0.15.14",
+    "ruff>=0.16.3",
     "rust-just>=1.50.0",
 ]
 commit = ["commitizen>=4.15.0", "pre-commit>=4.6.0"]

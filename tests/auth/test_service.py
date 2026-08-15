@@ -162,7 +162,7 @@ async def test_anonymize_user_allows_when_other_superuser_exists(
 ) -> None:
     """anonymize_user succeeds when at least one other active superuser remains."""
     (su1,) = await persist(db, make_user(is_superuser=True))
-    (su2,) = await persist(db, make_user(is_superuser=True))
+    await persist(db, make_user(is_superuser=True))
 
     result = await anonymize_user(db, su1.id)
     assert result.is_active is False

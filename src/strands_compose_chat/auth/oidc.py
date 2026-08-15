@@ -180,7 +180,7 @@ def build_oidc_registry(settings: Settings) -> dict[str, OIDCProvider]:
         seen.add(key)
 
         try:
-            cfg = OidcProviderSettings(_env_prefix=f"OIDC_{key}_")  # ty: ignore
+            cfg = OidcProviderSettings(_env_prefix=f"OIDC_{key}_")
         except ValidationError as exc:
             missing = [".".join(str(loc) for loc in e["loc"]) for e in exc.errors()]
             raise OidcConfigurationError(

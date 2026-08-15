@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..admin.auth import resolve_admin_user
 from ..db.models import User
-from ..deps import get_db
+from ..deps import DbSession
 from ..errors import ProblemDetailsException
 from .api_key import KEY_PREFIX, resolve_api_key
 
@@ -84,7 +84,7 @@ async def _resolve_session_user(request: Request, db: AsyncSession) -> User | No
 
 async def get_current_user(
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    db: DbSession,
 ) -> User:
     """FastAPI dependency: resolve the browser-authenticated user (session only).
 
@@ -113,7 +113,7 @@ async def get_current_user(
 
 async def get_api_key_or_session_user(
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    db: DbSession,
 ) -> User:
     """FastAPI dependency: resolve an API-key or browser session user.
 
@@ -150,7 +150,7 @@ ApiKeyOrSessionUser = Annotated[User, Depends(get_api_key_or_session_user)]
 
 async def get_admin_user(
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    db: DbSession,
 ) -> User:
     """FastAPI dependency: resolve an active superuser or raise 401.
 

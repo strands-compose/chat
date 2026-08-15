@@ -130,22 +130,19 @@ async def invoke(
             yield format_error("The agent service is currently unavailable. Please try again.")
         except Exception:
             stream_finished = True
-            logger.error(
-                "unexpected error during agent stream",
-                exc_info=True,
-            )
+            logger.exception("unexpected error during agent stream")
             yield format_error("An internal error occurred. Please try again later.")
         finally:
             if isinstance(client, AsyncLocalClient):
                 try:
                     await client.aclose()
-                except Exception:  # noqa: BLE001
+                except Exception:
                     logger.warning("client close failed", exc_info=True)
             elif stream_finished:
                 # AgentCoreClient — stream ended normally, just close.
                 try:
                     await asyncio.to_thread(client.close)
-                except Exception:  # noqa: BLE001
+                except Exception:
                     logger.warning("client close failed", exc_info=True)
             else:
                 # AgentCoreClient — client disconnected mid-stream; stop the
@@ -182,7 +179,7 @@ async def _stop_and_close_agentcore(
             session_id=session_id,
             status_code=result.status_code,
         )
-    except Exception:  # noqa: BLE001
+    except Exception:
         logger.warning(
             "failed to stop agentcore session",
             session_id=session_id,
@@ -191,5 +188,5 @@ async def _stop_and_close_agentcore(
     finally:
         try:
             await asyncio.to_thread(client.close)
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.warning("client close failed", exc_info=True)

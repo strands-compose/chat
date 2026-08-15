@@ -222,7 +222,9 @@ async def test_summary_cost_and_token_totals_equal_arithmetic_sum(db: AsyncSessi
     from_date = date(2024, 1, 10)
     to_date = date(2024, 1, 20)
 
-    total_cost, inp_total, out_total, hits, active_users = await get_summary(db, from_date, to_date)
+    total_cost, inp_total, out_total, _hits, _active_users = await get_summary(
+        db, from_date, to_date
+    )
 
     expected_cost = sum(c for _, _, c in inputs)
     expected_inp = sum(i for i, _, _ in inputs)
