@@ -1,8 +1,8 @@
 """FastAPI application factory for the Chat Backend API."""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
 
 import structlog
 from fastapi import FastAPI
@@ -45,7 +45,7 @@ logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Application lifespan: startup and shutdown."""
     settings = get_settings()
 
@@ -143,13 +143,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     admin.add_base_view(DashboardView)
 
     @app.get(f"{prefix}/health", tags=["health"], operation_id="health_check")
-    @app.get("/health", tags=["health"], operation_id="health_check")
+    @app.get("/health", tags=["health"], operation_id="health_check_root", include_in_schema=False)
     async def health() -> dict:
         """Return HTTP 200 when the process is running."""
         return {"status": "ok"}
 
     @app.get(f"{prefix}/ready", tags=["health"], operation_id="health_ready")
-    @app.get("/ready", tags=["health"], operation_id="health_ready")
+    @app.get("/ready", tags=["health"], operation_id="health_ready_root", include_in_schema=False)
     async def ready(db: DbSession) -> JSONResponse:
         """Return HTTP 200 when the database is reachable.
 

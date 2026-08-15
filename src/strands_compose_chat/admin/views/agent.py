@@ -1,7 +1,7 @@
 """Admin view for the Agent model."""
 
 import re
-from typing import Any
+from typing import Any, ClassVar
 from urllib.parse import urlparse
 
 from markupsafe import Markup
@@ -99,7 +99,7 @@ class AgentAdmin(BaseModelView, model=Agent):
     name_plural = "Agents"
     icon = "fa-solid fa-robot"
 
-    column_list = [
+    column_list: ClassVar[list[Any]] = [
         Agent.name,
         Agent.description,
         Agent.access_groups,
@@ -109,7 +109,7 @@ class AgentAdmin(BaseModelView, model=Agent):
         Agent.created_at,
         Agent.updated_at,
     ]
-    column_details_list = [
+    column_details_list: ClassVar[list[Any]] = [
         Agent.name,
         Agent.description,
         Agent.access_groups,
@@ -123,7 +123,7 @@ class AgentAdmin(BaseModelView, model=Agent):
         Agent.created_at,
         Agent.updated_at,
     ]
-    form_columns = [
+    form_columns: ClassVar[list[Any]] = [
         Agent.name,
         Agent.description,
         Agent.access_groups,
@@ -136,30 +136,30 @@ class AgentAdmin(BaseModelView, model=Agent):
         Agent.suggested_questions,
     ]
 
-    column_searchable_list = [Agent.name, Agent.id]
-    column_default_sort = [(Agent.name, False)]
+    column_searchable_list: ClassVar[list[Any]] = [Agent.name, Agent.id]
+    column_default_sort: ClassVar[list[Any]] = [(Agent.name, False)]
 
-    form_defaults = {"enabled": True, "multimodal": False}
+    form_defaults: ClassVar[dict[str, Any]] = {"enabled": True, "multimodal": False}
 
     # access_groups renders as badge list via BaseModelView.get_list_value / get_detail_value
-    _badge_relation_props = {"access_groups": "#d79750"}
+    _badge_relation_props: ClassVar[dict[str, str]] = {"access_groups": "#d79750"}
 
-    column_formatters = {  # type: ignore[assignment]
+    column_formatters: ClassVar[dict[Any, Any]] = {  # type: ignore[assignment]
         Agent.description: _format_description,
         Agent.agent_kind: _format_agent_kind,
     }
-    column_formatters_detail = {  # type: ignore[assignment]
+    column_formatters_detail: ClassVar[dict[Any, Any]] = {  # type: ignore[assignment]
         Agent.description: _format_description_detail,
         Agent.agent_kind: _format_agent_kind,
         Agent.suggested_questions: _format_suggested_questions_detail,
     }
 
-    form_overrides = {
+    form_overrides: ClassVar[dict[str, Any]] = {
         "agent_kind": SelectField,
         "description": TextAreaField,
         "suggested_questions": SuggestedQuestionsField,
     }
-    form_args = {
+    form_args: ClassVar[dict[str, Any]] = {
         "agent_kind": {
             "choices": [
                 ("agentcore_runtime", "Agentcore Runtime"),
@@ -198,7 +198,7 @@ class AgentAdmin(BaseModelView, model=Agent):
         },
     }
 
-    form_ajax_refs = {
+    form_ajax_refs: ClassVar[dict[str, Any]] = {
         "access_groups": {
             "fields": ("name",),
             "order_by": "name",
@@ -252,7 +252,7 @@ class AgentAdmin(BaseModelView, model=Agent):
 
     async def delete_model(self, request: Any, pk: Any) -> None:
         """Override hard-delete with a soft-delete (enabled=False)."""
-        from sqlalchemy import select  # noqa: PLC0415
+        from sqlalchemy import select
 
         async with self.session_maker() as session:
             stmt = select(Agent).where(Agent.id == pk)

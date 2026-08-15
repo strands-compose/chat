@@ -367,7 +367,7 @@ def _build_hits_stmt(
     stmt = _apply_dimension_joins(stmt, dimension, ChatSession)
     stmt = stmt.where(
         ChatMessage.role == "assistant",
-        ChatMessage.is_success == True,  # noqa: E712
+        ChatMessage.is_success == True,
         ChatMessage.created_at >= from_dt,
         ChatMessage.created_at < to_dt,
     )
@@ -758,7 +758,7 @@ async def _get_summary_hits(
         .join(ChatSession, ChatSession.id == ChatMessage.chat_session_id)
         .where(
             ChatMessage.role == "assistant",
-            ChatMessage.is_success == True,  # noqa: E712
+            ChatMessage.is_success == True,
             ChatMessage.created_at >= from_dt,
             ChatMessage.created_at < to_dt,
         )
@@ -1136,7 +1136,7 @@ def _build_cross_tab_hits(
     stmt = _apply_both_dimension_joins(stmt, category_dim, stack_by_dim, ChatSession)
     stmt = stmt.where(
         ChatMessage.role == "assistant",
-        ChatMessage.is_success == True,  # noqa: E712
+        ChatMessage.is_success == True,
         ChatMessage.created_at >= from_dt,
         ChatMessage.created_at < to_dt,
     )
@@ -1178,7 +1178,7 @@ async def get_budgets(
     }
 
     # Step 2: fetch all active users
-    users_stmt = select(User).where(User.is_active == True)  # noqa: E712
+    users_stmt = select(User).where(User.is_active == True)
     users_result = await db.execute(users_stmt)
     users = users_result.scalars().all()
 

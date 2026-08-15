@@ -22,7 +22,7 @@ class DashboardView(BaseView):
     name = "Dashboard"
     icon = "fa-solid fa-gauge-high"
 
-    def is_visible(self, request: Request) -> bool:  # noqa: ARG002
+    def is_visible(self, request: Request) -> bool:
         """Hide this view from the sidebar navigation."""
         return False
 

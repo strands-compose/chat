@@ -149,7 +149,7 @@ class Settings(BaseSettings):
         try:
             decoded = base64.b64decode(key, validate=True)
             entropy_bytes = len(decoded)
-        except Exception:
+        except ValueError:
             entropy_bytes = len(key.encode("utf-8"))
 
         if entropy_bytes < 32:

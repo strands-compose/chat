@@ -33,9 +33,9 @@ config.get_settings.cache_clear()
 config.get_settings = lambda: _TEST_SETTINGS  # type: ignore
 
 # Deferred until after the override above so the engine binds to the test DB.
-from strands_compose_chat.app import create_app  # noqa: E402
-from strands_compose_chat.db.base import Base, engine  # noqa: E402
-from strands_compose_chat.deps import get_db, get_settings  # noqa: E402
+from strands_compose_chat.app import create_app
+from strands_compose_chat.db.base import Base, engine
+from strands_compose_chat.deps import get_db, get_settings
 
 _FIXED_INSTANT = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
 
@@ -46,7 +46,7 @@ async def _schema() -> AsyncIterator[None]:
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — fatal test-session bootstrap failure, must abort the run
         pytest.exit(f"schema setup failed: {exc}", returncode=1)
 
     yield

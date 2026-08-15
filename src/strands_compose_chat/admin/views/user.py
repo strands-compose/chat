@@ -1,6 +1,6 @@
 """Admin view for the User model."""
 
-from typing import Any
+from typing import Any, ClassVar
 
 import structlog
 from fastapi import Request
@@ -52,7 +52,7 @@ class UserAdmin(BaseModelView, model=User):
     # data with the "Anonymize user" action below.
     can_delete = False
 
-    column_list = [
+    column_list: ClassVar[list[Any]] = [
         User.username,
         User.first_name,
         User.last_name,
@@ -62,7 +62,7 @@ class UserAdmin(BaseModelView, model=User):
         User.is_superuser,
         User.auth_provider,
     ]
-    column_details_list = [
+    column_details_list: ClassVar[list[Any]] = [
         User.username,
         User.first_name,
         User.last_name,
@@ -79,7 +79,7 @@ class UserAdmin(BaseModelView, model=User):
         User.created_at,
         User.updated_at,
     ]
-    form_columns = [
+    form_columns: ClassVar[list[Any]] = [
         User.username,
         User.email,
         User.auth_provider,
@@ -96,7 +96,7 @@ class UserAdmin(BaseModelView, model=User):
 
     # auth_provider is create-only. Editing it on an existing OIDC user would
     # overwrite the JIT-provisioned identity key, breaking their next login.
-    form_create_rules = [
+    form_create_rules: ClassVar[list[str]] = [
         "username",
         "email",
         "auth_provider",
@@ -111,7 +111,7 @@ class UserAdmin(BaseModelView, model=User):
         "is_active",
         "is_superuser",
     ]
-    form_edit_rules = [
+    form_edit_rules: ClassVar[list[str]] = [
         "username",
         "email",
         "password",
@@ -126,8 +126,8 @@ class UserAdmin(BaseModelView, model=User):
         "is_superuser",
     ]
 
-    form_overrides = {"auth_provider": SelectField}
-    form_args = {
+    form_overrides: ClassVar[dict[str, Any]] = {"auth_provider": SelectField}
+    form_args: ClassVar[dict[str, Any]] = {
         "auth_provider": {
             "choices": [("local", "Local")],
             "description": "Authentication provider. Use 'Local' for password-based accounts.",
@@ -139,16 +139,21 @@ class UserAdmin(BaseModelView, model=User):
         },
     }
 
-    column_searchable_list = [User.username, User.email, User.first_name, User.last_name]
-    column_default_sort = [(User.created_at, True)]
+    column_searchable_list: ClassVar[list[Any]] = [
+        User.username,
+        User.email,
+        User.first_name,
+        User.last_name,
+    ]
+    column_default_sort: ClassVar[list[Any]] = [(User.created_at, True)]
 
     # groups renders as badge list via BaseModelView.get_list_value / get_detail_value
-    _badge_relation_props = {"groups": "#d79750"}
+    _badge_relation_props: ClassVar[dict[str, str]] = {"groups": "#d79750"}
 
-    column_formatters = {User.auth_provider: _format_auth_provider}
-    column_formatters_detail = column_formatters
+    column_formatters: ClassVar[dict[Any, Any]] = {User.auth_provider: _format_auth_provider}
+    column_formatters_detail: ClassVar[dict[Any, Any]] = column_formatters
 
-    form_ajax_refs = {
+    form_ajax_refs: ClassVar[dict[str, Any]] = {
         "groups": {
             "fields": ("name",),
             "order_by": "name",
@@ -174,9 +179,9 @@ class UserAdmin(BaseModelView, model=User):
             render_kw={"class": "form-control", "autocomplete": "new-password"},
         )
         # On edit auth_provider is absent, so anchor password to email instead.
-        anchor_field = getattr(form, "auth_provider", None) or getattr(form, "email")
+        anchor_field = getattr(form, "auth_provider", None) or form.email  # ty: ignore
         password.creation_counter = anchor_field.creation_counter + 0.5  # ty: ignore
-        setattr(form, "password", password)
+        form.password = password
         return form
 
     async def on_model_change(
@@ -198,7 +203,7 @@ class UserAdmin(BaseModelView, model=User):
             data["password_hash"] = None
             return
 
-        from ...deps import get_settings  # noqa: PLC0415
+        from ...deps import get_settings
 
         settings = get_settings()
         if is_created and not password:
@@ -208,7 +213,7 @@ class UserAdmin(BaseModelView, model=User):
                 raise ValueError(
                     f"Password must be at least {settings.PASSWORD_MIN_LENGTH} characters long."
                 )
-            from ...auth.passwords import hash_password  # noqa: PLC0415
+            from ...auth.passwords import hash_password
 
             data["password_hash"] = hash_password(password, settings)
 

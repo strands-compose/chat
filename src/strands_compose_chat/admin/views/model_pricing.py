@@ -1,5 +1,7 @@
 """Admin view for the ModelPricing model."""
 
+from typing import Any, ClassVar
+
 from ...db.models import ModelPricing
 from .base import BaseModelView
 
@@ -15,7 +17,7 @@ class ModelPricingAdmin(BaseModelView, model=ModelPricing):
     name_plural = "Model Pricing"
     icon = "fa-solid fa-usd"
 
-    column_list = [
+    column_list: ClassVar[list[Any]] = [
         ModelPricing.model_id,
         ModelPricing.provider,
         ModelPricing.input_token_price,
@@ -23,7 +25,7 @@ class ModelPricingAdmin(BaseModelView, model=ModelPricing):
         ModelPricing.created_at,
         ModelPricing.updated_at,
     ]
-    column_details_list = [
+    column_details_list: ClassVar[list[Any]] = [
         ModelPricing.model_id,
         ModelPricing.provider,
         ModelPricing.input_token_price,
@@ -31,17 +33,17 @@ class ModelPricingAdmin(BaseModelView, model=ModelPricing):
         ModelPricing.created_at,
         ModelPricing.updated_at,
     ]
-    form_columns = [
+    form_columns: ClassVar[list[Any]] = [
         ModelPricing.model_id,
         ModelPricing.provider,
         ModelPricing.input_token_price,
         ModelPricing.output_token_price,
     ]
 
-    column_searchable_list = [ModelPricing.model_id, ModelPricing.provider]
-    column_default_sort = [(ModelPricing.model_id, False)]
+    column_searchable_list: ClassVar[list[Any]] = [ModelPricing.model_id, ModelPricing.provider]
+    column_default_sort: ClassVar[list[Any]] = [(ModelPricing.model_id, False)]
 
-    form_args = {
+    form_args: ClassVar[dict[str, Any]] = {
         "input_token_price": {
             "description": "Price in USD per 1 million input tokens.",
         },

@@ -12,7 +12,7 @@ from .config import Settings, get_settings
 from .db.base import AsyncSessionLocal
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession]:
     """Per-request async database session.
 
     Commits on success, rolls back on any exception.

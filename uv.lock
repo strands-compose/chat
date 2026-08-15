@@ -2272,7 +2272,7 @@ provides-extras = ["postgres"]
 [package.metadata.requires-dev]
 check = [
     { name = "bandit", specifier = ">=1.9.4" },
-    { name = "ruff", specifier = ">=0.15.14" },
+    { name = "ruff", specifier = ">=0.16.3" },
     { name = "rust-just", specifier = ">=1.50.0" },
     { name = "ty", specifier = ">=0.0.55" },
 ]

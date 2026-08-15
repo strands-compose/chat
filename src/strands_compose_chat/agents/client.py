@@ -42,8 +42,7 @@ def build_client(agent: Agent) -> AgentClient:
             raise ValueError(f"local agent {agent.id!r} missing endpoint_url")
         base = agent.endpoint_url.rstrip("/")
         # Tolerate users who paste the full invocations path instead of the base URL
-        if base.endswith("/invocations"):
-            base = base[: -len("/invocations")]
+        base = base.removesuffix("/invocations")
         return AsyncLocalClient(
             url=base + "/invocations",
             timeout=httpx.Timeout(connect=5.0, read=300.0, write=None, pool=None),

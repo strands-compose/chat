@@ -44,8 +44,8 @@ def format_sse(event: StreamEvent) -> bytes:
     """
     data_str = json.dumps(event.asdict(), ensure_ascii=False)
     if event.type:
-        return f"event: {event.type}\ndata: {data_str}\n\n".encode("utf-8")
-    return f"data: {data_str}\n\n".encode("utf-8")
+        return f"event: {event.type}\ndata: {data_str}\n\n".encode()
+    return f"data: {data_str}\n\n".encode()
 
 
 def format_error(message: str) -> bytes:
@@ -135,7 +135,7 @@ async def save_token_usage(
                 )
             )
             await session.commit()
-        except Exception:  # noqa: BLE001
+        except Exception:
             await session.rollback()
             logger.warning(
                 "failed to persist token usage; stream unaffected",
@@ -172,7 +172,7 @@ async def save_manifest(
             )
             await session.execute(stmt)
             await session.commit()
-        except Exception:  # noqa: BLE001
+        except Exception:
             await session.rollback()
             logger.warning(
                 "failed to persist session manifest; stream unaffected",
@@ -228,7 +228,7 @@ async def save_user_message(
                 )
             )
             await session.commit()
-        except Exception:  # noqa: BLE001
+        except Exception:
             await session.rollback()
             logger.warning(
                 "failed to persist user message; stream unaffected",
@@ -268,7 +268,7 @@ async def save_assistant_message(
                 )
             )
             await session.commit()
-        except Exception:  # noqa: BLE001
+        except Exception:
             await session.rollback()
             logger.warning(
                 "failed to persist assistant message; stream unaffected",
@@ -309,7 +309,7 @@ async def save_assistant_error(
                 )
             )
             await session.commit()
-        except Exception:  # noqa: BLE001
+        except Exception:
             await session.rollback()
             logger.warning(
                 "failed to persist assistant error; stream unaffected",
@@ -352,7 +352,7 @@ async def stream_turn(
     chat_session_id: str,
     user_id: str,
     attachments: list[dict[str, Any]] | None = None,
-) -> AsyncGenerator[bytes, None]:
+) -> AsyncGenerator[bytes]:
     """Invoke the agent and yield each event as an SSE frame.
 
     Persistence side-effects are best-effort: each helper opens its own
@@ -429,9 +429,8 @@ async def stream_turn(
                 seen_error_texts.append(error_text)
                 error_occurred = True
                 await save_assistant_error(chat_session_id, event)
-            elif event.type == EventType.SESSION_END:
-                if not error_occurred:
-                    await save_assistant_message(chat_session_id, event)
+            elif event.type == EventType.SESSION_END and not error_occurred:
+                await save_assistant_message(chat_session_id, event)
 
             yield format_sse(event)
     finally:

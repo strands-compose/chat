@@ -50,7 +50,7 @@ def serve(host: str = _DEFAULT_HOST, port: int = _DEFAULT_PORT) -> None:
         host: Interface to bind (default: loopback; use ``0.0.0.0`` in containers).
         port: TCP port to listen on.
     """
-    import uvicorn  # noqa: PLC0415 — deferred so `migrate` does not import the server stack
+    import uvicorn
 
     uvicorn.run(
         "strands_compose_chat.app:app",
