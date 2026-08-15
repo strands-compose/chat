@@ -61,17 +61,33 @@ def format_error(message: str) -> bytes:
     return format_sse(event)
 
 
-def resolve_model_from_manifest(
+def resolve_model(
+    event: StreamEvent,
     manifest: dict[str, Any] | None,
-    agent_name: str | None,
 ) -> tuple[str | None, str | None]:
-    """Helper to resolve (model_id, provider) from the manifest for an agent."""
-    if not manifest or not agent_name:
+    """Resolve (model_id, provider) for an ``agent_complete`` event.
+
+    Prefers the ``model`` dict carried directly in the event's ``data``,
+    falling back to the session manifest when it's absent (older agents).
+
+    Args:
+        event: The ``agent_complete`` stream event.
+        manifest: The session manifest, used as a fallback.
+
+    Returns:
+        A ``(model_id, provider)`` tuple, either of which may be ``None``.
+    """
+    model_info = event.data.get("model") or {}
+    model_id = model_info.get("model_id")
+    provider = model_info.get("provider")
+    if model_id and provider:
+        return model_id, provider
+
+    if not manifest or not event.agent_name:
         return None, None
 
-    agents = manifest.get("agents", [])
-    for item in agents:
-        if item.get("name") == agent_name:
+    for item in manifest.get("agents", []):
+        if item.get("name") == event.agent_name:
             model_info = item.get("model", {})
             return model_info.get("model_id"), model_info.get("provider")
 
@@ -99,7 +115,7 @@ async def save_token_usage(
     if input_tokens == 0 and output_tokens == 0:
         return
 
-    model_id, provider = resolve_model_from_manifest(manifest, event.agent_name)
+    model_id, provider = resolve_model(event, manifest)
 
     async with AsyncSessionLocal() as session:
         try:
