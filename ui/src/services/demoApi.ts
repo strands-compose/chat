@@ -222,7 +222,7 @@ export function logout(): void {
 }
 
 export async function fetchAuthProviders(): Promise<AuthProvidersResponse> {
-  return { registration_enabled: false, providers: [] };
+  return { registration_enabled: false, local_signin_enabled: true, providers: [] };
 }
 
 export function startProviderLogin(providerId: string): void {

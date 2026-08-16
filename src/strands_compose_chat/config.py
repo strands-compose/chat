@@ -116,6 +116,9 @@ class Settings(BaseSettings):
     AUTH_REGISTRATION_ENABLED: bool | None = None
     """Self-service registration gate; None means derive from OIDC_PROVIDERS."""
 
+    AUTH_LOCAL_SIGNIN_ENABLED: bool = True
+    """Username/password sign-in gate; false leaves OIDC as the only login method."""
+
     CHAT_MEDIA_MAX_FILE_BYTES: int = 5 * 1024 * 1024
     """Maximum size, in bytes, of a single attached file."""
 
@@ -180,6 +183,26 @@ class Settings(BaseSettings):
         """
         if self.AUTH_REGISTRATION_ENABLED is None:
             self.AUTH_REGISTRATION_ENABLED = not bool(self.OIDC_PROVIDERS)
+        return self
+
+    @model_validator(mode="after")
+    def _validate_local_signin(self) -> "Settings":
+        """Disabling local sign-in requires an OIDC provider and forces registration off.
+
+        Declared after _default_registration_enabled so it overrides the derived value.
+
+        Raises:
+            ValueError: When local sign-in is disabled and no OIDC provider is configured,
+                which would leave no way to log in.
+        """
+        if self.AUTH_LOCAL_SIGNIN_ENABLED:
+            return self
+        if not self.OIDC_PROVIDERS:
+            raise ValueError(
+                "AUTH_LOCAL_SIGNIN_ENABLED=false requires at least one OIDC_PROVIDERS entry, "
+                "otherwise no login method remains"
+            )
+        self.AUTH_REGISTRATION_ENABLED = False
         return self
 
     @model_validator(mode="after")

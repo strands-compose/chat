@@ -77,11 +77,12 @@ async def list_providers(settings: AppSettings, registry: OidcRegistry) -> AuthP
     """Public description of available login methods.
 
     Returns the list of configured OIDC providers (id and display_name only),
-    whether self-service registration is enabled, and the default provider id
-    for automatic login (null when not configured). Requires no authentication.
+    whether self-service registration is enabled, and whether local
+    username/password sign-in is enabled. Requires no authentication.
     """
     return AuthProvidersOut(
         registration_enabled=bool(settings.AUTH_REGISTRATION_ENABLED),
+        local_signin_enabled=settings.AUTH_LOCAL_SIGNIN_ENABLED,
         providers=[
             AuthProviderInfo(id=p.id, display_name=p.display_name) for p in registry.values()
         ],
@@ -150,10 +151,20 @@ async def login(
 ) -> LoginOut:
     """Authenticate a local user with username and password.
 
+    Gated on AUTH_LOCAL_SIGNIN_ENABLED (403 when disabled).
+
     Returns a single 401 "Invalid credentials" for any combination of unknown
     user / disabled account / wrong password so attackers cannot use response
     timing or wording to probe state.
     """
+    # Config-only check, so it precedes the constant-time credential path
+    # without revealing anything about the submitted username.
+    if not settings.AUTH_LOCAL_SIGNIN_ENABLED:
+        raise ProblemDetailsException(
+            status_code=403,
+            detail="Local sign-in is currently disabled.",
+        )
+
     result = await db.execute(
         select(User).where(User.username == body.username, User.auth_provider == "local")
     )

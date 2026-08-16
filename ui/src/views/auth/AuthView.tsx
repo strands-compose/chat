@@ -62,6 +62,8 @@ const AuthViewComponent = (): ReactElement => {
   const [error, setError] = useState<string | null>(null);
   const [providers, setProviders] = useState<AuthProviderInfo[]>([]);
   const [registrationEnabled, setRegistrationEnabled] = useState(false);
+  // Defaults to true: a failed providers fetch must not hide the only way in.
+  const [localSigninEnabled, setLocalSigninEnabled] = useState(true);
 
   const isSignUp = mode === 'signup' && registrationEnabled;
 
@@ -94,6 +96,7 @@ const AuthViewComponent = (): ReactElement => {
         if (!cancelled) {
           setProviders(data.providers);
           setRegistrationEnabled(data.registration_enabled);
+          setLocalSigninEnabled(data.local_signin_enabled);
         }
       })
       .catch(() => {
@@ -231,14 +234,57 @@ const AuthViewComponent = (): ReactElement => {
     );
   };
 
+  const renderLocalForm = (): ReactElement | null => {
+    if (!localSigninEnabled) return null;
+    return (
+      <form
+        className={styles.form}
+        onSubmit={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          void form.handleSubmit();
+        }}
+      >
+        <form.Subscribe selector={(state) => state.isSubmitting}>
+          {(isSubmitting) => (
+            <>
+              {renderUsername(isSubmitting)}
+              {renderEmail(isSubmitting)}
+              {renderPassword(isSubmitting)}
+              {renderConfirmPassword(isSubmitting)}
+              {renderError()}
+              <Button
+                type="submit"
+                variant="primary"
+                className={styles.submitButton}
+                fullWidth
+                disabled={isSubmitting}
+              >
+                {isSignUp ? 'Create account' : 'Sign in'}
+              </Button>
+            </>
+          )}
+        </form.Subscribe>
+      </form>
+    );
+  };
+
+  /** The "or continue with" wording only reads correctly when a local form precedes it. */
+  const renderProvidersDivider = (): ReactElement => {
+    if (!localSigninEnabled) return <hr className={styles.providersRule} />;
+    return (
+      <p className={styles.providersDivider}>
+        <span>or continue with</span>
+      </p>
+    );
+  };
+
   const renderProviderButtons = (): ReactElement | null => {
     if (providers.length === 0) return null;
     if (mode === 'signup') return null;
     return (
       <div className={styles.providersRoot}>
-        <p className={styles.providersDivider}>
-          <span>or continue with</span>
-        </p>
+        {renderProvidersDivider()}
         {providers.map((p) => {
           const Icon = resolveProviderIcon(p.id, p.display_name);
           return (
@@ -275,35 +321,7 @@ const AuthViewComponent = (): ReactElement => {
     <div className={styles.root}>
       <div className={styles.card}>
         {renderHeading()}
-        <form
-          className={styles.form}
-          onSubmit={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            void form.handleSubmit();
-          }}
-        >
-          <form.Subscribe selector={(state) => state.isSubmitting}>
-            {(isSubmitting) => (
-              <>
-                {renderUsername(isSubmitting)}
-                {renderEmail(isSubmitting)}
-                {renderPassword(isSubmitting)}
-                {renderConfirmPassword(isSubmitting)}
-                {renderError()}
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className={styles.submitButton}
-                  fullWidth
-                  disabled={isSubmitting}
-                >
-                  {isSignUp ? 'Create account' : 'Sign in'}
-                </Button>
-              </>
-            )}
-          </form.Subscribe>
-        </form>
+        {renderLocalForm()}
         {renderFooter()}
         {renderProviderButtons()}
       </div>

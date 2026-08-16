@@ -84,7 +84,7 @@ export interface ChatStreamEvent {
   /** Plain text payload — used by `token`, `reasoning`, `error`. */
   content?: string;
 
-  /** Tool label (or fallback to tool name) — used by `tool_start` / `tool_end`. */
+  /** Tool name — used by `tool_start` / `tool_end`. */
   name?: string;
 
   /** Tool argument object — used by `tool_start`. */

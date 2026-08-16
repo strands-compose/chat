@@ -21,7 +21,7 @@ export interface WorkflowItem {
   /** Plain text content (for `text`, `reasoning`, `handoff`, etc.). */
   content: string;
 
-  /** Tool label/name — used by `tool` items. */
+  /** Tool name — used by `tool` items. */
   toolName?: string;
   /** Raw tool argument payload, rendered in the expanded badge. */
   toolInput?: unknown;
