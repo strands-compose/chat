@@ -31,6 +31,7 @@ class AuthProvidersOut(BaseModel):
     """Response body for GET /auth/providers."""
 
     registration_enabled: bool
+    local_signin_enabled: bool
     providers: list[AuthProviderInfo]
 
 

@@ -22,9 +22,10 @@ const EMPTY_ITEMS: WorkflowItem[] = [];
 // ======================
 
 type AgentEventConfig = { Icon: IconType; label: string };
+/** `orchestrator` is optional — only variants an orchestrator can emit define it. */
 type AgentEventConfigMap = Record<
   AgentEventProps['variant'],
-  { agent: AgentEventConfig; orchestrator: AgentEventConfig }
+  { agent: AgentEventConfig; orchestrator?: AgentEventConfig }
 >
 
 const AGENT_EVENT_CONFIG: AgentEventConfigMap = {
@@ -36,9 +37,10 @@ const AGENT_EVENT_CONFIG: AgentEventConfigMap = {
     agent:        { Icon: FiSquare,      label: 'Agent ended' },
     orchestrator: { Icon: FiCheckCircle, label: 'Orchestrator ended' },
   },
+  // A handoff is always a peer-to-peer transfer between agents (Swarm), never an
+  // orchestrator delegation — that arrives as a tool call and renders as a ToolBadge.
   handoff: {
     agent:        { Icon: FiArrowRight,  label: 'Handoff' },
-    orchestrator: { Icon: FiArrowRight,  label: 'Delegating work to agent' },
   },
 };
 
@@ -58,7 +60,7 @@ const StreamingTextBox = memo(({ content }: { content: string }): ReactElement =
 
 const AgentEvent = memo(({ variant, agentName, content, isOrchestrator }: AgentEventProps): ReactElement => {
   const cfg = AGENT_EVENT_CONFIG[variant];
-  const { Icon, label } = isOrchestrator ? cfg.orchestrator : cfg.agent;
+  const { Icon, label } = (isOrchestrator && cfg.orchestrator) || cfg.agent;
   const agentLabel = agentName ?? content ?? '';
   return (
     <div className={styles.agentEvent}>

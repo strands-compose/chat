@@ -8,15 +8,36 @@ all fail with the same 401.
 log in through POST /auth/login first and let the client carry the cookie.
 """
 
+from collections.abc import Callable, Iterator
+
+import pytest
+from fastapi import FastAPI
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from strands_compose_chat.auth.passwords import hash_password
+from strands_compose_chat.deps import get_settings
 from strands_compose_chat.schemas.auth import AuthProvidersOut, LoginOut, MeOut
 from tests.conftest import _TEST_SETTINGS
 from tests.factories import make_user, persist
 
 _PASSWORD = "correct-horse-battery-staple"  # pragma: allowlist secret
+
+
+@pytest.fixture
+def settings_override(app: FastAPI) -> Iterator[Callable[..., None]]:
+    """Swap fields on the injected settings for one test, then restore them.
+
+    ``model_copy`` skips validation on purpose, so a route gate can be exercised
+    without also satisfying the cross-field rules in the Settings validators.
+    """
+
+    def _apply(**overrides: object) -> None:
+        replacement = _TEST_SETTINGS.model_copy(update=overrides)
+        app.dependency_overrides[get_settings] = lambda: replacement
+
+    yield _apply
+    app.dependency_overrides[get_settings] = lambda: _TEST_SETTINGS
 
 
 async def _login(client: AsyncClient, db: AsyncSession) -> None:
@@ -111,6 +132,38 @@ async def test_login_to_a_disabled_account_returns_401(
     await persist(db, user)
     resp = await client.post("/auth/login", json={"username": user.username, "password": _PASSWORD})
     assert resp.status_code == 401
+
+
+async def test_login_is_forbidden_when_local_signin_is_disabled(
+    client: AsyncClient,
+    db: AsyncSession,
+    settings_override: Callable[..., None],
+) -> None:
+    user = make_user(password_hash=hash_password(_PASSWORD, _TEST_SETTINGS), auth_provider="local")
+    await persist(db, user)
+    settings_override(AUTH_LOCAL_SIGNIN_ENABLED=False)
+
+    resp = await client.post("/auth/login", json={"username": user.username, "password": _PASSWORD})
+
+    assert resp.status_code == 403
+
+
+async def test_register_is_forbidden_when_registration_is_disabled(
+    client: AsyncClient,
+    settings_override: Callable[..., None],
+) -> None:
+    settings_override(AUTH_REGISTRATION_ENABLED=False)
+
+    resp = await client.post(
+        "/auth/register",
+        json={
+            "username": "newuser02",
+            "email": "newuser02@example.com",
+            "password": "supersecretpassword123",  # pragma: allowlist secret
+        },
+    )
+
+    assert resp.status_code == 403
 
 
 async def test_logout_redirects(client: AsyncClient) -> None:

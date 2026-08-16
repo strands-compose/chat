@@ -363,7 +363,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:19.604553+00:00",
     "data": {
       "tool_name": "doc_expert",
-      "tool_label": "Delegating work to agent: Doc_Expert",
       "tool_use_id": "tooluse_QJQdwkFcCvXXHcpl4UkRa8",
       "tool_input": {
         "input": "What is strands-compose? What is its core purpose, and who is it for? What is the unique value it brings compared to building agents manually?"
@@ -478,7 +477,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:21.855204+00:00",
     "data": {
       "tool_name": "list_docs",
-      "tool_label": "list_docs",
       "tool_use_id": "tooluse_CBnJIVnkQQRo4QrjU4Tirn",
       "tool_input": {}
     }
@@ -489,7 +487,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:21.858814+00:00",
     "data": {
       "tool_name": "list_docs",
-      "tool_label": "list_docs",
       "tool_use_id": "tooluse_CBnJIVnkQQRo4QrjU4Tirn",
       "status": "success",
       "error": null,
@@ -526,7 +523,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:22.776172+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_Sog8nXDIl5nDv9taBglJ05",
       "tool_input": {
         "name": "01_overview_and_value.md"
@@ -539,7 +535,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:22.778960+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_Sog8nXDIl5nDv9taBglJ05",
       "status": "success",
       "error": null,
@@ -2769,7 +2764,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:29.825543+00:00",
     "data": {
       "tool_name": "doc_expert",
-      "tool_label": "Delegating work to agent: Doc_Expert",
       "tool_use_id": "tooluse_QJQdwkFcCvXXHcpl4UkRa8",
       "status": "success",
       "error": null,
@@ -2894,7 +2888,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:32.043207+00:00",
     "data": {
       "tool_name": "doc_expert",
-      "tool_label": "Delegating work to agent: Doc_Expert",
       "tool_use_id": "tooluse_7Li6OdRzvUsLzpYPtyyMxW",
       "tool_input": {
         "input": "Explain the three orchestration modes (delegate, swarm, graph) in simple terms. What does each one do? When would you use each?"
@@ -2913,7 +2906,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:32.046549+00:00",
     "data": {
       "tool_name": "doc_expert",
-      "tool_label": "Delegating work to agent: Doc_Expert",
       "tool_use_id": "tooluse_S08gqFV6JTQCJjW9Q3ijoK",
       "tool_input": {
         "input": "What are the key technical building blocks in strands-compose? Explain tools, hooks, sessions, and the \"native objects\" idea in a way a beginner can understand."
@@ -2926,7 +2918,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:32.046817+00:00",
     "data": {
       "tool_name": "doc_expert",
-      "tool_label": "Delegating work to agent: Doc_Expert",
       "tool_use_id": "tooluse_S08gqFV6JTQCJjW9Q3ijoK",
       "status": "error",
       "error": "Agent is already processing a request. Concurrent invocations are not supported.",
@@ -4428,7 +4419,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:36.987675+00:00",
     "data": {
       "tool_name": "doc_expert",
-      "tool_label": "Delegating work to agent: Doc_Expert",
       "tool_use_id": "tooluse_7Li6OdRzvUsLzpYPtyyMxW",
       "status": "success",
       "error": null,
@@ -4489,7 +4479,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:38.671733+00:00",
     "data": {
       "tool_name": "doc_expert",
-      "tool_label": "Delegating work to agent: Doc_Expert",
       "tool_use_id": "tooluse_HzTo7UyZ5W222wXXcd4eiV",
       "tool_input": {
         "input": "What are the key technical building blocks in strands-compose? Explain tools, hooks, sessions, and the \"native objects\" idea in a way a beginner can understand."
@@ -4580,7 +4569,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:40.182353+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_Ble6PEHDUbFyfeYX7shRsa",
       "tool_input": {
         "name": "02_technical_concepts.md"
@@ -4593,7 +4581,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:40.185307+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_Ble6PEHDUbFyfeYX7shRsa",
       "status": "success",
       "error": null,
@@ -8751,7 +8738,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:52.829530+00:00",
     "data": {
       "tool_name": "doc_expert",
-      "tool_label": "Delegating work to agent: Doc_Expert",
       "tool_use_id": "tooluse_HzTo7UyZ5W222wXXcd4eiV",
       "status": "success",
       "error": null,
@@ -8868,7 +8854,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:55.163942+00:00",
     "data": {
       "tool_name": "developer",
-      "tool_label": "Delegating work to agent: Developer",
       "tool_use_id": "tooluse_sI9ztG47yamlqCa2QVusZb",
       "tool_input": {
         "input": "Give me a SHORT, ESSENTIAL example of strands-compose in action. Show a delegate orchestration with two agents (a coordinator and a specialist), where the coordinator has one custom tool, and the specialist has another. Include the complete config.yaml and any Python files needed. Keep it minimal and fast to read — just enough to show how simple the wiring is."
@@ -8975,7 +8960,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:56.244019+00:00",
     "data": {
       "tool_name": "list_docs",
-      "tool_label": "list_docs",
       "tool_use_id": "tooluse_7hObIBbK5FffWCwjuFdimy",
       "tool_input": {}
     }
@@ -8986,7 +8970,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:56.248123+00:00",
     "data": {
       "tool_name": "list_docs",
-      "tool_label": "list_docs",
       "tool_use_id": "tooluse_7hObIBbK5FffWCwjuFdimy",
       "status": "success",
       "error": null,
@@ -9183,7 +9166,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:57.954743+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_0dDeuHqeCECT5eyv3YhsuL",
       "tool_input": {
         "name": "examples/07_delegate"
@@ -9196,7 +9178,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:57.959015+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_0dDeuHqeCECT5eyv3YhsuL",
       "status": "success",
       "error": null,
@@ -9329,7 +9310,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:59.690592+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_fa6HKQwyo03CRoxyQxLUyk",
       "tool_input": {
         "name": "configuration/Chapter_05.md"
@@ -9342,7 +9322,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:47:59.691779+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_fa6HKQwyo03CRoxyQxLUyk",
       "status": "success",
       "error": null,
@@ -9467,7 +9446,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:48:01.282963+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_5heyEcBVvoOQOLLFLEvEH5",
       "tool_input": {
         "name": "examples/03_tools"
@@ -9480,7 +9458,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:48:01.284611+00:00",
     "data": {
       "tool_name": "read_doc",
-      "tool_label": "read_doc",
       "tool_use_id": "tooluse_5heyEcBVvoOQOLLFLEvEH5",
       "status": "success",
       "error": null,
@@ -11190,7 +11167,6 @@ export const events: BackendStreamEvent[] = [
     "timestamp": "2026-07-12T00:48:07.148616+00:00",
     "data": {
       "tool_name": "developer",
-      "tool_label": "Delegating work to agent: Developer",
       "tool_use_id": "tooluse_sI9ztG47yamlqCa2QVusZb",
       "status": "success",
       "error": null,

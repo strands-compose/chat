@@ -94,6 +94,15 @@
   background: var(--sc-border-primary);
 }
 
+/* Unlabelled rule used when there is no local form to separate from */
+.providersRule {
+  width: 100%;
+  height: 1px;
+  margin: 0.25rem 0;
+  border: none;
+  background: var(--sc-border-primary);
+}
+
 /* Individual provider button — left-aligned with 1rem gap between icon and label */
 .providerButton {
   padding: 0.55rem 1rem;

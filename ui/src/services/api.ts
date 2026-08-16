@@ -159,6 +159,7 @@ export interface AuthProviderInfo {
 /** Response body for GET /auth/providers. */
 export interface AuthProvidersResponse {
   registration_enabled: boolean;
+  local_signin_enabled: boolean;
   providers: AuthProviderInfo[];
 }
 
@@ -288,7 +289,7 @@ export const mapBackendEvent = (raw: BackendStreamEvent): ChatStreamEvent | null
     case 'tool_start':
       return {
         type: 'tool_start',
-        name: (data.tool_label ?? data.tool_name) as string,
+        name: data.tool_name as string,
         input: data.tool_input,
         agent_name,
       };
@@ -296,7 +297,7 @@ export const mapBackendEvent = (raw: BackendStreamEvent): ChatStreamEvent | null
     case 'tool_end':
       return {
         type: 'tool_end',
-        name: (data.tool_label ?? data.tool_name) as string,
+        name: data.tool_name as string,
         output: data.tool_result as string | undefined,
         status: data.status as 'success' | 'error',
         agent_name,

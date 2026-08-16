@@ -119,6 +119,10 @@
       "AuthProvidersOut": {
         "description": "Response body for GET /auth/providers.",
         "properties": {
+          "local_signin_enabled": {
+            "title": "Local Signin Enabled",
+            "type": "boolean"
+          },
           "providers": {
             "items": {
               "$ref": "#/components/schemas/AuthProviderInfo"
@@ -133,6 +137,7 @@
         },
         "required": [
           "registration_enabled",
+          "local_signin_enabled",
           "providers"
         ],
         "title": "AuthProvidersOut",
@@ -2132,7 +2137,7 @@
     },
     "/auth/login": {
       "post": {
-        "description": "Authenticate a local user with username and password.\n\nReturns a single 401 \"Invalid credentials\" for any combination of unknown\nuser / disabled account / wrong password so attackers cannot use response\ntiming or wording to probe state.",
+        "description": "Authenticate a local user with username and password.\n\nGated on AUTH_LOCAL_SIGNIN_ENABLED (403 when disabled).\n\nReturns a single 401 \"Invalid credentials\" for any combination of unknown\nuser / disabled account / wrong password so attackers cannot use response\ntiming or wording to probe state.",
         "operationId": "login_auth_login_post",
         "requestBody": {
           "content": {
@@ -2313,7 +2318,7 @@
     },
     "/auth/providers": {
       "get": {
-        "description": "Public description of available login methods.\n\nReturns the list of configured OIDC providers (id and display_name only),\nwhether self-service registration is enabled, and the default provider id\nfor automatic login (null when not configured). Requires no authentication.",
+        "description": "Public description of available login methods.\n\nReturns the list of configured OIDC providers (id and display_name only),\nwhether self-service registration is enabled, and whether local\nusername/password sign-in is enabled. Requires no authentication.",
         "operationId": "list_providers_auth_providers_get",
         "responses": {
           "200": {
