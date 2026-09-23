@@ -7,6 +7,7 @@ from .chat_session import ChatSessionAdmin
 from .dashboard import DashboardView
 from .group import GroupAdmin
 from .model_pricing import ModelPricingAdmin
+from .session_transcript import SessionTranscriptView
 from .token_usage import TokenUsageAdmin
 from .user import UserAdmin
 
@@ -18,6 +19,7 @@ __all__ = [
     "DashboardView",
     "GroupAdmin",
     "ModelPricingAdmin",
+    "SessionTranscriptView",
     "TokenUsageAdmin",
     "UserAdmin",
 ]

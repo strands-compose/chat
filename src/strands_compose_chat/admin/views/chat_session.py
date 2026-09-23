@@ -5,8 +5,10 @@ from typing import Any, ClassVar
 
 from fastapi import Request
 from markupsafe import Markup
+from sqladmin import action
 from sqlalchemy import String, cast, or_
 from sqlalchemy.orm import selectinload
+from starlette.responses import RedirectResponse
 
 from ...db.models import Agent, ChatSession, User
 from .base import BaseModelView
@@ -148,3 +150,39 @@ class ChatSessionAdmin(BaseModelView, model=ChatSession):
             value = _summarise_token_usage(rows) if rows else "—"
             return value, value
         return await super().get_detail_value(obj, prop, request)
+
+    @action(
+        name="view_transcript",
+        label="View transcript",
+        add_in_detail=True,
+        add_in_list=True,
+    )
+    async def view_transcript(self, request: Request) -> RedirectResponse:
+        """Redirect to the full-session transcript page for the selected session.
+
+        This is a navigation action, not a mutation: it reads the first selected
+        primary key from the ``pks`` query param and redirects to the
+        ``SessionTranscriptView`` route. When invoked from the list with several
+        rows selected, only the first session's transcript is shown.
+
+        Args:
+            request: The incoming admin request; ``pks`` query param holds
+                comma-separated primary keys of the selected rows.
+
+        Returns:
+            A redirect to the transcript page, or back to the session list when
+            no row is selected.
+        """
+        pks_raw = request.query_params.get("pks", "")
+        pks = [pk for pk in pks_raw.split(",") if pk]
+
+        if not pks:
+            return RedirectResponse(
+                url=str(request.url_for("admin:list", identity=self.identity)),
+                status_code=302,
+            )
+
+        return RedirectResponse(
+            url=str(request.url_for("admin:view-session-transcript", pk=pks[0])),
+            status_code=302,
+        )

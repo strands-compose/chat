@@ -22,6 +22,7 @@ from .admin.views import (
     DashboardView,
     GroupAdmin,
     ModelPricingAdmin,
+    SessionTranscriptView,
     TokenUsageAdmin,
     UserAdmin,
 )
@@ -141,6 +142,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     admin.add_view(ModelPricingAdmin)
     admin.add_view(ApiKeyAdmin)
     admin.add_base_view(DashboardView)
+    admin.add_base_view(SessionTranscriptView)
 
     @app.get(f"{prefix}/health", tags=["health"], operation_id="health_check")
     @app.get("/health", tags=["health"], operation_id="health_check_root", include_in_schema=False)
