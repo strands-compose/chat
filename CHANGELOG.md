@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Feat
 
-- **ui,admin**: iframe, url navigation, admin session transcript (#34)
+- **security**: allow same-origin iframe embedding by default, configurable
+  via `FRAME_ANCESTORS` (`["self"]` to allow, `[]`/`["none"]` to deny)
+- **ui**: deep-link sessions and agents via `?session_id=` / `?agent_id=`
+  query params, kept in sync with the current chat selection
+- **agents**: persist rejected and failed turns instead of dropping them
+- **admin**: add a human-readable chat session transcript view with a
+  "View transcript" action on the Chat Session list and detail pages
 
 ## v0.3.0 (2026-08-16)
 
