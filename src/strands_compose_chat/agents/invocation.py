@@ -24,6 +24,8 @@ from .payload import parse_request
 from .service import get_visible, load_user_groups
 from .streaming import (
     format_error,
+    save_assistant_error,
+    save_rejected_turn,
     stream_turn,
 )
 
@@ -53,6 +55,21 @@ async def invoke(
     # browser contexts.
     session_id: str = body.session_id or str(uuid4())
 
+    logger.debug(
+        "invocation received",
+        user_id=current_user.id,
+        agent_id=body.agent_id,
+        session_id=session_id,
+    )
+
+    # Resolved before the pre-flight gates below so a rejection can be recorded on
+    # the thread. Only an existing conversation gets that record: a session
+    # created by this request is rolled back together with the rejection, leaving
+    # no row for the messages to hang off.
+    chat_session, is_new_session = await lock_or_create(
+        db, current_user.id, session_id, body.agent_id, prompt
+    )
+
     # Calculate monthly spend and compare to user's budget
     current_spend = await get_monthly_spend(db, current_user.id)
     if current_spend >= current_user.budget:
@@ -62,23 +79,18 @@ async def invoke(
             usage=current_spend,
             budget=current_user.budget,
         )
-        raise ProblemDetailsException(
-            status_code=402,
-            detail="Budget exceeded. Please contact your administrator.",
-        )
+        detail = "Budget exceeded. Please contact your administrator."
+        if not is_new_session:
+            await save_rejected_turn(chat_session.id, prompt, detail, attachments)
+        raise ProblemDetailsException(status_code=402, detail=detail)
 
-    logger.debug(
-        "invocation received",
-        user_id=current_user.id,
-        agent_id=body.agent_id,
-        session_id=session_id,
-    )
-
-    chat_session, _ = await lock_or_create(db, current_user.id, session_id, body.agent_id, prompt)
     user_groups = await load_user_groups(db, current_user.id)
     agent = await get_visible(db, chat_session.agent_id, user_groups)
     if agent is None:
-        raise ProblemDetailsException(404, f"Agent {chat_session.agent_id!r} not available.")
+        detail = f"Agent {chat_session.agent_id!r} not available."
+        if not is_new_session:
+            await save_rejected_turn(chat_session.id, prompt, detail, attachments)
+        raise ProblemDetailsException(404, detail)
 
     logger.debug(
         "agent resolved, starting stream",
@@ -121,17 +133,24 @@ async def invoke(
 
             stream_finished = True
 
+        # Both handlers persist what they emit: the failure never reached the
+        # stream as an error event, so nothing else would record it and the
+        # restored thread would end on the user's prompt alone.
         except (AgentCoreClientError, ClientConnectionError):
             stream_finished = True
             logger.warning(
                 "upstream agent error",
                 exc_info=True,
             )
-            yield format_error("The agent service is currently unavailable. Please try again.")
+            detail = "The agent service is currently unavailable. Please try again."
+            await save_assistant_error(chat_session_id, detail)
+            yield format_error(detail)
         except Exception:
             stream_finished = True
             logger.exception("unexpected error during agent stream")
-            yield format_error("An internal error occurred. Please try again later.")
+            detail = "An internal error occurred. Please try again later."
+            await save_assistant_error(chat_session_id, detail)
+            yield format_error(detail)
         finally:
             if isinstance(client, AsyncLocalClient):
                 try:
