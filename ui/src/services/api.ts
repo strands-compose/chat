@@ -297,6 +297,7 @@ export const mapBackendEvent = (raw: BackendStreamEvent): ChatStreamEvent | null
       return {
         type: 'tool_start',
         name: data.tool_name as string,
+        tool_use_id: data.tool_use_id as string | undefined,
         input: data.tool_input,
         agent_name,
       };
@@ -305,6 +306,7 @@ export const mapBackendEvent = (raw: BackendStreamEvent): ChatStreamEvent | null
       return {
         type: 'tool_end',
         name: data.tool_name as string,
+        tool_use_id: data.tool_use_id as string | undefined,
         output: data.tool_result as string | undefined,
         status: data.status as 'success' | 'error',
         agent_name,

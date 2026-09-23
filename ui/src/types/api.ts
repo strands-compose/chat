@@ -87,6 +87,9 @@ export interface ChatStreamEvent {
   /** Tool name — used by `tool_start` / `tool_end`. */
   name?: string;
 
+  /** Pairs a `tool_end` with its `tool_start`, which name alone cannot do when agents run in parallel. */
+  tool_use_id?: string;
+
   /** Tool argument object — used by `tool_start`. */
   input?: unknown;
 

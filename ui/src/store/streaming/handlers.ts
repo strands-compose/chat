@@ -65,9 +65,11 @@ const normalizeAgentName = (name: string | null | undefined): string | undefined
 const normalizeToolName = (name: string | null | undefined): string =>
   name ? name.replaceAll('_', ' ') : '';
 
-/** Push an item to the buffer and schedule a flush. */
+/** Push a non-text item to the buffer and schedule a flush. */
 const pushItem = (item: WorkflowItem, effects: StreamingSideEffects): void => {
   streamingState.workflowItemsBuffer.push(item);
+  // Anything else from this agent ends its text run, so its next token starts a new item.
+  streamingState.openTextItemByAgent.delete(item.agentName ?? '');
   effects.scheduleFlush();
 };
 
@@ -123,19 +125,20 @@ export function handleSessionEnd(event: ChatStreamEvent, effects: StreamingSideE
 // ====== TOKEN ======
 
 /**
- * Append a streamed text chunk. Consecutive tokens from the same agent
- * coalesce into a single `text` workflow item.
+ * Append a streamed text chunk to the agent's open text item, or start one.
+ * Tracked per agent so parallel agents don't concatenate into each other.
  */
 export function handleToken(event: ChatStreamEvent, effects: StreamingSideEffects): void {
   const content = event.content ?? '';
   const agentName = normalizeAgentName(event.agent_name);
-  const buffer = streamingState.workflowItemsBuffer;
-  const last = buffer[buffer.length - 1];
+  const openText = streamingState.openTextItemByAgent.get(agentName ?? '');
 
-  if (last?.type === 'text' && last.agentName === agentName) {
-    last.content += content;
+  if (openText) {
+    openText.content += content;
   } else {
-    buffer.push({ type: 'text', content, agentName });
+    const item: WorkflowItem = { type: 'text', content, agentName };
+    streamingState.workflowItemsBuffer.push(item);
+    streamingState.openTextItemByAgent.set(agentName ?? '', item);
   }
 
   effects.scheduleFlush();
@@ -162,6 +165,7 @@ export function handleToolStart(event: ChatStreamEvent, effects: StreamingSideEf
       type: 'tool',
       content: '',
       toolName: normalizeToolName(event.name),
+      toolUseId: event.tool_use_id,
       toolInput: event.input ?? undefined,
       agentName: normalizeAgentName(event.agent_name),
     },
@@ -169,19 +173,29 @@ export function handleToolStart(event: ChatStreamEvent, effects: StreamingSideEf
   );
 }
 
-/** Attach output to the most recent matching `tool` item. */
+/**
+ * Attach output to the `tool` item this event closes. Matching falls back to
+ * name plus agent when the backend omits the tool-use id.
+ */
 export function handleToolEnd(event: ChatStreamEvent, effects: StreamingSideEffects): void {
   const buffer = streamingState.workflowItemsBuffer;
-  const target = normalizeToolName(event.name);
+  const toolName = normalizeToolName(event.name);
+  const agentName = normalizeAgentName(event.agent_name);
+
   for (let i = buffer.length - 1; i >= 0; i--) {
-    if (buffer[i].type === 'tool' && buffer[i].toolName === target) {
-      buffer[i].toolOutput =
-        event.status === 'error'
-          ? `${event.output ?? 'Unknown error'}`
-          : event.output ?? undefined;
-      break;
-    }
+    const item = buffer[i];
+    if (item.type !== 'tool') continue;
+
+    const isMatch = event.tool_use_id
+      ? item.toolUseId === event.tool_use_id
+      : item.toolName === toolName && item.agentName === agentName;
+    if (!isMatch) continue;
+
+    item.toolOutput =
+      event.status === 'error' ? event.output ?? 'Unknown error' : event.output ?? undefined;
+    break;
   }
+
   effects.scheduleFlush();
 }
 

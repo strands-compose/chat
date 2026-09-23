@@ -11,6 +11,7 @@ import type { StreamingState } from './types';
 export function makeInitialStreamingState(): StreamingState {
   return {
     workflowItemsBuffer: [],
+    openTextItemByAgent: new Map(),
     inputTokens: 0,
     outputTokens: 0,
     errorMessage: null,
