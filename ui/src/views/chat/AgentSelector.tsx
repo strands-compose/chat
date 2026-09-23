@@ -11,6 +11,7 @@ import type { ReactElement } from 'react';
 import { memo, useEffect, useCallback } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import { useChatStore } from '@/store';
+import type { Agent } from '@/services';
 import {
   Button,
   DropdownMenu,
@@ -26,7 +27,7 @@ const AgentSelectorComponent = (): ReactElement => {
   // ======================
   const selectedAgent = useChatStore((s) => s.selectedAgent);
   const selectedAgentLabel = useChatStore((s) => s.selectedAgentLabel);
-  const setSelectedAgent = useChatStore((s) => s.setSelectedAgent);
+  const selectAgent = useChatStore((s) => s.selectAgent);
   const agents = useChatStore((s) => s.agents);
   const loading = useChatStore((s) => s.agentsLoading);
   const error = useChatStore((s) => s.agentsError);
@@ -40,11 +41,11 @@ const AgentSelectorComponent = (): ReactElement => {
   // HANDLERS
   // ======================
   const handleSelect = useCallback(
-    (id: string, name: string, questions: string[] | null, description: string, multimodal: boolean) => () => {
-      sessionStorage.setItem('lastSelectedAgentId', id);
-      setSelectedAgent(id, name, questions ?? [], description, multimodal);
+    (agent: Agent) => () => {
+      sessionStorage.setItem('lastSelectedAgentId', agent.id);
+      selectAgent(agent);
     },
-    [setSelectedAgent],
+    [selectAgent],
   );
 
   // ======================
@@ -68,7 +69,7 @@ const AgentSelectorComponent = (): ReactElement => {
       <DropdownMenuItem
         key={agent.id}
         isChecked={agent.id === selectedAgent}
-        onSelect={handleSelect(agent.id, agent.name, agent.suggested_questions, agent.description, agent.multimodal)}
+        onSelect={handleSelect(agent)}
       >
         <span className={styles.agentName}>{agent.name}</span>
       </DropdownMenuItem>

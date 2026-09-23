@@ -3,6 +3,7 @@ export {
   streamChat,
   fetchAgents,
   fetchSessions,
+  fetchSession,
   renameSession,
   deleteSession,
   fetchCurrentUser,

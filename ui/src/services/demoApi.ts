@@ -276,6 +276,13 @@ export async function fetchSessions(limit = 50, offset = 0): Promise<Session[]> 
   return sessions.slice(offset, offset + limit).map((s) => ({ ...s }));
 }
 
+export async function fetchSession(sessionId: string): Promise<Session> {
+  const session = sessions.find((s) => s.session_id === sessionId);
+  // Rejecting mirrors the backend's 404 for an unknown or foreign session.
+  if (!session) throw new Error(`Session not found: ${sessionId}`);
+  return { ...session };
+}
+
 export async function renameSession(sessionId: string, title: string): Promise<Session> {
   sessions = sessions.map((s) => (s.session_id === sessionId ? { ...s, title } : s));
   const updated = sessions.find((s) => s.session_id === sessionId);
@@ -288,7 +295,11 @@ export async function deleteSession(sessionId: string): Promise<void> {
 }
 
 export async function fetchSessionMessages(sessionId: string): Promise<SessionMessage[]> {
-  void sessionId;
+  // Reject unknown ids like the backend 404s, so a stale ?session_id= link
+  // falls back to a new conversation instead of replaying fixtures.
+  if (!sessions.some((s) => s.session_id === sessionId)) {
+    throw new Error(`Session not found: ${sessionId}`);
+  }
   return (messagesFixture as unknown as SessionMessage[]).map((m) => ({ ...m }));
 }
 

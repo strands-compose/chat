@@ -11,6 +11,7 @@ import type { Attachment, Message, WorkflowItem } from '../types';
 import {
   streamChat,
   fetchSessions,
+  fetchSession,
   fetchSessionMessages,
   fetchSessionUsage,
   fetchAgents,
@@ -50,6 +51,25 @@ export function buildThreadFromBackend(
     messageOrder.push(id);
   }
   return { messages, messageOrder };
+}
+
+/** Map an agent record to the store's selected-agent fields. Single source so a
+ *  new selected-agent field is added here once, not at every call site. */
+function agentSelection(agent: Agent): Pick<
+  ChatStore,
+  | 'selectedAgent'
+  | 'selectedAgentLabel'
+  | 'selectedAgentDescription'
+  | 'selectedAgentMultimodal'
+  | 'suggestedQuestions'
+> {
+  return {
+    selectedAgent: agent.id,
+    selectedAgentLabel: agent.name,
+    selectedAgentDescription: agent.description,
+    selectedAgentMultimodal: agent.multimodal,
+    suggestedQuestions: agent.suggested_questions ?? [],
+  };
 }
 
 // ====== STORE TYPES ======
@@ -122,7 +142,8 @@ export interface ChatStore {
   closeWorkflowPanel: () => void;
   /** Reopen the workflow panel after the user closed it. */
   openWorkflowPanel: () => void;
-  setSelectedAgent: (id: string, label: string, questions: string[], description: string, multimodal: boolean) => void;
+  /** Apply an agent record as the current selection. */
+  selectAgent: (agent: Agent) => void;
   /** Fetch the agent list once and auto-select a default. Idempotent. */
   loadAgents: () => Promise<void>;
   stopGeneration: () => void;
@@ -333,21 +354,22 @@ export const useChatStore = create<ChatStore>((set, get) => {
               }),
         });
 
-        // Resolve agent info from the session
-        const session = get().sessions.find((s) => s.session_id === sessionId);
+        // Resolve agent info from the session. A session opened from a URL can be
+        // older than the loaded sidebar page, so fetch the row when it's missing.
+        let session = get().sessions.find((s) => s.session_id === sessionId) ?? null;
+        if (!session) {
+          session = await fetchSession(sessionId).catch((err) => {
+            console.error('[chatStore] fetchSession failed:', err);
+            return null;
+          });
+        }
         if (session) {
           if (get().agents.length === 0) {
             await get().loadAgents();
           }
           const agent = get().agents.find((a) => a.id === session.agent_id);
           if (agent) {
-            set({
-              selectedAgent: agent.id,
-              selectedAgentLabel: agent.name,
-              selectedAgentDescription: agent.description,
-              selectedAgentMultimodal: agent.multimodal,
-              suggestedQuestions: agent.suggested_questions ?? [],
-            });
+            set(agentSelection(agent));
           } else {
             set({
               selectedAgent: session.agent_id,
@@ -518,14 +540,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set({ workflowPanelClosed: false });
     },
 
-    setSelectedAgent: (id: string, label: string, questions: string[], description: string, multimodal: boolean): void => {
-      set({
-        selectedAgent: id,
-        selectedAgentLabel: label,
-        selectedAgentDescription: description,
-        selectedAgentMultimodal: multimodal,
-        suggestedQuestions: questions,
-      });
+    selectAgent: (agent: Agent): void => {
+      set(agentSelection(agent));
     },
 
     loadAgents: async (): Promise<void> => {
@@ -543,13 +559,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
           const savedId = sessionStorage.getItem('lastSelectedAgentId');
           const preferred = savedId ? list.find((a) => a.id === savedId) : undefined;
           const agent = preferred ?? list[0];
-          set({
-            selectedAgent: agent.id,
-            selectedAgentLabel: agent.name,
-            selectedAgentDescription: agent.description,
-            selectedAgentMultimodal: agent.multimodal,
-            suggestedQuestions: agent.suggested_questions ?? [],
-          });
+          set(agentSelection(agent));
         }
       } catch (err) {
         console.error('[chatStore] loadAgents failed:', err);
