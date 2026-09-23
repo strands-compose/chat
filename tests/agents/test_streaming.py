@@ -263,12 +263,17 @@ async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
     assert assistant_messages[0].content == assistant_text
 
 
-async def test_streaming_mid_stream_error_persists_no_assistant_turn(
+async def test_streaming_mid_stream_error_persists_a_failed_assistant_turn(
     client: AsyncClient,
     db: AsyncSession,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A mid-stream failure yields one error frame, no SESSION_END, and no assistant turn."""
+    """A mid-stream failure yields one error frame, no SESSION_END, and a failed turn.
+
+    The crash never surfaces as an error *event*, so the handler that reports it
+    to the client is also the one that records it — a restored thread must show
+    the failure instead of ending on the user's prompt.
+    """
     agent_id, headers = await _setup_user_agent_group(db)
 
     # raise_after=1: index 0 (SESSION_START) is yielded, then the RuntimeError
@@ -317,6 +322,7 @@ async def test_streaming_mid_stream_error_persists_no_assistant_turn(
         )
         assistant_messages = list(result.scalars().all())
 
-    assert len(assistant_messages) == 0, (
-        f"expected zero assistant ChatMessage rows after error; found {len(assistant_messages)}"
+    assert len(assistant_messages) == 1, (
+        f"expected one assistant ChatMessage row after error; found {len(assistant_messages)}"
     )
+    assert assistant_messages[0].is_success is False

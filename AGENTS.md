@@ -7,6 +7,22 @@ AWS Bedrock AgentCore adapter.
 
 ---
 
+## Communication Style — MANDATORY
+
+**Executive summary only. Answer in the first line. 1-3 sentences for a direct
+question; yes/no starts with yes or no. Bullets or a table over prose.**
+
+**Detail, rationale, and background ONLY if the user explicitly asks.**
+
+Forbidden unless requested: multi-section reports, headers, narrating what you
+read or searched, recapping earlier turns, storytelling, praise, filler,
+end-of-task summaries of a visible diff.
+
+Never cut: uncertainty, verified-vs-assumed, corrections that change a decision,
+risk warnings before destructive actions.
+
+---
+
 ## Read the Skill First — MANDATORY
 
 Before touching any code, load the skill for the area you are working in.
@@ -51,14 +67,6 @@ doubt, apply them in order.
    one thing. When something grows a second job, split it.
 7. **One-way dependencies** — inner layers never import outward. The dependency
    direction for each area is defined in its skill.
-
----
-
-## Communication Style — Apply Everywhere
-
-- **Short and essential by default.** Answer directly. No preamble, no storytelling, no background context unless explicitly asked.
-- **Explain only when asked.** If the user asks "why" or "explain", provide detail. Otherwise, give the result.
-- **No filler.** No "Great question!", no "As you can see…", no summaries restating what was just done.
 
 ---
 

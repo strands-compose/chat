@@ -133,7 +133,8 @@ Authentication, authorisation, and transport security are implemented to product
 | Password storage | Argon2id hashes only; raw credentials are never persisted or logged. |
 | Authorisation | Role-based FastAPI dependencies on every endpoint. Agent visibility requires explicit group membership. |
 | OIDC / SSO | Standards-based OAuth 2.0 / OpenID Connect; redirect targets validated against open-redirect. |
-| Security headers | `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Content-Security-Policy`, `X-XSS-Protection`, `Referrer-Policy` on every response. |
+| Security headers | `Strict-Transport-Security`, `X-Content-Type-Options`, `Content-Security-Policy`, `X-XSS-Protection`, `Referrer-Policy` on every response. |
+| Framing | `frame-ancestors 'self'` / `X-Frame-Options: SAMEORIGIN` by default, so a same-origin page can embed the app; `FRAME_ANCESTORS=[]` denies framing outright. Cross-origin embedding is not offered — it would require a `SameSite=None` session cookie. |
 | Transport | `TrustedHostMiddleware`, configurable `CORS_ALLOWED_ORIGINS`.|
 | Production hardening | `APP_ENV=prod` enforces HTTPS-only cookies, rejects SQLite and wildcard CORS/host settings at startup. |
 | Secrets handling | All credentials via environment variables; sensitive fields redacted in logs, diagnostics, and config repr. |

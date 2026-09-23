@@ -1,0 +1,143 @@
+{% extends "sqladmin/layout.html" %}
+
+{% block content %}
+<style>
+  .transcript-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 8px 4px;
+  }
+  .transcript-row {
+    display: flex;
+    width: 100%;
+  }
+  .transcript-row.user { justify-content: flex-end; }
+  .transcript-row.assistant { justify-content: flex-start; }
+  .bubble {
+    max-width: 78%;
+    border-radius: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--tblr-border-color);
+    background: var(--tblr-bg-surface-secondary, var(--tblr-secondary-bg));
+  }
+  .transcript-row.user .bubble {
+    border-color: rgba(13, 110, 253, 0.45);
+    background: rgba(13, 110, 253, 0.10);
+  }
+  .transcript-row.assistant .bubble {
+    border-color: rgba(25, 135, 84, 0.45);
+    background: rgba(25, 135, 84, 0.10);
+  }
+  .transcript-row.error .bubble {
+    border-color: rgba(220, 53, 69, 0.65);
+    background: rgba(220, 53, 69, 0.12);
+  }
+  .bubble-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    color: var(--tblr-secondary-color, var(--tblr-muted));
+  }
+  .bubble-meta .meta-time {
+    margin-left: auto;
+  }
+  .role-pill {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: 600;
+  }
+  .role-pill.user { background: #0d6efd; }
+  .role-pill.assistant { background: #198754; }
+  .error-pill {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    background: #dc3545;
+    color: #fff;
+    font-weight: 600;
+  }
+  .bubble-content {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.45;
+    color: var(--tblr-body-color);
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+  .attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .attachment-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.76em;
+    border: 1px solid var(--tblr-border-color);
+    background: var(--tblr-secondary-bg);
+    color: var(--tblr-body-color);
+  }
+</style>
+
+<div class="col-12">
+  <div class="card">
+    <div class="card-header d-flex flex-wrap align-items-center gap-2">
+      <a href="{{ back_url }}" class="btn btn-sm me-3">&larr; {{ _("Go Back") }}</a>
+      <div class="text-secondary">
+        <span class="me-3"><strong>User:</strong> {{ header.username }}</span>
+        <span class="me-3"><strong>Agent:</strong> {{ header.agent_name }}</span>
+        <span class="me-3"><strong>Created:</strong> {{ header.created_at }}</span>
+        <span class="me-3"><strong>Last used:</strong> {{ header.last_used_at }}</span>
+        {% if header.is_archived %}<span class="badge bg-secondary">archived</span>{% endif %}
+      </div>
+    </div>
+
+    <div class="card-body">
+      {% if not messages %}
+      <div class="empty">
+        <p class="empty-title">No messages</p>
+        <p class="empty-subtitle text-secondary">This session has no persisted messages.</p>
+      </div>
+      {% else %}
+      <div class="transcript-wrap">
+        {% for msg in messages %}
+        {% set is_error = (msg.role == "assistant" and not msg.is_success) %}
+        <div class="transcript-row {{ msg.role }}{% if is_error %} error{% endif %}">
+          <div class="bubble">
+            <div class="bubble-meta">
+              <span class="role-pill {{ msg.role }}">{{ msg.role | capitalize }}</span>
+              {% if is_error %}<span class="error-pill">error</span>{% endif %}
+              <span class="meta-time">{{ msg.created_at }}</span>
+            </div>
+            <pre class="bubble-content">{{ msg.content }}</pre>
+            {% if msg.attachments %}
+            <div class="attachments">
+              {% for att in msg.attachments %}
+              <span class="attachment-chip">
+                <i class="fa-solid {% if att.type == 'image' %}fa-image{% else %}fa-file{% endif %}"></i>
+                {{ att.filename }} <span class="text-secondary">({{ att.size }} B)</span>
+              </span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

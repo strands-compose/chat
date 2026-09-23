@@ -6,6 +6,7 @@ import { ConfirmDialog, ErrorDialog, SplitLayout } from '@/components';
 import { CollapseProvider, useAuth } from '@/contexts';
 import { useChatStore } from '@/store';
 import { LOGIN_URL } from '@/services/api';
+import { useUrlState } from './useUrlState';
 import styles from './ChatApp.module.css';
 
 const ChatView = lazy(() => import('@/views/chat'));
@@ -28,6 +29,8 @@ const AppShell = (): ReactElement => {
       cancelInterrupt: s.cancelInterrupt,
     })),
   );
+
+  useUrlState();
 
   const errorDialogOpen = !isLoading && !!authError;
 

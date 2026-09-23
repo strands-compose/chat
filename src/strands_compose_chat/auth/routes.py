@@ -231,7 +231,8 @@ async def oidc_login(
         request: The incoming request (used for session and url_for).
         settings: Injected application settings.
         registry: The cached OIDC provider registry.
-        next_url: Optional same-origin path to redirect to after login.
+        next_url: Optional same-origin path to redirect to after login. When
+            absent, any destination already stashed in the session is kept.
 
     Returns:
         A redirect response to the identity provider's authorization endpoint.
@@ -251,7 +252,13 @@ async def oidc_login(
         )
 
     request.session[_OIDC_PROVIDER_SESSION_KEY] = provider_id
-    request.session[_AUTH_NEXT_SESSION_KEY] = safe_next_url(next_url, settings.URL_PREFIX)
+    # The login page is reached by redirect, so the caller has no next URL to pass:
+    # fall back to the destination the redirect stashed, keeping a deep link
+    # (e.g. /?session_id=…) alive across the provider round trip.
+    stashed_next = request.session.get(_AUTH_NEXT_SESSION_KEY)
+    request.session[_AUTH_NEXT_SESSION_KEY] = safe_next_url(
+        next_url or stashed_next, settings.URL_PREFIX
+    )
 
     redirect_uri = _build_callback_redirect_uri(request, settings)
     try:

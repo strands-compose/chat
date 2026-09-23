@@ -295,20 +295,18 @@ async def save_assistant_message(
 
 async def save_assistant_error(
     chat_session_id: str,
-    event: StreamEvent,
+    text: str,
 ) -> None:
-    """Persist a streaming error as an assistant message. Logs and swallows errors.
+    """Persist an error as an assistant message. Logs and swallows errors.
 
-    Called on ``EventType.ERROR``. The row is ``role='assistant'`` with
-    ``is_success=False`` so restored threads can render the failure as an error
-    bubble. Best-effort: a database hiccup is logged and never breaks the stream.
+    The row is ``role='assistant'`` with ``is_success=False`` so restored threads
+    can render the failure as an error bubble. Best-effort: a database hiccup is
+    logged and never breaks the stream.
 
     Args:
         chat_session_id: Primary key of the owning ``chat_sessions`` row.
-        event: The ``error`` stream event carrying ``data['text']``.
+        text: The error message to store. Empty text is not persisted.
     """
-    data = event.data or {}
-    text: str = data.get("text", "")
     if not text:
         return
 
@@ -332,6 +330,29 @@ async def save_assistant_error(
                 chat_session_id=chat_session_id,
                 exc_info=True,
             )
+
+
+async def save_rejected_turn(
+    chat_session_id: str,
+    prompt: Any,
+    detail: str,
+    attachments: list[dict[str, Any]] | None = None,
+) -> None:
+    """Persist a turn that was rejected before the agent ran.
+
+    Pre-flight rejections (exhausted budget, an agent the user may no longer
+    see) never reach the stream, so without this the turn leaves no trace and a
+    reloaded thread ends on the previous answer with nothing explaining the
+    failure.
+
+    Args:
+        chat_session_id: Primary key of the owning ``chat_sessions`` row.
+        prompt: The raw prompt value from the rejected request.
+        detail: The rejection message returned to the client, stored verbatim.
+        attachments: Attachment metadata dicts to persist with the user message.
+    """
+    await save_user_message(chat_session_id, prompt, attachments)
+    await save_assistant_error(chat_session_id, detail)
 
 
 def _normalise_error_text(event: StreamEvent) -> str:
@@ -444,7 +465,9 @@ async def stream_turn(
                     continue
                 seen_error_texts.append(error_text)
                 error_occurred = True
-                await save_assistant_error(chat_session_id, event)
+                # The raw text is stored, not the normalised one, so a multi-line
+                # failure survives a reload the way it was streamed.
+                await save_assistant_error(chat_session_id, str((event.data or {}).get("text", "")))
             elif event.type == EventType.SESSION_END and not error_occurred:
                 await save_assistant_message(chat_session_id, event)
 

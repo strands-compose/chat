@@ -59,10 +59,13 @@ These principles guide every design decision in strands-compose. When contributi
 git clone https://github.com/strands-compose/chat
 cd chat
 uv run just install
+cp example.env .env   # then set SESSION_SECRET_KEY
 ```
 
 This installs all dependencies **and** wires the git hooks in one step.
-If you only want to (re-)install the hooks later:
+`example.env` is the template for local development — it documents every
+setting you need to run the app from a clone. If you only want to (re-)install
+the hooks later:
 
 ```bash
 uv run just install-hooks

@@ -208,6 +208,13 @@ export async function fetchSessions(limit = 50, offset = 0): Promise<Session[]> 
   return (await res.json()) as Session[];
 }
 
+/** Fetch a single session by id. Rejects with 404 when the user doesn't own it. */
+export async function fetchSession(sessionId: string): Promise<Session> {
+  const res = await fetchWithTimeout(`${SESSIONS_URL}/${encodeURIComponent(sessionId)}`);
+  if (!res.ok) throw new Error(`Failed to fetch session: ${res.status}`);
+  return (await res.json()) as Session;
+}
+
 /** Rename a session by id. Returns the updated session. */
 export async function renameSession(sessionId: string, title: string): Promise<Session> {
   const res = await fetchWithTimeout(`${SESSIONS_URL}/${encodeURIComponent(sessionId)}`, {
@@ -397,7 +404,11 @@ export async function* streamChat(
   const response = await fetch(INVOCATIONS_URL, init);
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    // The message is rendered as the failed assistant turn, so surface the
+    // backend's Problem Details detail (agent unavailable, budget exceeded, …).
+    // The status carries the fallback because a stream can also fail upstream
+    // of the app, where there is no JSON body to read.
+    throw new Error(await extractError(response, `Agent request failed (${response.status}).`));
   }
 
   const reader = response.body?.getReader();
