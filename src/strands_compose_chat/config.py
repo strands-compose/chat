@@ -89,6 +89,9 @@ class Settings(BaseSettings):
     CORS_ALLOWED_ORIGINS: list[str] = ["http://localhost:5173"]
     TRUSTED_HOSTS: list[str] = ["localhost", "127.0.0.1"]
 
+    FRAME_ANCESTORS: list[str] = ["self"]
+    """Pages allowed to embed the app in an iframe: ``["self"]`` or ``[]`` / ``["none"]``."""
+
     CHAT_SESSION_MAX_PAGE_SIZE: int = 100
     """Maximum number of sessions returned in a single paginated request."""
 
@@ -140,6 +143,28 @@ class Settings(BaseSettings):
         if v and not v.startswith("/"):
             v = f"/{v}"
         return v
+
+    @field_validator("FRAME_ANCESTORS")
+    @classmethod
+    def _validate_frame_ancestors(cls, value: list[str]) -> list[str]:
+        """Normalise to ``["self"]`` or ``[]``, accepting the CSP keywords quoted.
+
+        Cross-origin framing is not offered: it would require a ``SameSite=None``
+        session cookie, dropping the CSRF baseline for every request, and browsers
+        that block third-party cookies would still fail to carry the session.
+
+        Raises:
+            ValueError: When an entry is neither ``self`` nor ``none``.
+        """
+        keywords = [entry.strip().strip("'\"").lower() for entry in value if entry.strip()]
+        unsupported = [keyword for keyword in keywords if keyword not in {"self", "none"}]
+        if unsupported:
+            raise ValueError(
+                f"FRAME_ANCESTORS accepts only 'self' or 'none' (got {unsupported}); "
+                "cross-origin framing is unsupported because the session cookie stays "
+                "SameSite=lax and is not sent from a third-party frame"
+            )
+        return [] if not keywords or "none" in keywords else ["self"]
 
     @model_validator(mode="after")
     def _validate_session_secret_key(self) -> "Settings":

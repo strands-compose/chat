@@ -92,7 +92,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         max_age=settings.SESSION_TTL_SECONDS,
         same_site="lax",
     )
-    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware, settings=settings)
     app.add_middleware(
         HealthExemptTrustedHostMiddleware,
         allowed_hosts=settings.TRUSTED_HOSTS,
