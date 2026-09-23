@@ -23,6 +23,8 @@ export interface WorkflowItem {
 
   /** Tool name — used by `tool` items. */
   toolName?: string;
+  /** Backend tool-use id, used to attach the matching `tool_end` output. */
+  toolUseId?: string;
   /** Raw tool argument payload, rendered in the expanded badge. */
   toolInput?: unknown;
   /** Tool result string, rendered in the expanded badge. */

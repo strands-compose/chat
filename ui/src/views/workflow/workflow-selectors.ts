@@ -5,34 +5,90 @@
  * they're tightly coupled to the view's rendering rules.
  */
 
-import type { WorkflowItem, WorkflowGroupedItems, ChatStore } from '@/types';
+import type { WorkflowItem, ChatStore } from '@/types';
+import type { AgentRun } from './workflow-types';
 
 /**
- * Merge consecutive items of the same type and agent into one group.
+ * Split the flat trace into per-agent runs so agents streaming in parallel
+ * render under their own separator instead of interleaved line by line.
  *
- * Keeps the full trace, including the trailing answer text, so the panel stays
- * stable when a turn finalizes. The answer thus shows here and in the thread.
+ * Runs appear in the order they opened, and consecutive items of the same type
+ * within a run are merged into one group. An agent that delegates opens a fresh
+ * run when the sub-agent it launched ends, so its continuation reads below that
+ * sub-agent's block rather than inside its own earlier one. Items the backend
+ * left unattributed collect in a nameless run at the end.
  */
-export function groupConsecutiveItems(
-  items: WorkflowItem[],
-): WorkflowGroupedItems[] {
-  if (!items) return [];
+export function buildAgentRuns(items: WorkflowItem[]): AgentRun[] {
+  const runs: AgentRun[] = [];
+  const openRuns = new Map<string, AgentRun>();
+  /** Agents whose delegate has ended and whose next item therefore opens a new run. */
+  const resumingAgents = new Set<string>();
+  /** Sub-agent name -> the agent whose delegation tool launched it. */
+  const delegatedBy = new Map<string, string>();
+  const orchestrators = new Set<string>();
+  const unattributed: AgentRun = {
+    key: 'unattributed',
+    isOrchestrator: false,
+    hasEnded: false,
+    groups: [],
+  };
 
-  const groups: WorkflowGroupedItems[] = [];
+  const startRun = (agentKey: string, agentName: string): AgentRun => {
+    const run: AgentRun = {
+      key: `${agentKey}#${runs.length}`,
+      agentName,
+      isOrchestrator: orchestrators.has(agentKey),
+      hasEnded: false,
+      groups: [],
+    };
+    runs.push(run);
+    openRuns.set(agentKey, run);
+    resumingAgents.delete(agentKey);
+    return run;
+  };
+
   for (const item of items) {
-    const lastGroup = groups[groups.length - 1];
-    const sameType = lastGroup && lastGroup.type === item.type;
-    const sameAgent =
-      lastGroup && (lastGroup.items[0].agentName ?? '') === (item.agentName ?? '');
+    const agentName = item.agentName;
+    const agentKey = agentName ?? '';
 
-    if (sameType && sameAgent) {
-      lastGroup.items.push(item);
-    } else {
-      groups.push({ type: item.type, items: [item] });
+    if (item.isOrchestrator) orchestrators.add(agentKey);
+
+    // Start/stop items are run boundaries; the separators are rendered from the run itself.
+    if (item.type === 'agent_start') {
+      if (agentName && !openRuns.has(agentKey)) startRun(agentKey, agentName);
+      continue;
     }
+    if (item.type === 'agent_stop') {
+      const ending = openRuns.get(agentKey);
+      if (!ending) continue;
+      ending.hasEnded = true;
+      openRuns.delete(agentKey);
+      const delegator = delegatedBy.get(agentKey);
+      if (delegator && openRuns.has(delegator)) resumingAgents.add(delegator);
+      continue;
+    }
+
+    let target: AgentRun;
+    if (!agentName) {
+      target = unattributed;
+    } else {
+      const open = openRuns.get(agentKey);
+      target = !open || resumingAgents.has(agentKey) ? startRun(agentKey, agentName) : open;
+      // A delegation tool is named after the sub-agent it invokes; both names are
+      // display-normalized and differ only in case.
+      if (item.type === 'tool' && item.toolName) {
+        delegatedBy.set(item.toolName.toUpperCase(), agentKey);
+      }
+    }
+
+    const lastGroup = target.groups[target.groups.length - 1];
+    if (lastGroup?.type === item.type) lastGroup.items.push(item);
+    else target.groups.push({ type: item.type, items: [item] });
   }
 
-  return groups;
+  if (unattributed.groups.length > 0) runs.push(unattributed);
+
+  return runs;
 }
 
 /**

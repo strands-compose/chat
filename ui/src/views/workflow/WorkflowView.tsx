@@ -1,14 +1,14 @@
-import { memo, useEffect, useMemo, useRef, useCallback } from 'react';
+import { Fragment, memo, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { FiActivity, FiX, FiPlay, FiSquare, FiCpu, FiCheckCircle, FiArrowRight } from 'react-icons/fi';
 import type { IconType } from 'react-icons';
 import { useChatStore } from '@/store';
 import { Markdown, TokenBadges, IconButton, StatusBadge, SubheaderBar, ToolBadge } from '@/components';
-import { groupConsecutiveItems, selectWorkflowTrace, selectWorkflowTokens } from './workflow-selectors';
+import { buildAgentRuns, selectWorkflowTrace, selectWorkflowTokens } from './workflow-selectors';
 import styles from './WorkflowView.module.css';
 
 import type { ReactElement } from 'react';
-import type { AgentEventProps } from './workflow-types';
+import type { AgentEventProps, AgentRun } from './workflow-types';
 import type { WorkflowItem, WorkflowGroupedItems } from '@/types';
 
 // ======================
@@ -167,10 +167,7 @@ const WorkflowViewComponent = (): ReactElement => {
   // RENDER FUNCTIONS
   // ======================
 
-  const groupedItems = useMemo(
-    () => groupConsecutiveItems(workflowItems),
-    [workflowItems],
-  );
+  const agentRuns = useMemo(() => buildAgentRuns(workflowItems), [workflowItems]);
 
   const renderTitleBar = (): ReactElement => {
     const statusBadge = (() => {
@@ -213,22 +210,22 @@ const WorkflowViewComponent = (): ReactElement => {
     </div>
   );
 
-  const renderGroup = (group: WorkflowGroupedItems, groupIndex: number): ReactElement | ReactElement[] | null => {
+  const renderGroup = (group: WorkflowGroupedItems, groupKey: string): ReactElement | ReactElement[] | null => {
     switch (group.type) {
       case 'reasoning':
         return (
           <InlineReasoning
-            key={groupIndex}
+            key={groupKey}
             content={group.items.map((item) => item.content).join('\n\n')}
           />
         );
       case 'text': {
-        // Skip blank text groups (e.g. a lone "\n" token)
-        const textContent = group.items.map((item) => item.content).join('\n\n');
+        // Token runs are already whole strings, so they concatenate without a separator.
+        const textContent = group.items.map((item) => item.content).join('');
         if (textContent.trim() === '') return null;
         return (
           <StreamingTextBox
-            key={groupIndex}
+            key={groupKey}
             content={textContent}
           />
         );
@@ -236,39 +233,58 @@ const WorkflowViewComponent = (): ReactElement => {
       case 'tool':
         return group.items.map((item, i) => (
           <ToolBadge
-            key={`${groupIndex}-${i}`}
+            key={`${groupKey}-${i}`}
             toolName={item.toolName || 'Unknown Tool'}
             toolInput={item.toolInput}
             toolOutput={item.toolOutput}
             agentName={item.agentName}
           />
         ));
-      case 'agent_start':
-      case 'agent_stop':
       case 'handoff':
         return group.items.map((item, i) => (
           <AgentEvent
-            key={`${groupIndex}-${i}`}
-            variant={group.type as AgentEventProps['variant']}
+            key={`${groupKey}-${i}`}
+            variant="handoff"
             agentName={item.agentName}
             content={item.content}
-            isOrchestrator={item.isOrchestrator}
           />
         ));
       default:
         return group.items.map((item, i) => (
-          <span key={`${groupIndex}-${i}`} className={styles.workflowText}>
+          <span key={`${groupKey}-${i}`} className={styles.workflowText}>
             {item.content}
           </span>
         ));
     }
   };
 
+  /** Separators come from the run, not from the trace: an agent's end event can
+   *  arrive long after a parallel agent's items were appended. */
+  const renderRun = (run: AgentRun): ReactElement => (
+    <Fragment key={run.key}>
+      {run.agentName && (
+        <AgentEvent
+          variant="agent_start"
+          agentName={run.agentName}
+          isOrchestrator={run.isOrchestrator}
+        />
+      )}
+      {run.groups.map((group, i) => renderGroup(group, `${run.key}-${i}`))}
+      {run.hasEnded && (
+        <AgentEvent
+          variant="agent_stop"
+          agentName={run.agentName}
+          isOrchestrator={run.isOrchestrator}
+        />
+      )}
+    </Fragment>
+  );
+
   const renderContent = (): ReactElement => (
     <div ref={contentRef} className={styles.workflowPanelContent} onScroll={handleScroll}>
       {resolvedMessageId === null && workflowItems === EMPTY_ITEMS
         ? renderEmpty()
-        : groupedItems.map((group, i) => renderGroup(group, i))}
+        : agentRuns.map(renderRun)}
     </div>
   );
 

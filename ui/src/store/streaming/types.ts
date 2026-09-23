@@ -18,6 +18,13 @@ export interface StreamingState {
   /** All workflow items accumulated so far for the current turn. */
   workflowItemsBuffer: WorkflowItem[];
 
+  /**
+   * The `text` item each agent is currently appending tokens to, keyed by agent
+   * name (`''` when unattributed). Agents running in parallel interleave their
+   * tokens, so the tail of the buffer is not a reliable coalescing target.
+   */
+  openTextItemByAgent: Map<string, WorkflowItem>;
+
   /** Input tokens summed across this turn's `agent_complete` events. */
   inputTokens: number;
   /** Output tokens summed across this turn's `agent_complete` events. */
