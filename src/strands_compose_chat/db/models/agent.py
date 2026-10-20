@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, Boolean, CheckConstraint, DateTime, String, Text, func
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..base import Base, _new_uuid
@@ -49,7 +50,11 @@ class Agent(Base):
     endpoint_url: Mapped[str | None] = mapped_column(String, nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     multimodal: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    suggested_questions: Mapped[list[str] | None] = mapped_column(JSON, nullable=True, default=None)
+    # JSONB on PostgreSQL: plain json has no equality operator, which breaks
+    # SELECT DISTINCT over agents (sqladmin Group edit form).
+    suggested_questions: Mapped[list[str] | None] = mapped_column(
+        JSON().with_variant(postgresql.JSONB(), "postgresql"), nullable=True, default=None
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=func.now()
     )
