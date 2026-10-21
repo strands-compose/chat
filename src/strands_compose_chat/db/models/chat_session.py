@@ -21,8 +21,8 @@ _SESSION_ID_LENGTH_CHECK = "length(session_id) >= 33 AND length(session_id) <= 2
 class ChatSession(Base):
     """Per-user chat session row.
 
-    session_id is a UI-generated string (33-256 chars) globally unique across
-    all users. agent_id is locked for the lifetime of the session.
+    session_id is the AgentCore runtime session id (33-256 chars), minted by the
+    backend as ``<uuid>_<USER-SUFFIX>`` and globally unique across all users. agent_id is locked for the lifetime of the session.
     manifest stores the SessionManifest JSON captured from the first
     session_start SSE event; NULL until that event is observed.
     """

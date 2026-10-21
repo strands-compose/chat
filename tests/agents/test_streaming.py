@@ -166,6 +166,37 @@ async def test_streaming_success_persists_one_assistant_turn(
     assert assistant_messages[0].is_success is True
 
 
+async def test_invocation_passes_username_to_agent_client(
+    client: AsyncClient,
+    db: AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The invoking user's username is forwarded to the agent client."""
+    user = make_user(username="alice")
+    group = make_group()
+    agent = make_agent()
+    await persist(db, user, group, agent)
+    db.add(UserGroup(user_id=user.id, group_id=group.id))
+    db.add(AgentGroup(agent_id=agent.id, group_id=group.id))
+    await db.flush()
+    headers = await as_user(db, user)
+
+    fake = FakeAgentClient(events=[])
+    monkeypatch.setattr(
+        "strands_compose_chat.agents.invocation.build_client",
+        lambda agent: fake,
+    )
+
+    resp = await client.post(
+        "/api/v1/invocations",
+        json={"agent_id": agent.id, "prompt": "Say hello"},
+        headers=headers,
+    )
+
+    assert resp.status_code == 200
+    assert fake.invoke_user_ids == ["alice"]
+
+
 async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
     client: AsyncClient,
     db: AsyncSession,

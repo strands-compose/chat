@@ -2,7 +2,6 @@
 
 import asyncio
 from contextlib import aclosing
-from uuid import uuid4
 
 import structlog
 from fastapi import APIRouter, Request
@@ -18,6 +17,7 @@ from ..analytics.service import get_monthly_spend
 from ..auth.current_user import ApiKeyOrSessionUser
 from ..deps import DbSession
 from ..errors import ProblemDetailsException
+from ..sessions.ids import new_session_id
 from ..sessions.service import lock_or_create, touch_last_used
 from .client import build_client
 from .payload import parse_request
@@ -52,8 +52,9 @@ async def invoke(
     # returned to the client on the session_start event so it can be reused for
     # follow-up turns and shown in the sidebar. Generating it server-side avoids
     # depending on crypto.randomUUID, which is unavailable in non-secure (HTTP)
-    # browser contexts.
-    session_id: str = body.session_id or str(uuid4())
+    # browser contexts. The id carries a suffix naming the user so sessions are
+    # recognisable in AgentCore logs and traces.
+    session_id: str = body.session_id or new_session_id(current_user)
 
     logger.debug(
         "invocation received",
@@ -106,6 +107,7 @@ async def invoke(
     # primitives only and never touches the request session during the run.
     chat_session_id: str = chat_session.id
     user_id: str = current_user.id
+    username: str = current_user.username
 
     # Commit now — makes the session row + last_used_at durable and releases
     # the shared DB connection back to the pool before the stream begins.
@@ -125,6 +127,7 @@ async def invoke(
                 session_id=session_id,
                 chat_session_id=chat_session_id,
                 user_id=user_id,
+                username=username,
                 attachments=attachments,
             )
             async with aclosing(sse_stream):

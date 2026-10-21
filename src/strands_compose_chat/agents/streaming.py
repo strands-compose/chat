@@ -388,6 +388,7 @@ async def stream_turn(
     session_id: str,
     chat_session_id: str,
     user_id: str,
+    username: str,
     attachments: list[dict[str, Any]] | None = None,
 ) -> AsyncGenerator[bytes]:
     """Invoke the agent and yield each event as an SSE frame.
@@ -407,9 +408,13 @@ async def stream_turn(
     Args:
         client: The agent client to invoke.
         prompt: The raw prompt value forwarded to ``client.invoke``.
-        session_id: The UI-generated session identifier sent to the agent.
+        session_id: The AgentCore runtime session id sent to the agent. Minted by
+            the backend on a conversation's first turn and echoed by the client
+            afterwards; distinct from ``chat_session_id``, the internal row key.
         chat_session_id: Primary key of the owning ``chat_sessions`` row.
         user_id: The invoking user id, persisted with token usage.
+        username: The invoking user's username, sent to the agent as
+            ``user_id`` in the invocation payload.
         attachments: Attachment metadata dicts to persist with the user message.
 
     Yields:
@@ -421,7 +426,7 @@ async def stream_turn(
     error_occurred = False
     seen_error_texts: list[str] = []
 
-    events = client.invoke(prompt, session_id=session_id)
+    events = client.invoke(prompt, session_id=session_id, user_id=username)
     aiter = events.__aiter__()
     # Uses asyncio.wait (not wait_for) so the in-flight pull is never cancelled
     # on heartbeat timeout — a slow model keeps the upstream connection alive.
