@@ -1,6 +1,7 @@
 """Admin view for the ChatMessage model."""
 
 import json
+from collections.abc import Sequence
 from typing import Any, ClassVar
 
 from fastapi import Request
@@ -77,14 +78,14 @@ class ChatMessageAdmin(BaseModelView, model=ChatMessage):
     can_edit = False
     can_delete = False
 
-    column_list: ClassVar[list[Any]] = [
+    column_list: ClassVar[Sequence[Any]] = [
         ChatMessage.role,
         ChatMessage.is_success,
         ChatMessage.seq,
         ChatMessage.chat_session,
         ChatMessage.created_at,
     ]
-    column_details_list: ClassVar[list[Any]] = [
+    column_details_list: ClassVar[Sequence[Any]] = [
         ChatMessage.id,
         ChatMessage.chat_session,
         ChatMessage.role,
@@ -97,8 +98,8 @@ class ChatMessageAdmin(BaseModelView, model=ChatMessage):
 
     # Needs at least one entry so sqladmin renders the search bar.
     # Actual search logic is in search_query — this list is not used for querying.
-    column_searchable_list: ClassVar[list[Any]] = [ChatMessage.id]
-    column_default_sort: ClassVar[list[Any]] = [(ChatMessage.created_at, True)]
+    column_searchable_list: ClassVar[Sequence[Any]] = [ChatMessage.id]
+    column_default_sort: ClassVar[Any] = [(ChatMessage.created_at, True)]
 
     column_formatters: ClassVar[dict[Any, Any]] = {ChatMessage.role: _format_role}
     column_formatters_detail: ClassVar[dict[Any, Any]] = {

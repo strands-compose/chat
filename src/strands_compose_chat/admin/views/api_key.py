@@ -1,5 +1,6 @@
 """Admin view for the ApiKey model."""
 
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any, ClassVar
 
@@ -41,7 +42,7 @@ class ApiKeyAdmin(BaseModelView, model=ApiKey):
     name_plural = "API Keys"
     icon = "fa-solid fa-key"
 
-    column_list: ClassVar[list[Any]] = [
+    column_list: ClassVar[Sequence[Any]] = [
         ApiKey.name,
         ApiKey.user,
         ApiKey.created_at,
@@ -49,7 +50,7 @@ class ApiKeyAdmin(BaseModelView, model=ApiKey):
         ApiKey.last_used_at,
         ApiKey.revoked_at,
     ]
-    column_details_list: ClassVar[list[Any]] = [
+    column_details_list: ClassVar[Sequence[Any]] = [
         ApiKey.name,
         ApiKey.user,
         ApiKey.key_prefix,
@@ -58,14 +59,14 @@ class ApiKeyAdmin(BaseModelView, model=ApiKey):
         ApiKey.last_used_at,
         ApiKey.revoked_at,
     ]
-    form_columns: ClassVar[list[Any]] = [
+    form_columns: ClassVar[Sequence[Any]] = [
         ApiKey.name,
         ApiKey.user,
         ApiKey.expires_at,
     ]
 
-    column_searchable_list: ClassVar[list[Any]] = [ApiKey.name, ApiKey.key_prefix]
-    column_default_sort: ClassVar[list[Any]] = [(ApiKey.created_at, True)]
+    column_searchable_list: ClassVar[Sequence[Any]] = [ApiKey.name, ApiKey.key_prefix]
+    column_default_sort: ClassVar[Any] = [(ApiKey.created_at, True)]
 
     form_args: ClassVar[dict[str, Any]] = {
         "user": {

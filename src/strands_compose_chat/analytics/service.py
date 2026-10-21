@@ -269,7 +269,7 @@ async def get_daily_buckets(
     from_dt = datetime.combine(from_date, time.min, tzinfo=UTC)
     to_dt = datetime.combine(to_date + timedelta(days=1), time.min, tzinfo=UTC)
 
-    dialect_name = db.bind.dialect.name
+    dialect_name = db.get_bind().dialect.name
 
     if metric in (Metric.cost, Metric.tokens):
         stmt = _build_cost_tokens_stmt(from_dt, to_dt, metric, dimension, filters, dialect_name)
@@ -293,7 +293,7 @@ def _build_cost_tokens_stmt(
     dimension: Dimension,
     filters: FiltersIn | None,
     dialect_name: str,
-) -> Select[tuple[Any, ...]]:
+) -> Select:
     """Build the SELECT statement for cost/tokens metrics with dimension joins.
 
     Args:
@@ -341,7 +341,7 @@ def _build_hits_stmt(
     dimension: Dimension,
     filters: FiltersIn | None,
     dialect_name: str,
-) -> Select[tuple[Any, ...]]:
+) -> Select:
     """Build the SELECT statement for hits metric with dimension joins.
 
     Args:
@@ -397,8 +397,8 @@ def _get_dim_col(dimension: Dimension) -> ColumnElement[Any]:
 
 
 def _apply_dimension_joins(
-    stmt: Select[tuple[Any, ...]], dimension: Dimension, session_cls: type[ChatSession]
-) -> Select[tuple[Any, ...]]:
+    stmt: Select, dimension: Dimension, session_cls: type[ChatSession]
+) -> Select:
     """Apply dimension-specific JOIN clauses to the statement.
 
     Args:
@@ -437,9 +437,7 @@ def _filters_need_session_join(filters: FiltersIn | None) -> bool:
     return bool(filters.user_ids or filters.agent_ids or filters.group_ids)
 
 
-def _apply_filters(
-    stmt: Select[tuple[Any, ...]], filters: FiltersIn | None
-) -> Select[tuple[Any, ...]]:
+def _apply_filters(stmt: Select, filters: FiltersIn | None) -> Select:
     """Apply filter WHERE clauses to the statement.
 
     Args:
@@ -1027,11 +1025,11 @@ def _get_dim_col_aliased(dimension: Dimension, alias: str) -> ColumnElement[Any]
 
 
 def _apply_both_dimension_joins(
-    stmt: Select[tuple[Any, ...]],
+    stmt: Select,
     category_dim: Dimension,
     stack_by_dim: Dimension,
     session_cls: type[ChatSession],
-) -> Select[tuple[Any, ...]]:
+) -> Select:
     """Apply joins for both category and stack_by dimensions, avoiding duplicates.
 
     Args:
@@ -1069,7 +1067,7 @@ def _build_cross_tab_cost_tokens(
     category_dim: Dimension,
     stack_by_dim: Dimension,
     filters: FiltersIn | None,
-) -> Select[tuple[Any, ...]]:
+) -> Select:
     """Build SELECT for cross-tab cost/tokens grouped by category and stack_by.
 
     Args:
@@ -1110,7 +1108,7 @@ def _build_cross_tab_hits(
     category_dim: Dimension,
     stack_by_dim: Dimension,
     filters: FiltersIn | None,
-) -> Select[tuple[Any, ...]]:
+) -> Select:
     """Build SELECT for cross-tab hits grouped by category and stack_by.
 
     Args:
@@ -1370,7 +1368,7 @@ async def _get_daily_user_usage(
     from_dt = datetime.combine(from_date, time.min, tzinfo=UTC)
     to_dt = datetime.combine(to_date + timedelta(days=1), time.min, tzinfo=UTC)
 
-    day_col = _day_bucket(TokenUsage.created_at, db.bind.dialect.name).label("day")
+    day_col = _day_bucket(TokenUsage.created_at, db.get_bind().dialect.name).label("day")
     stmt = (
         select(
             day_col,
