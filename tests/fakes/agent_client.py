@@ -59,9 +59,13 @@ class FakeAgentClient:
         self.aclose_called: bool = False
         self.close_called: bool = False
         self.stop_session_calls: list[str] = []
+        self.invoke_user_ids: list[str | None] = []
 
-    async def invoke(self, prompt: Any, *, session_id: str) -> AsyncIterator[StreamEvent]:  # type: ignore[override]
+    async def invoke(
+        self, prompt: Any, *, session_id: str, user_id: str | None = None
+    ) -> AsyncIterator[StreamEvent]:  # type: ignore[override]
         """Yield the scripted events, honouring gates and ``raise_after``."""
+        self.invoke_user_ids.append(user_id)
         for i, event in enumerate(self._events):
             if self._raise_after is not None and i >= self._raise_after:
                 raise RuntimeError(

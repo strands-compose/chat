@@ -1,6 +1,7 @@
 """Admin view for the Agent model."""
 
 import re
+from collections.abc import Sequence
 from typing import Any, ClassVar
 from urllib.parse import urlparse
 
@@ -99,7 +100,7 @@ class AgentAdmin(BaseModelView, model=Agent):
     name_plural = "Agents"
     icon = "fa-solid fa-robot"
 
-    column_list: ClassVar[list[Any]] = [
+    column_list: ClassVar[Sequence[Any]] = [
         Agent.name,
         Agent.description,
         Agent.access_groups,
@@ -109,7 +110,7 @@ class AgentAdmin(BaseModelView, model=Agent):
         Agent.created_at,
         Agent.updated_at,
     ]
-    column_details_list: ClassVar[list[Any]] = [
+    column_details_list: ClassVar[Sequence[Any]] = [
         Agent.name,
         Agent.description,
         Agent.access_groups,
@@ -123,7 +124,7 @@ class AgentAdmin(BaseModelView, model=Agent):
         Agent.created_at,
         Agent.updated_at,
     ]
-    form_columns: ClassVar[list[Any]] = [
+    form_columns: ClassVar[Sequence[Any]] = [
         Agent.name,
         Agent.description,
         Agent.access_groups,
@@ -136,8 +137,8 @@ class AgentAdmin(BaseModelView, model=Agent):
         Agent.suggested_questions,
     ]
 
-    column_searchable_list: ClassVar[list[Any]] = [Agent.name, Agent.id]
-    column_default_sort: ClassVar[list[Any]] = [(Agent.name, False)]
+    column_searchable_list: ClassVar[Sequence[Any]] = [Agent.name, Agent.id]
+    column_default_sort: ClassVar[Any] = [(Agent.name, False)]
 
     form_defaults: ClassVar[dict[str, Any]] = {"enabled": True, "multimodal": False}
 

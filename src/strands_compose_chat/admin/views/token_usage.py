@@ -1,5 +1,6 @@
 """Admin view for the TokenUsage model."""
 
+from collections.abc import Sequence
 from typing import Any, ClassVar
 
 import structlog
@@ -38,7 +39,7 @@ class TokenUsageAdmin(BaseModelView, model=TokenUsage):
     can_edit = False
     can_delete = False
 
-    column_list: ClassVar[list[Any]] = [
+    column_list: ClassVar[Sequence[Any]] = [
         TokenUsage.agent_name,
         TokenUsage.chat_session,
         TokenUsage.cost,
@@ -48,7 +49,7 @@ class TokenUsageAdmin(BaseModelView, model=TokenUsage):
         TokenUsage.provider,
         TokenUsage.created_at,
     ]
-    column_details_list: ClassVar[list[Any]] = [
+    column_details_list: ClassVar[Sequence[Any]] = [
         TokenUsage.chat_session,
         TokenUsage.agent_name,
         TokenUsage.model_id,
@@ -61,8 +62,8 @@ class TokenUsageAdmin(BaseModelView, model=TokenUsage):
 
     # Needs at least one entry so sqladmin renders the search bar.
     # Actual search logic is in search_query — this list is not used for querying.
-    column_searchable_list: ClassVar[list[Any]] = [TokenUsage.agent_name]
-    column_default_sort: ClassVar[list[Any]] = [(TokenUsage.created_at, True)]
+    column_searchable_list: ClassVar[Sequence[Any]] = [TokenUsage.agent_name]
+    column_default_sort: ClassVar[Any] = [(TokenUsage.created_at, True)]
 
     def search_placeholder(self) -> str:  # type: ignore[override]
         """Return a human-readable placeholder describing what can be searched."""
