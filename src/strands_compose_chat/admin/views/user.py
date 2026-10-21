@@ -1,5 +1,6 @@
 """Admin view for the User model."""
 
+from collections.abc import Sequence
 from typing import Any, ClassVar
 
 import structlog
@@ -52,7 +53,7 @@ class UserAdmin(BaseModelView, model=User):
     # data with the "Anonymize user" action below.
     can_delete = False
 
-    column_list: ClassVar[list[Any]] = [
+    column_list: ClassVar[Sequence[Any]] = [
         User.username,
         User.first_name,
         User.last_name,
@@ -62,7 +63,7 @@ class UserAdmin(BaseModelView, model=User):
         User.is_superuser,
         User.auth_provider,
     ]
-    column_details_list: ClassVar[list[Any]] = [
+    column_details_list: ClassVar[Sequence[Any]] = [
         User.username,
         User.first_name,
         User.last_name,
@@ -79,7 +80,7 @@ class UserAdmin(BaseModelView, model=User):
         User.created_at,
         User.updated_at,
     ]
-    form_columns: ClassVar[list[Any]] = [
+    form_columns: ClassVar[Sequence[Any]] = [
         User.username,
         User.email,
         User.auth_provider,
@@ -139,13 +140,13 @@ class UserAdmin(BaseModelView, model=User):
         },
     }
 
-    column_searchable_list: ClassVar[list[Any]] = [
+    column_searchable_list: ClassVar[Sequence[Any]] = [
         User.username,
         User.email,
         User.first_name,
         User.last_name,
     ]
-    column_default_sort: ClassVar[list[Any]] = [(User.created_at, True)]
+    column_default_sort: ClassVar[Any] = [(User.created_at, True)]
 
     # groups renders as badge list via BaseModelView.get_list_value / get_detail_value
     _badge_relation_props: ClassVar[dict[str, str]] = {"groups": "#d79750"}
