@@ -1,23 +1,36 @@
 import { useState, useCallback, memo } from 'react';
 import type { ReactElement } from 'react';
-import { FiCopy, FiCheck, FiArrowUp, FiUser, FiActivity } from 'react-icons/fi';
-import { LuBotMessageSquare } from 'react-icons/lu';
+import {
+  LuBot,
+  LuChevronDown,
+  LuCircleAlert,
+  LuCopy,
+  LuCheck,
+  LuFileText,
+  LuImage,
+  LuRefreshCw,
+  LuUser,
+  LuWorkflow,
+} from 'react-icons/lu';
 import { useChatStore } from '@/store';
 import { useContentReveal } from '@/hooks';
-import { Markdown, IconButton } from '@/components';
+import { Avatar, Markdown, IconButton } from '@/components';
 import { useCollapseContext } from '@/contexts';
 import { cn } from '@/services/utils';
 import { formatFileSize } from '@/services';
+import { selectLiveActivity } from './live-activity';
+import type { LiveActivity } from './live-activity';
 import styles from './Message.module.css';
 
-/** Three-dot typing indicator — only used here. */
-const TypingIndicator = memo((): ReactElement => (
-  <span className={styles.typingIndicator}>
-    <span className={styles.dot}></span>
-    <span className={styles.dot}></span>
-    <span className={styles.dot}></span>
-  </span>
-));
+// ======================
+// HELPERS
+// ======================
+
+/** First non-empty line of a markdown answer, stripped of markdown markers. */
+const previewLine = (content: string): string => {
+  const line = content.split('\n').find((l) => l.replace(/[-#*_`>|\s]/g, '') !== '') ?? '';
+  return line.replace(/[#*_`>|]/g, '').trim();
+};
 
 interface ChatMessageProps {
   messageId: string;
@@ -43,6 +56,10 @@ const ChatMessageComponent = ({
   // Seq of the turn that just completed this session — drives the one-shot
   // content reveal (fresh answer animates; restored history renders instantly).
   const lastCompletedSeq = useChatStore((s) => s.lastCompletedSeq);
+  // Live trace — only read by the streaming message for its activity hint.
+  const liveItems = useChatStore((s) =>
+    s.messages[messageId]?.isStreaming ? s.activeWorkflowItems : null,
+  );
 
   // Stable store actions — never change identity
   const copyMessage = useChatStore((s) => s.copyMessage);
@@ -100,22 +117,36 @@ const ChatMessageComponent = ({
   // Guard: message might have been removed (e.g. during regeneration)
   if (!message) return null;
 
+  const collapseTitle = collapsed ? 'Expand message' : 'Collapse message';
+
   // ======================
   // RENDER FUNCTIONS
   // ======================
+  const renderCopyButton = (): ReactElement => (
+    <IconButton onClick={handleCopy} title="Copy message">
+      {copiedMsg ? <LuCheck size={15} /> : <LuCopy size={15} />}
+    </IconButton>
+  );
+
   const renderAttachments = (): ReactElement | null => {
-    if (!isUser) return null;
     const visible = (message.attachments ?? []).filter((a) => a.size > 0);
     if (visible.length === 0) return null;
 
     return (
       <div className={styles.attachments}>
-        <span className={styles.attachmentsLabel}>Attachments:</span>
         {visible.map((attachment, index) => {
-          const label = attachment.type === 'document' ? 'Document' : 'Image';
+          const isImage = attachment.type === 'image';
           return (
-            <span key={`${attachment.filename}-${index}`}>
-              {label}: {attachment.filename} ({formatFileSize(attachment.size)})
+            <span key={`${attachment.filename}-${index}`} className={styles.fileChip}>
+              <span className={cn(styles.fileIcon, isImage ? styles.fileIconImage : styles.fileIconDoc)}>
+                {isImage ? <LuImage size={16} /> : <LuFileText size={16} />}
+              </span>
+              <span className={styles.fileMeta}>
+                <span className={styles.fileName}>{attachment.filename}</span>
+                <span className={styles.fileSize}>
+                  {isImage ? 'Image' : 'Document'} · {formatFileSize(attachment.size)}
+                </span>
+              </span>
             </span>
           );
         })}
@@ -124,11 +155,12 @@ const ChatMessageComponent = ({
   };
 
   /**
-   * Workflow button — assistant only. Shown while the turn streams (reopens the
-   * live panel) and afterwards when a stored trace exists for this turn.
+   * Workflow pill — assistant only, pinned top-right of the reply in every
+   * state (open, collapsed, streaming) so a closed panel can always be
+   * reopened. Shown while the turn streams and afterwards when a stored
+   * trace exists for this turn.
    */
   const renderWorkflowButton = (): ReactElement | null => {
-    if (message.role !== 'assistant') return null;
     const seq = message.seq;
     const hasTrace = seq != null && (workflowTraces[seq]?.length ?? 0) > 0;
     if (!hasTrace && !message.isStreaming) return null;
@@ -144,126 +176,127 @@ const ChatMessageComponent = ({
         : 'Show workflow in panel';
     return (
       <button
-        className={cn(styles.showWorkflowButton, isActive && styles.showWorkflowButtonActive)}
+        className={cn(styles.workflowButton, isActive && styles.workflowButtonActive)}
         onClick={handleShowWorkflow}
         type="button"
         disabled={disabled}
         title={title}
       >
-        <FiActivity size={13} />
+        <LuWorkflow size={15} />
         <span>Workflow</span>
+        {message.isStreaming && <span className={styles.liveDot} />}
       </button>
     );
   };
 
-  /**
-   * Top-right header actions bar — copy, resend, and (assistant-only) workflow.
-   * While streaming, only the workflow toggle shows (copy/resend act on final
-   * content); otherwise it's hidden until the content-reveal settles.
-   */
-  const renderHeaderActions = (): ReactElement | null => {
-    if (collapsed) return null;
+  const renderLiveActivity = (activity: LiveActivity | null): ReactElement | null => {
+    if (!activity) return null;
+    return (
+      <div className={styles.activity}>
+        <span className={styles.activityChip}>
+          <LuBot size={14} />
+          {activity.agentLabel}
+        </span>
+        <span>{activity.detail}</span>
+      </div>
+    );
+  };
 
-    if (message.isStreaming) {
-      const workflowButton = renderWorkflowButton();
-      if (!workflowButton) return null;
-      return <div className={styles.headerActions}>{workflowButton}</div>;
+  const renderThinking = (): ReactElement => (
+    <div className={styles.thinking}>
+      <span className={styles.shimmer}>Working on it…</span>
+      {renderLiveActivity(liveItems ? selectLiveActivity(liveItems) : null)}
+    </div>
+  );
+
+  const renderAssistantContent = (): ReactElement => {
+    if (!displayedContent && message.isStreaming) return renderThinking();
+
+    const markdown = displayedContent ? <Markdown>{displayedContent}</Markdown> : null;
+    if (message.isSuccess === false) {
+      return (
+        <div className={styles.error}>
+          <LuCircleAlert size={18} className={styles.errorIcon} />
+          <div className={styles.errorBody}>{markdown}</div>
+        </div>
+      );
     }
-
-    if (isRevealing) return null;
-
     return (
-      <div className={styles.headerActions}>
-        <IconButton size="sm" onClick={handleCopy} title="Copy message">
-          {copiedMsg ? <FiCheck size={14} /> : <FiCopy size={14} />}
-        </IconButton>
-        {isUser && (
-          <IconButton size="sm" onClick={handleResend} title="Resend message">
-            <FiArrowUp size={14} />
-          </IconButton>
-        )}
-        {renderWorkflowButton()}
-      </div>
+      <div className={cn(styles.content, isRevealing && styles.revealing)}>{markdown}</div>
     );
   };
 
-  const renderMessageContent = (): ReactElement => {
-    const contentClasses = cn(
-      styles.content,
-      message.isSuccess === false && styles.error,
-      !message.content && message.isStreaming && styles.loading,
-      isRevealing && styles.revealing,
-    );
-
-    return (
-      <div className={contentClasses}>
-        {displayedContent ? (
-          <Markdown>{displayedContent}</Markdown>
-        ) : message.isStreaming ? (
-          <TypingIndicator />
-        ) : (
-          ''
-        )}
-      </div>
-    );
-  };
+  const renderCollapsedPreview = (): ReactElement => (
+    <button type="button" className={styles.collapsedRow} onClick={handleToggleCollapse} title="Expand message">
+      <span className={styles.collapsedText}>
+        {previewLine(message.content) || (message.isStreaming ? 'Working on it…' : '')}
+      </span>
+      <LuChevronDown size={16} className={styles.collapsedChevron} />
+    </button>
+  );
 
   const renderUserMessage = (): ReactElement => (
-    <div className={styles.message}>
-      <button
-        type="button"
-        className={cn(styles.avatar, styles.userAvatar)}
-        onClick={handleToggleCollapse}
-        title={collapsed ? 'Expand message' : 'Collapse message'}
-        aria-label={collapsed ? 'Expand message' : 'Collapse message'}
-        aria-expanded={!collapsed}
-      >
-        <FiUser size={16} />
-      </button>
-      <div className={styles.contentSection}>
-        <div className={styles.senderLabel}>You</div>
-        {renderHeaderActions()}
-        {!collapsed && (
-          <>
-            <div className={cn(styles.content, styles.userContent)}>
-              {message.content}
-            </div>
-            {renderAttachments()}
-          </>
+    <div className={styles.userMessage}>
+      <div className={styles.userStack}>
+        <div className={styles.userBlock}>
+        <div className={styles.userHead}>
+          <div className={styles.userActions}>
+            {renderCopyButton()}
+            <IconButton onClick={handleResend} title="Resend message">
+              <LuRefreshCw size={15} />
+            </IconButton>
+          </div>
+          <span className={styles.senderLabel}>You</span>
+        </div>
+        {renderAttachments()}
+        {collapsed ? (
+          <button type="button" className={cn(styles.bubble, styles.bubbleCollapsed)} onClick={handleToggleCollapse} title="Expand message">
+            <span className={styles.collapsedText}>{message.content}</span>
+            <LuChevronDown size={16} className={styles.collapsedChevron} />
+          </button>
+        ) : (
+          <div className={styles.bubble}>{message.content}</div>
         )}
+        </div>
       </div>
+      <Avatar
+        icon={<LuUser size={17} />}
+        tone="neutral"
+        onClick={handleToggleCollapse}
+        title={collapseTitle}
+        ariaLabel={collapseTitle}
+        ariaExpanded={!collapsed}
+      />
     </div>
   );
 
-  const renderAssistantMessage = (): ReactElement => (
-    <div className={styles.message}>
-      <button
-        type="button"
-        className={cn(styles.avatar, styles.assistantAvatar)}
-        onClick={handleToggleCollapse}
-        title={collapsed ? 'Expand message' : 'Collapse message'}
-        aria-label={collapsed ? 'Expand message' : 'Collapse message'}
-        aria-expanded={!collapsed}
-      >
-        <LuBotMessageSquare size={16} />
-      </button>
-      <div className={styles.contentSection}>
-        <div className={styles.senderLabel}>Assistant</div>
-        {renderHeaderActions()}
-        {!collapsed && (
-          <>
-            {renderMessageContent()}
-          </>
-        )}
+  const renderAssistantMessage = (): ReactElement => {
+    const showCopy = !message.isStreaming && !isRevealing && !!message.content;
+    return (
+      <div className={styles.assistantMessage}>
+        <Avatar
+          icon={<LuBot size={17} />}
+          tone="accent"
+          spinning={!!message.isStreaming}
+          onClick={handleToggleCollapse}
+          title={collapseTitle}
+          ariaLabel={collapseTitle}
+          ariaExpanded={!collapsed}
+        />
+        <div className={styles.assistantBody}>
+          <div className={styles.assistantHead}>
+            <span className={styles.senderLabel}>Assistant</span>
+            <span className={styles.grow} />
+            {showCopy && renderCopyButton()}
+            {renderWorkflowButton()}
+          </div>
+          {collapsed ? renderCollapsedPreview() : renderAssistantContent()}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  if (isUser) {
-    return renderUserMessage();
-  }
-
-  return renderAssistantMessage();
+  return isUser ? renderUserMessage() : renderAssistantMessage();
 };
 
 export const ChatMessage = memo(ChatMessageComponent);

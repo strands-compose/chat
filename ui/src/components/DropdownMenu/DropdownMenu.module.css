@@ -2,24 +2,26 @@
 .content {
   min-width: 220px;
   background: var(--sc-bg-primary);
-  border: 1px solid var(--sc-border-primary);
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: 16px;
+  box-shadow: var(--sc-shadow-3);
   z-index: 200;
   overflow: hidden;
-  padding: 4px 0;
+  padding: 6px;
+  color: var(--sc-text-primary);
   animation: dropIn 0.12s ease-out;
 }
 
 [data-theme="dark"] .content {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  background: var(--sc-bg-tertiary);
 }
 
 .item {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 12px;
+  padding: 9px 12px;
+  border-radius: var(--sc-radius-sm);
   cursor: pointer;
   outline: none;
   transition: background 0.1s;
@@ -27,29 +29,35 @@
 
 .item:hover,
 .item[data-highlighted] {
-  background: var(--sc-bg-secondary);
+  background: var(--sc-bg-hover);
 }
 
 .item[data-state='checked'] {
-  background: var(--sc-bg-tertiary);
+  background: var(--sc-bg-hover);
+  font-weight: 500;
+}
+
+.item[data-disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* ====== SEPARATOR ====== */
 .separator {
   height: 1px;
   background: var(--sc-border-secondary);
-  margin: 4px 0;
+  margin: 6px 4px;
 }
 
 /* ====== DANGER ITEM ====== */
 .itemDanger {
-  color: #d93025;
+  color: var(--sc-status-danger);
 }
 
 .itemDanger:hover,
 .itemDanger[data-highlighted] {
-  background: rgba(217, 48, 37, 0.08);
-  color: #d93025;
+  background: var(--sc-status-danger-soft);
+  color: var(--sc-status-danger);
 }
 
 @keyframes dropIn {

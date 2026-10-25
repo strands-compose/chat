@@ -32,8 +32,8 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--aws-orange);
-  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.15);
+  border-color: var(--sc-accent);
+  box-shadow: 0 0 0 3px var(--sc-accent-soft);
 }
 
 .input:disabled {
@@ -43,15 +43,15 @@
 
 /* ====== INVALID ====== */
 .invalid {
-  border-color: #d93025;
+  border-color: var(--sc-status-danger);
 }
 
 .invalid:focus {
-  border-color: #d93025;
-  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.15);
+  border-color: var(--sc-status-danger);
+  box-shadow: 0 0 0 3px var(--sc-status-danger-soft);
 }
 
 .error {
   font-size: 0.78rem;
-  color: #d93025;
+  color: var(--sc-status-danger);
 }

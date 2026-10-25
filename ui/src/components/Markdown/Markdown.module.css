@@ -1,48 +1,44 @@
 /* ====== CODE BLOCK WITH HEADER ====== */
 .codeBlockWrapper {
-  border: 1px solid var(--sc-border-primary);
-  border-radius: 6px;
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: var(--sc-radius-md);
   overflow: hidden;
-  margin: 8px 0;
-  font-size: 0.82rem;
+  margin: 6px 0 18px;
+  background: var(--sc-code-bg);
 }
 
 .codeBlockHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 10px;
-  background: var(--sc-bg-secondary);
-  border-bottom: 1px solid var(--sc-border-primary);
+  height: 38px;
+  padding: 0 6px 0 16px;
+  background: var(--sc-code-head);
   user-select: none;
 }
 
 .codeBlockLang {
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--sc-text-tertiary);
-  letter-spacing: 0.06em;
-  font-size: 0.68rem;
-  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--sc-text-secondary);
 }
 
 .codeBlockCopy {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   background: none;
   border: none;
-  color: var(--sc-text-tertiary);
+  border-radius: 8px;
+  color: var(--sc-text-secondary);
   cursor: pointer;
-  font-size: 0.72rem;
-  padding: 2px 6px;
-  border-radius: 3px;
   transition: background 0.15s, color 0.15s;
-  font-family: inherit;
 }
 
 .codeBlockCopy:hover {
-  background: var(--sc-bg-tertiary);
+  background: var(--sc-bg-hover);
   color: var(--sc-text-primary);
 }
 
@@ -53,16 +49,16 @@
   border: none !important;
 }
 
-/* Fallback pre while highlighter lazy-loads */
+/* Code body (plain and highlighted) */
 .codeBlockFallback {
   margin: 0;
-  padding: 10px 14px;
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
-  font-size: 0.8rem;
-  line-height: 1.55;
+  padding: 14px 18px 16px;
+  font-family: var(--sc-font-mono);
+  font-size: 12.5px;
+  line-height: 1.62;
   white-space: pre;
   overflow-x: auto;
-  background: var(--sc-bg-secondary);
+  background: var(--sc-code-bg);
   color: var(--sc-text-primary);
 }
 
@@ -157,124 +153,150 @@
    panel) gets identical styling without importing another view's stylesheet. */
 .markdownBody {
   color: var(--sc-text-primary);
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.7;
   white-space: unset !important;
   max-width: 100%;
 }
 
-.markdownBody ol,
-.markdownBody ul {
-  margin: 0;
-  margin-top: 12px;
-  padding-left: 24px;
+.markdownBody > *:first-child {
+  margin-top: 0;
 }
 
-.markdownBody ol li,
-.markdownBody ul li {
-  margin: 0;
-  margin-bottom: 8px;
+.markdownBody > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdownBody p {
+  margin: 0 0 14px;
+}
+
+.markdownBody ol,
+.markdownBody ul {
+  margin: 0 0 14px;
+  padding-left: 26px;
+  list-style-position: outside;
+}
+
+.markdownBody li {
+  margin: 0 0 6px;
+  padding-left: 4px;
+}
+
+.markdownBody li::marker {
+  color: var(--sc-text-tertiary);
 }
 
 .markdownBody li p {
-  margin: 0;
-  margin-bottom: 6px;
-  line-height: 1.6;
+  margin: 0 0 6px;
 }
 
 .markdownBody li p:last-child {
-  margin-bottom: 12px;
-}
-
-.markdownBody li p br {
-  content: "";
-  display: block;
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 .markdownBody strong {
   font-weight: 600;
 }
 
+/* ====== TABLES ====== */
+.tableWrap {
+  margin: 6px 0 18px;
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: var(--sc-radius-md);
+  overflow-x: auto;
+}
+
 .markdownBody table {
   border-collapse: collapse;
   width: 100%;
-  margin: 12px 0;
-  font-size: 0.9em;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .markdownBody table th,
 .markdownBody table td {
-  border: 1px solid var(--sc-border-primary);
-  padding: 8px 12px;
+  padding: 11px 14px;
   text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--sc-border-secondary);
 }
 
 .markdownBody table th {
+  padding-top: 10px;
+  padding-bottom: 10px;
   background-color: var(--sc-bg-secondary);
-  font-weight: 600;
+  color: var(--sc-text-secondary);
+  font-weight: 500;
 }
 
-.markdownBody table tr:nth-child(even) {
-  background-color: var(--sc-bg-secondary);
+.markdownBody table tr:last-child td {
+  border-bottom: 0;
 }
 
+/* ====== INLINE ====== */
 .markdownBody code {
+  font-family: var(--sc-font-mono);
+  font-size: 0.86em;
   background-color: var(--sc-bg-tertiary);
+  color: var(--sc-text-primary);
   padding: 2px 6px;
-  border-radius: 2px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9em;
+  border-radius: 6px;
 }
 
-[data-theme="dark"] .markdownBody code {
-  background-color: rgba(255, 255, 255, 0.09);
-  color: #d4d4d4;
-}
-
-.markdownBody p {
-  margin: 0 !important;
+.markdownBody a {
+  color: var(--sc-link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--sc-link) 40%, transparent);
+  text-underline-offset: 3px;
 }
 
 .markdownBody hr {
-  border: 1px solid #e2e2e2;
-  margin: 12px 0px;
+  border: 0;
+  height: 1px;
+  background: var(--sc-border-secondary);
+  margin: 22px 0;
 }
 
-/* ====== HEADING SIZE OVERRIDES ====== */
+/* ====== HEADINGS ====== */
+.markdownBody h1,
+.markdownBody h2,
+.markdownBody h3,
+.markdownBody h4,
+.markdownBody h5,
+.markdownBody h6 {
+  color: var(--sc-text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
 .markdownBody h1 {
-  font-size: 1.4rem;
-  margin: 16px 0 8px;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 26px 0 10px;
 }
 
 .markdownBody h2 {
-  font-size: 1.15rem;
-  margin: 14px 0 6px;
+  font-size: 19px;
+  font-weight: 500;
+  margin: 26px 0 10px;
 }
 
 .markdownBody h3 {
-  font-size: 1rem;
-  margin: 12px 0 4px;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 22px 0 8px;
 }
 
 .markdownBody h4 {
-  font-size: 0.92rem;
-  margin: 10px 0 4px;
+  font-size: 14.5px;
+  font-weight: 600;
+  margin: 18px 0 6px;
 }
 
-.markdownBody h5 {
-  font-size: 0.85rem;
-  margin: 8px 0 4px;
-}
-
+.markdownBody h5,
 .markdownBody h6 {
-  font-size: 0.8rem;
-  margin: 8px 0 4px;
-}
-
-.markdownBody ol {
-  list-style-position: outside;
-}
-
-.markdownBody ul {
-  list-style-position: outside;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin: 14px 0 6px;
 }

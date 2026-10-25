@@ -1,14 +1,17 @@
 /**
- * Collapsible left sidebar — Gemini/OpenAI style.
+ * Collapsible left sidebar: app title, new chat, session history, and the
+ * user card (budget + user menu) at the bottom.
  */
 
 import type { ReactElement } from 'react';
 import { memo, useEffect, useState } from 'react';
-import { FiEdit, FiTrash2, FiChevronsLeft, FiChevronsRight } from 'react-icons/fi';
+import { LuPanelLeftClose, LuPanelLeftOpen, LuPencil, LuSquarePen, LuTrash2 } from 'react-icons/lu';
 import { useChatStore } from '@/store';
+import { useAppConfig } from '@/contexts';
 import { cn, isMobileViewport } from '@/services/utils';
 import type { Session } from '@/services/api';
 import { IconButton, ConfirmDialog, RenameSessionDialog } from '@/components';
+import { SidebarUserCard } from './SidebarUserCard';
 import styles from './Sidebar.module.css';
 
 // ====== TIME BUCKET HELPERS ======
@@ -34,30 +37,6 @@ function groupSessions(sessions: Session[]): Array<{ label: Bucket; items: Sessi
 
 // ====== SUB-COMPONENTS ======
 
-interface NavButtonProps {
-  onClick?: () => void;
-  label: string;
-  title: string;
-  children: ReactElement;
-  disabled?: boolean;
-}
-
-const NavButton = ({ onClick, label, title, children, disabled = false }: NavButtonProps): ReactElement => (
-  <div className={styles.navItem}>
-    <button
-      className={styles.navBtn}
-      onClick={onClick}
-      type="button"
-      title={title}
-      aria-label={title}
-      disabled={disabled}
-    >
-      <span className={styles.navBtnIcon}>{children}</span>
-      <span className={styles.navBtnLabel}>{label}</span>
-    </button>
-  </div>
-);
-
 interface HistoryGroupProps {
   label: Bucket;
   items: Session[];
@@ -78,9 +57,12 @@ const HistoryGroup = ({
   <div className={styles.historyGroup}>
     <div className={styles.historyGroupLabel}>{label}</div>
     {items.map((s) => (
-      <div key={s.session_id} className={styles.historyRow}>
+      <div
+        key={s.session_id}
+        className={cn(styles.historyRow, s.session_id === activeSessionId && styles.historyRowActive)}
+      >
         <button
-          className={cn(styles.historyItem, s.session_id === activeSessionId && styles.historyItemActive)}
+          className={styles.historyItem}
           type="button"
           title={s.title ?? s.session_id}
           onClick={() => onSelect(s.session_id)}
@@ -97,7 +79,7 @@ const HistoryGroup = ({
               onRenameClick(s.session_id, s.title ?? s.session_id);
             }}
           >
-            <FiEdit size={15} />
+            <LuPencil size={15} />
           </IconButton>
           <IconButton
             size="sm"
@@ -108,7 +90,7 @@ const HistoryGroup = ({
               onDeleteClick(s.session_id);
             }}
           >
-            <FiTrash2 size={15} />
+            <LuTrash2 size={15} />
           </IconButton>
         </div>
       </div>
@@ -127,6 +109,7 @@ const SidebarComponent = (): ReactElement => {
   const [renameTarget, setRenameTarget] = useState<{ sessionId: string; title: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
+  const { title } = useAppConfig();
   const clearChat = useChatStore((s) => s.clearChat);
   const restoreSession = useChatStore((s) => s.restoreSession);
   const guardInterrupt = useChatStore((s) => s.guardInterrupt);
@@ -172,6 +155,33 @@ const SidebarComponent = (): ReactElement => {
   // ======================
   // RENDER FUNCTIONS
   // ======================
+  const renderHead = (): ReactElement => (
+    <div className={styles.head}>
+      {expanded && <span className={styles.title}>{title ?? 'Strands Compose'}</span>}
+      <IconButton
+        size="lg"
+        onClick={toggleSidebar}
+        title={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+        aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+      >
+        {expanded ? <LuPanelLeftClose size={18} /> : <LuPanelLeftOpen size={18} />}
+      </IconButton>
+    </div>
+  );
+
+  const renderNewChat = (): ReactElement => (
+    <button
+      className={styles.newChat}
+      onClick={handleNewChat}
+      type="button"
+      title="New chat"
+      aria-label="New chat"
+    >
+      <LuSquarePen size={18} className={styles.newChatIcon} />
+      <span className={styles.newChatLabel}>New chat</span>
+    </button>
+  );
+
   const renderHistory = (): ReactElement => {
     if (sessionsLoading && sessions.length === 0) {
       return <div className={styles.historyLoading} aria-busy="true">Loading…</div>;
@@ -188,7 +198,7 @@ const SidebarComponent = (): ReactElement => {
             items={items}
             activeSessionId={sessionId}
             onSelect={handleSelectSession}
-            onRenameClick={(sid, title) => setRenameTarget({ sessionId: sid, title })}
+            onRenameClick={(sid, sessionTitle) => setRenameTarget({ sessionId: sid, title: sessionTitle })}
             onDeleteClick={(sid) => setDeleteTarget(sid)}
           />
         ))}
@@ -196,28 +206,8 @@ const SidebarComponent = (): ReactElement => {
     );
   };
 
-  return (
-    <div className={cn(styles.sidebar, expanded ? styles.sidebarExpanded : styles.sidebarCollapsed)}>
-      <nav className={styles.navSection} aria-label="Chat navigation">
-        <NavButton
-          onClick={toggleSidebar}
-          label="Collapse"
-          title={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
-        >
-          {expanded ? <FiChevronsLeft size={17} /> : <FiChevronsRight size={17} />}
-        </NavButton>
-        <NavButton onClick={handleNewChat} label="New chat" title="New chat">
-          <FiEdit size={17} />
-        </NavButton>
-        {/* TODO: enable when implemented */}
-        {/* <NavButton label="Search" title="Search chats (coming soon)" disabled>
-          <FiSearch size={17} />
-        </NavButton> */}
-      </nav>
-      <div className={styles.history} aria-label="Chat history">
-        {renderHistory()}
-      </div>
-
+  const renderDialogs = (): ReactElement => (
+    <>
       {renameTarget && (
         <RenameSessionDialog
           open={!!renameTarget}
@@ -236,6 +226,22 @@ const SidebarComponent = (): ReactElement => {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
+    </>
+  );
+
+  return (
+    <div className={cn(styles.sidebar, expanded ? styles.sidebarExpanded : styles.sidebarCollapsed)}>
+      <nav className={styles.navSection} aria-label="Chat navigation">
+        {renderHead()}
+        {renderNewChat()}
+      </nav>
+      <div className={styles.history} aria-label="Chat history">
+        {expanded && renderHistory()}
+      </div>
+      <div className={styles.footer}>
+        <SidebarUserCard collapsed={!expanded} />
+      </div>
+      {renderDialogs()}
     </div>
   );
 };

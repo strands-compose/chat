@@ -29,6 +29,12 @@ export interface WorkflowItem {
   toolInput?: unknown;
   /** Tool result string, rendered in the expanded badge. */
   toolOutput?: string;
+  /** Tool lifecycle — `running` from `tool_start` until `tool_end` sets the outcome. */
+  toolStatus?: 'running' | 'success' | 'error';
+
+  /** Tokens the agent used, carried on its `agent_stop` item (from `agent_complete`). */
+  inputTokens?: number;
+  outputTokens?: number;
 
   /** Originating agent — used for filtering and the agent separator label. */
   agentName?: string;

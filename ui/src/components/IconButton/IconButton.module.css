@@ -1,6 +1,6 @@
 /* ====== ICON BUTTON ======
-   Square, borderless icon-only button. ChatGPT-style: transparent by
-   default, subtle background highlight on hover. */
+   Square, borderless icon-only button. Transparent by default, subtle
+   background highlight on hover. */
 
 .iconButton {
   display: flex;
@@ -9,20 +9,16 @@
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 6px;
-  color: var(--sc-text-tertiary);
+  border-radius: 8px;
+  color: var(--sc-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.15s, color 0.15s;
 }
 
 .iconButton:hover {
-  background: var(--sc-bg-tertiary);
+  background: var(--sc-bg-hover);
   color: var(--sc-text-primary);
-}
-
-[data-theme="dark"] .iconButton:hover {
-  background: rgba(255, 255, 255, 0.08);
 }
 
 .iconButton:disabled {
@@ -32,7 +28,7 @@
 
 .iconButton:disabled:hover {
   background: transparent;
-  color: var(--sc-text-tertiary);
+  color: var(--sc-text-secondary);
 }
 
 /* ====== SIZES ====== */
@@ -46,23 +42,15 @@
   height: 32px;
 }
 
+.lg {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--sc-radius-sm);
+}
+
 /* ====== ACTIVE STATE ====== */
-.active {
-  background: rgba(255, 153, 0, 0.1);
-  color: var(--aws-orange);
-}
-
+.active,
 .active:hover {
-  background: rgba(255, 153, 0, 0.15);
-  color: var(--aws-orange);
-}
-
-/* ====== ON-DARK SURFACE (e.g. app header) ====== */
-.onDark {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.onDark:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: var(--sc-accent-soft);
+  color: var(--sc-accent-text);
 }

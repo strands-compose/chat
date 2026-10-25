@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { memo } from 'react';
-import { FiFileText, FiX } from 'react-icons/fi';
+import { LuFileText, LuX } from 'react-icons/lu';
 import type { Attachment } from '@/types/api';
 import styles from './AttachmentChip.module.css';
 
@@ -24,7 +24,7 @@ const AttachmentChipComponent = ({
     }
     return (
       <span className={styles.document}>
-        <FiFileText className={styles.documentIcon} aria-hidden="true" />
+        <span className={styles.documentIcon} aria-hidden="true"><LuFileText size={16} /></span>
         <span className={styles.name} title={attachment.name}>
           {attachment.name}
         </span>
@@ -50,7 +50,7 @@ const AttachmentChipComponent = ({
         title="Remove attachment"
         aria-label={`Remove ${attachment.name}`}
       >
-        <FiX size={14} />
+        <LuX size={12} />
       </button>
     </div>
   );

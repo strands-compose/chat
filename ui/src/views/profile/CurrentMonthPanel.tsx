@@ -134,8 +134,8 @@ const CurrentMonthPanelComponent = ({
       buildLineOption(
         xLabels,
         tokenSeries,
-        cssVar('--aws-orange'),
-        cssVar('--aws-orange'),
+        cssVar('--sc-accent'),
+        cssVar('--sc-accent'),
         false,
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps

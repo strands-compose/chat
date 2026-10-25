@@ -26,30 +26,40 @@ const getInitialColorMode = (): ColorMode => {
   return mq.matches ? 'dark' : 'light';
 };
 
-export function useColorMode(): { colorMode: ColorMode; toggle: () => void } {
-  const [colorMode, setColorMode] = useState<ColorMode>(getInitialColorMode);
+/**
+ * Write the mode to the document root. Must run before the React state update:
+ * consumers read CSS tokens during render (e.g. chart options via
+ * `getComputedStyle`), and an effect would run only after that render.
+ */
+const applyColorMode = (mode: ColorMode): void => {
+  document.documentElement.dataset.theme = mode;
+  document.documentElement.style.colorScheme = mode;
+};
 
-  useEffect(() => {
-    document.documentElement.dataset.theme = colorMode;
-    document.documentElement.style.colorScheme = colorMode;
-  }, [colorMode]);
+export function useColorMode(): { colorMode: ColorMode; toggle: () => void } {
+  const [colorMode, setColorMode] = useState<ColorMode>(() => {
+    const initial = getInitialColorMode();
+    applyColorMode(initial);
+    return initial;
+  });
 
   useEffect(() => {
     const handleChange = (e: MediaQueryListEvent): void => {
       if (sessionStorage.getItem(SESSION_KEY)) return;
-      setColorMode(e.matches ? 'dark' : 'light');
+      const next: ColorMode = e.matches ? 'dark' : 'light';
+      applyColorMode(next);
+      setColorMode(next);
     };
     mq.addEventListener('change', handleChange);
     return () => mq.removeEventListener('change', handleChange);
   }, []);
 
   const toggle = useCallback((): void => {
-    setColorMode((prev) => {
-      const next: ColorMode = prev === 'dark' ? 'light' : 'dark';
-      sessionStorage.setItem(SESSION_KEY, next);
-      return next;
-    });
-  }, []);
+    const next: ColorMode = colorMode === 'dark' ? 'light' : 'dark';
+    sessionStorage.setItem(SESSION_KEY, next);
+    applyColorMode(next);
+    setColorMode(next);
+  }, [colorMode]);
 
   return { colorMode, toggle };
 }

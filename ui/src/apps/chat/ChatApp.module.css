@@ -6,7 +6,7 @@
   background: var(--sc-bg-primary);
 }
 
-/* ====== BODY (below header) ====== */
+/* ====== BODY (sidebar + split layout) ====== */
 .body {
   display: flex;
   flex: 1;

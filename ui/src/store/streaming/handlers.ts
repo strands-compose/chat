@@ -98,11 +98,27 @@ const pushAgentStopOnce = (
   agentName: string | undefined,
   effects: StreamingSideEffects,
   isOrchestrator = false,
+  usage?: { inputTokens?: number; outputTokens?: number },
 ): void => {
   const buffer = streamingState.workflowItemsBuffer;
   const last = buffer[buffer.length - 1];
-  if (last?.type === 'agent_stop' && last.agentName === agentName) return;
-  pushItem({ type: 'agent_stop', content: '', agentName, isOrchestrator }, effects);
+  if (last?.type === 'agent_stop' && last.agentName === agentName) {
+    // A duplicate stop (e.g. node_stop then agent_complete) may carry the usage.
+    if (usage?.inputTokens != null) last.inputTokens = usage.inputTokens;
+    if (usage?.outputTokens != null) last.outputTokens = usage.outputTokens;
+    return;
+  }
+  pushItem(
+    {
+      type: 'agent_stop',
+      content: '',
+      agentName,
+      isOrchestrator,
+      inputTokens: usage?.inputTokens,
+      outputTokens: usage?.outputTokens,
+    },
+    effects,
+  );
 };
 
 // ====== SESSION_START / SESSION_END ======
@@ -167,6 +183,7 @@ export function handleToolStart(event: ChatStreamEvent, effects: StreamingSideEf
       toolName: normalizeToolName(event.name),
       toolUseId: event.tool_use_id,
       toolInput: event.input ?? undefined,
+      toolStatus: 'running',
       agentName: normalizeAgentName(event.agent_name),
     },
     effects,
@@ -193,6 +210,7 @@ export function handleToolEnd(event: ChatStreamEvent, effects: StreamingSideEffe
 
     item.toolOutput =
       event.status === 'error' ? event.output ?? 'Unknown error' : event.output ?? undefined;
+    item.toolStatus = event.status === 'error' ? 'error' : 'success';
     break;
   }
 
@@ -231,8 +249,9 @@ const handleCompleteLike = (
   event: ChatStreamEvent,
   effects: StreamingSideEffects,
   isOrchestrator: boolean,
+  usage?: { inputTokens?: number; outputTokens?: number },
 ): void => {
-  pushAgentStopOnce(normalizeAgentName(event.agent_name), effects, isOrchestrator);
+  pushAgentStopOnce(normalizeAgentName(event.agent_name), effects, isOrchestrator, usage);
 };
 
 export function handleComplete(event: ChatStreamEvent, effects: StreamingSideEffects): void {
@@ -241,7 +260,11 @@ export function handleComplete(event: ChatStreamEvent, effects: StreamingSideEff
   // multiagent_complete) so the orchestrator total isn't double-counted.
   streamingState.inputTokens += event.input_tokens ?? 0;
   streamingState.outputTokens += event.output_tokens ?? 0;
-  handleCompleteLike(event, effects, false);
+  // The agent's own usage is also kept on its stop item for the panel's run header.
+  handleCompleteLike(event, effects, false, {
+    inputTokens: event.input_tokens,
+    outputTokens: event.output_tokens,
+  });
 }
 
 export function handleMultiagentComplete(event: ChatStreamEvent, effects: StreamingSideEffects): void {

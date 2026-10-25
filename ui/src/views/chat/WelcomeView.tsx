@@ -1,22 +1,21 @@
 /**
  * Welcome screen — shown when there is no active session.
  *
- * Layout:
- *   Left column (always visible):
- *     1. "Welcome to {title}" heading
- *     2. Agent selector + hint text
- *     3. Composer
- *     4. Suggestion chips
- *   Right panel (slides in when the selected agent has a description):
- *     - Agent description rendered as Markdown
+ * Layout (single centred column):
+ *   1. "Welcome to {title}" heading
+ *   2. Agent selector + hint text
+ *   3. Composer
+ *   4. Suggestion chips
+ *
+ * The selected agent's description is shown by AgentDescriptionPanel, mounted
+ * by the app shell in the right-hand panel slot.
  */
 
 import type { ReactElement } from 'react';
-import { memo, useCallback, useEffect, useState } from 'react';
-import { FiAlertCircle, FiCopy, FiCheck } from 'react-icons/fi';
-import { RiRobot2Line } from "react-icons/ri";
+import { memo, useCallback, useEffect } from 'react';
+import { LuCircleAlert } from 'react-icons/lu';
 import { useChatStore } from '@/store';
-import { Button, IconButton, Markdown } from '@/components';
+import { Button } from '@/components';
 import { useAppConfig } from '@/contexts';
 import { AgentSelector } from './AgentSelector';
 import { ConnectedComposer } from './ConnectedComposer';
@@ -28,15 +27,11 @@ const WelcomeViewComponent = (): ReactElement => {
   // ======================
   const suggestions = useChatStore((s) => s.suggestedQuestions);
   const sendMessage = useChatStore((s) => s.sendMessage);
-  const agentDescription = useChatStore((s) => s.selectedAgentDescription);
-  const agentLabel = useChatStore((s) => s.selectedAgentLabel);
   const agents = useChatStore((s) => s.agents);
   const agentsLoaded = useChatStore((s) => s.agentsLoaded);
   const agentsError = useChatStore((s) => s.agentsError);
   const loadAgents = useChatStore((s) => s.loadAgents);
   const { title } = useAppConfig();
-
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadAgents();
@@ -48,7 +43,6 @@ const WelcomeViewComponent = (): ReactElement => {
    * `false` — fetch settled with empty list or error
    */
   const hasSomeAgents: boolean | null = agentsLoaded ? agents.length > 0 && !agentsError : null;
-  const hasDescription = agentDescription.trim().length > 0;
 
   // ======================
   // HANDLERS
@@ -58,16 +52,6 @@ const WelcomeViewComponent = (): ReactElement => {
     [sendMessage],
   );
 
-  const handleCopyDescription = useCallback(() => {
-    const markdown = `# ${agentLabel}\n\n${agentDescription}`;
-    navigator.clipboard
-      .writeText(markdown)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      })
-      .catch(console.error);
-  }, [agentLabel, agentDescription]);
 
   // ======================
   // RENDER FUNCTIONS
@@ -82,7 +66,7 @@ const WelcomeViewComponent = (): ReactElement => {
     <div className={styles.centeredContent}>
       {renderTitle()}
       <div className={styles.noAgentsBanner} role="alert">
-        <FiAlertCircle size={32} className={styles.noAgentsIcon} aria-hidden="true" />
+        <LuCircleAlert size={32} className={styles.noAgentsIcon} aria-hidden="true" />
         <span>
           You do not have access to any AI agents.
           <br />
@@ -115,44 +99,17 @@ const WelcomeViewComponent = (): ReactElement => {
     );
   };
 
-  const renderDescriptionPanel = (): ReactElement | null => {
-    if (!hasDescription) return null;
-    return (
-      <aside className={styles.descriptionPanel}>
-        <div className={styles.descriptionHeader}>
-          <RiRobot2Line size={25} className={styles.descriptionHeaderIcon} aria-hidden="true" />
-          <span className={styles.descriptionHeaderLabel}>{agentLabel}</span>
-          <IconButton
-            size="sm"
-            className={styles.descriptionCopyButton}
-            onClick={handleCopyDescription}
-            title="Copy description as Markdown"
-            aria-label="Copy description as Markdown"
-          >
-            {copied ? <FiCheck size={14} /> : <FiCopy size={14} />}
-          </IconButton>
-        </div>
-        <div className={styles.descriptionBody}>
-          <Markdown>{agentDescription}</Markdown>
-        </div>
-      </aside>
-    );
-  };
-
   const renderAgentContent = (): ReactElement => (
-    <div className={`${styles.splitRoot} ${hasDescription ? styles.splitRootOpen : ''}`}>
-      <div className={styles.mainColumn}>
-        {renderTitle()}
-        <div className={styles.agentRow}>
-          <p className={styles.hint}>Choose your agent and start conversation</p>
-          <AgentSelector />
-        </div>
-        <div className={styles.inputWrapper}>
-          <ConnectedComposer />
-        </div>
-        {renderSuggestions()}
+    <div className={styles.mainColumn}>
+      {renderTitle()}
+      <div className={styles.agentRow}>
+        <p className={styles.hint}>Choose your agent and start conversation</p>
+        <AgentSelector />
       </div>
-      {renderDescriptionPanel()}
+      <div className={styles.inputWrapper}>
+        <ConnectedComposer />
+      </div>
+      {renderSuggestions()}
     </div>
   );
 

@@ -3,24 +3,20 @@ import { memo } from 'react';
 import { cn } from '@/services/utils';
 import styles from './IconButton.module.css';
 
-export type IconButtonSize = 'sm' | 'md';
-export type IconButtonSurface = 'default' | 'onDark';
+export type IconButtonSize = 'sm' | 'md' | 'lg';
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** The icon to render. */
   children: ReactNode;
-  /** Square dimension. Defaults to `'md'` (32px). */
+  /** Square dimension: `'sm'` 28px, `'md'` 32px (default), `'lg'` 36px. */
   size?: IconButtonSize;
-  /** Surface the button sits on — `'onDark'` tunes hover for dark headers. */
-  surface?: IconButtonSurface;
-  /** Highlight as the active/selected control (brand-orange tint). */
+  /** Highlight as the active/selected control (accent tint). */
   isActive?: boolean;
 }
 
 const IconButtonComponent = ({
   children,
   size = 'md',
-  surface = 'default',
   isActive = false,
   type = 'button',
   className,
@@ -29,13 +25,7 @@ const IconButtonComponent = ({
   // ======================
   // RENDER
   // ======================
-  const classes = cn(
-    styles.iconButton,
-    styles[size],
-    surface === 'onDark' && styles.onDark,
-    isActive && styles.active,
-    className,
-  );
+  const classes = cn(styles.iconButton, styles[size], isActive && styles.active, className);
 
   return (
     <button type={type} className={classes} {...rest}>

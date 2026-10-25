@@ -1,6 +1,6 @@
 /* ====== SUBHEADER BAR ======
    Shared chrome surface with leading/trailing slots. Used by the chat
-   ControlBar and the WorkflowView title bar. */
+   ControlBar and the WorkflowView title bar. Flat: no bottom border. */
 
 .subheader {
   display: flex;
@@ -8,12 +8,11 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 8px 12px;
+  padding: 0 12px 0 16px;
   background: var(--sc-bg-primary);
-  border-bottom: 1px solid var(--sc-border-secondary);
   flex-shrink: 0;
   gap: 8px;
-  min-height: 2.8rem;
+  min-height: 56px;
   box-sizing: border-box;
   user-select: none;
   position: relative;
@@ -23,16 +22,17 @@
 .subheaderLeft {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
+  min-width: 0;
   white-space: nowrap;
 }
 
-/* Trailing inline slot — status badge, token badges. */
+/* Trailing inline slot — usage pill, theme toggle, close button. */
 .subheaderRight {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
   white-space: nowrap;
   margin-left: auto;

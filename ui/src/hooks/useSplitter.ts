@@ -17,7 +17,7 @@ const MAX_PERCENT = 88;
  * Drag-to-resize splitter state.
  * Container ref defines the bounds; splitter element calls onSplitterMouseDown.
  */
-export function useSplitter(initialPercent = 60): SplitterApi {
+export function useSplitter(initialPercent = 65): SplitterApi {
   const [leftPercent, setLeftPercent] = useState(initialPercent);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);

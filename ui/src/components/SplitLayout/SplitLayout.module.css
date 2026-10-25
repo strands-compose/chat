@@ -11,26 +11,34 @@
   min-width: 0;
 }
 
+/* Invisible divider with a wider hit area for dragging; the line only shows
+   while hovered or being dragged. */
 .splitter {
+  position: relative;
   width: 0;
-  cursor: col-resize;
-  background-color: rgba(200, 200, 200, 0.10);
   flex-shrink: 0;
-  transition: width 0.2s ease, background 0.15s;
-  overflow: hidden;
-  border-left: 1px solid #d5d5d5;
+  cursor: col-resize;
+  background: transparent;
+  transition: background 0.15s;
+  z-index: 2;
 }
 
-[data-theme="dark"] .splitter {
-  border-left-color: #2a2a2a;
+.splitter::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  right: -4px;
 }
 
 .splitterOpen {
-  width: 0.5rem;
+  width: 1px;
 }
 
-.splitter:hover {
-  background: rgba(160, 160, 160, 0.25);
+.splitter:hover,
+.splitter:active {
+  background: var(--sc-border-primary);
 }
 
 .rightPanel {

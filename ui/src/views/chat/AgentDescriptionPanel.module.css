@@ -1,0 +1,70 @@
+/* ====== AGENT DESCRIPTION PANEL ======
+   Same surface as the sidebar and the workflow panel. */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--sc-bg-secondary);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 10px 0 18px;
+  flex-shrink: 0;
+}
+
+.icon {
+  color: var(--sc-accent-text);
+  flex-shrink: 0;
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sc-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 18px 24px;
+}
+
+/* Compact prose so the description reads like panel text, not a chat answer. */
+.body .markdown {
+  font-size: 13px;
+  line-height: 1.62;
+  color: var(--sc-text-secondary);
+}
+
+.body .markdown p {
+  margin-bottom: 10px;
+}
+
+.body .markdown strong {
+  color: var(--sc-text-primary);
+}
+
+.body .markdown ul,
+.body .markdown ol {
+  margin-bottom: 10px;
+  padding-left: 20px;
+}
+
+.body .markdown li {
+  margin-bottom: 7px;
+}
+
+.body .markdown hr {
+  margin: 14px 0;
+}

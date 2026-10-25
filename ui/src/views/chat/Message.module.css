@@ -1,99 +1,310 @@
-/* ====== LAYOUT — Bedrock-style flat rows ====== */
-.message {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px 0 16px 0;
-  border-bottom: 1px solid var(--sc-border-secondary);
-}
-
-.message:nth-last-child(2) {
-  border-bottom: none;
-}
-
-/* ====== AVATAR ====== */
-.avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: 50%;
-  flex-shrink: 0;
-  font-size: 15px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.avatar:hover {
-  opacity: 0.7;
-}
-
-.userAvatar {
-  background: var(--sc-bg-tertiary);
-  color: var(--sc-text-secondary);
-  border: 1px solid var(--sc-border-primary);
-}
-
-.assistantAvatar {
-  background: var(--aws-squid-ink);
-  color: var(--aws-orange);
-  border: 1px solid transparent;
-}
-
-[data-theme="dark"] .assistantAvatar {
-  background: rgba(255, 153, 0, 0.12);
-  border-color: rgba(255, 153, 0, 0.25);
-}
-
-/* ====== CONTENT SECTION (fills row) ====== */
-.contentSection {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  gap: 0.5rem;
-  margin-top: 7px;
-}
-
+/* ====== SHARED ====== */
 .senderLabel {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--sc-text-secondary);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--sc-text-tertiary);
   user-select: none;
-  margin-bottom: 0.25rem;
+}
+
+.grow {
+  flex: 1;
 }
 
 .content {
   max-width: 100%;
   word-break: break-word;
   user-select: text;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
-/* ====== USER CONTENT ====== */
-.userContent {
-  font-size: 0.92rem;
+/* ====== USER MESSAGE ====== */
+.userMessage {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 12px 0 30px;
+}
+
+.userStack {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Shrink-wrapped to the bubble (up to 80% of the row) and pushed to the right,
+   so the header's actions sit on the bubble's top-left corner instead of the
+   far edge of the row. */
+.userBlock {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  max-width: 80%;
+  min-width: 0;
+}
+
+/* Header row: actions pinned top-left of the bubble (mirroring the assistant's
+   top-right), "You" label next to the avatar. Always visible, also when folded. */
+.userHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 32px;
+  margin-bottom: 2px;
+}
+
+.bubble {
+  align-self: flex-end;
+  max-width: 100%;
+  padding: 12px 20px;
+  border-radius: 22px;
+  background: var(--sc-bg-tertiary);
+  color: var(--sc-text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+}
+
+.bubbleCollapsed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 12px 12px 20px;
+  border: none;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  text-align: left;
+}
+
+.userActions {
+  display: flex;
+  gap: 2px;
+}
+
+/* ====== ATTACHMENTS ====== */
+.attachments {
+  display: flex;
+  flex-wrap: wrap;
+  align-self: flex-end;
+  max-width: 100%;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fileChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 14px 0 8px;
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: var(--sc-radius-md);
+  background: var(--sc-bg-primary);
+  user-select: text;
+}
+
+.fileIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-bg-primary);
+}
+
+.fileIconImage {
+  background: var(--sc-agent-5);
+}
+
+.fileIconDoc {
+  background: var(--sc-agent-2);
+}
+
+.fileMeta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 13px;
+  color: var(--sc-text-primary);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  font-size: 11.5px;
+  color: var(--sc-text-tertiary);
+}
+
+/* ====== ASSISTANT MESSAGE ====== */
+.assistantMessage {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  column-gap: 12px;
+  margin: 0 0 30px;
+}
+
+.assistantBody {
+  min-width: 0;
+}
+
+.assistantHead {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  margin-bottom: 2px;
+}
+
+/* ====== WORKFLOW PILL ====== */
+.workflowButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  margin-left: 4px;
+  padding: 0 14px 0 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--sc-radius-pill);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--sc-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.workflowButton:hover:not(:disabled) {
+  background: var(--sc-bg-hover);
+  color: var(--sc-text-primary);
+}
+
+.workflowButton:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+/* Compound selector beats the base hover rule. */
+.workflowButton.workflowButtonActive,
+.workflowButton.workflowButtonActive:hover {
+  background: var(--sc-accent-soft);
+  color: var(--sc-accent-text);
+}
+
+.liveDot {
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
+  animation: livePulse 1.2s infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+/* ====== COLLAPSED ====== */
+/* Folded assistant reply: plain text plus the chevron, no border or hover
+   highlight. Same type size and colour as the folded user bubble. */
+.collapsedRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 4px 0 0;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.collapsedText {
+  flex: 1;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--sc-text-primary);
-  white-space: pre-wrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* ====== ASSISTANT CONTENT ======
-   Markdown prose styling now lives in the Markdown primitive
-   (components/Markdown/Markdown.module.css → .markdownBody). */
-
-.loading {
-  white-space: normal !important;
-  letter-spacing: 2px;
+.collapsedChevron {
+  flex-shrink: 0;
+  color: var(--sc-text-secondary);
 }
 
-/* ====== REVEAL ANIMATION (replaces typewriter) ====== */
+/* ====== STREAMING STATE ====== */
+.thinking {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.shimmer {
+  font-size: 15px;
+  font-weight: 500;
+  background: linear-gradient(
+    90deg,
+    var(--sc-text-tertiary) 0%,
+    var(--sc-text-primary) 40%,
+    var(--sc-text-tertiary) 70%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  animation: shimmer 2s linear infinite;
+  width: fit-content;
+}
+
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+.activity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--sc-text-tertiary);
+  min-width: 0;
+}
+
+.activityChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--sc-radius-pill);
+  background: var(--sc-bg-tertiary);
+  color: var(--sc-text-secondary);
+  flex-shrink: 0;
+}
+
+/* ====== REVEAL ANIMATION ====== */
 .revealing {
   animation: revealContent 0.5s ease-out;
 }
@@ -109,172 +320,42 @@
   }
 }
 
-/* ====== ATTACHMENTS ====== */
-.attachments {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 0.25rem;
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: var(--sc-text-attachment);
-  user-select: text;
-}
-
-.attachmentsLabel {
-  font-weight: 600;
-}
-
-/* ====== HEADER ACTIONS (top-right corner, shared by both roles) ====== */
-.headerActions {
-  position: absolute;
-  top: -10px;
-  right: 0;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-/* ====== TYPING INDICATOR ====== */
-.typingIndicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  height: 1rem;
-  width: 2.2rem;
-  margin-left: 4px;
-  margin-top: 0.6rem;
-  vertical-align: middle;
-}
-
-.dot {
-  width: 5px;
-  height: 5px;
-  background-color: var(--sc-text-tertiary);
-  border-radius: 50%;
-  opacity: 0;
-  animation: blink 1.2s infinite both;
-}
-
-.dot:nth-child(1) { animation-delay: 0s; }
-.dot:nth-child(2) { animation-delay: 0.2s; }
-.dot:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes blink {
-  0%   { opacity: 0; transform: scale(1); }
-  50%  { opacity: 1; transform: scale(1.2); }
-  100% { opacity: 0; transform: scale(1); }
-}
-
-/* ====== MARKDOWN STYLES ====== */
 /* ====== ERROR ====== */
 .error {
-  background: #fff5f5;
-  border-color: #ffcccc;
-  color: #c00;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-}
-
-.error p {
-  color: #c00;
-}
-
-[data-theme="dark"] .error {
-  background: rgba(220, 50, 50, 0.12);
-  border-color: rgba(220, 50, 50, 0.3);
-  color: #f28b82;
-}
-
-[data-theme="dark"] .error p {
-  color: #f28b82;
-}
-
-/* ====== MESSAGE ACTIONS ====== */
-.actionButton {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  color: var(--sc-text-tertiary);
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: var(--sc-radius-md);
+  background: var(--sc-status-danger-soft);
+  color: var(--sc-status-danger);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-.actionButton:hover {
-  background: var(--sc-bg-tertiary);
-  color: var(--sc-text-primary);
+.errorIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
-[data-theme="dark"] .actionButton:hover {
-  background: rgba(255, 255, 255, 0.08);
+.errorBody {
+  min-width: 0;
 }
 
-/* ====== SHOW WORKFLOW BUTTON ====== */
-.showWorkflowButton {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  height: 28px;
-  padding: 0 0.5rem;
-  background: transparent;
-  border: none;
-  border-radius: 5px;
-  color: var(--sc-text-tertiary);
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.showWorkflowButton:hover {
-  background: var(--sc-bg-tertiary);
-  color: var(--sc-text-primary);
-  border-color: rgba(100, 100, 100, 0.4);
-}
-
-.showWorkflowButton:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.showWorkflowButton:disabled:hover {
-  background: transparent;
-  color: var(--sc-text-tertiary);
-  border-color: rgba(100, 100, 100, 0.2);
-}
-
-/* Compound selector beats the base class — avoids border shorthand override */
-.showWorkflowButton.showWorkflowButtonActive {
-  opacity: 1;
-  background: rgba(255, 153, 0, 0.1);
-  border-color: rgba(255, 153, 0, 0.3);
-  color: var(--aws-orange);
-}
-
-[data-theme="dark"] .showWorkflowButton {
-  border-color: rgba(200, 200, 200, 0.2);
-}
-
-[data-theme="dark"] .showWorkflowButton:hover {
-  border-color: rgba(200, 200, 200, 0.35);
+.errorBody p {
+  color: var(--sc-status-danger);
 }
 
 /* ============================== */
 /* MOBILE */
 
 @media (max-width: 768px) {
-  .avatar {
-    position: absolute;
-    z-index: 10;
+  .userBlock {
+    max-width: 88%;
   }
 
-  .senderLabel {
-    margin-left: 3rem;
-    margin-bottom: 1rem;
+  .assistantMessage {
+    grid-template-columns: 28px minmax(0, 1fr);
+    column-gap: 8px;
   }
 }

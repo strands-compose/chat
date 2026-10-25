@@ -1,6 +1,6 @@
 // Reusable, dumb primitives. These MUST NOT import from features/ or store/.
 export { IconButton } from './IconButton';
-export type { IconButtonSize, IconButtonSurface } from './IconButton';
+export type { IconButtonSize } from './IconButton';
 
 export { Button } from './Button';
 export type { ButtonVariant } from './Button';
@@ -40,7 +40,7 @@ export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusBadgeVariant } from './StatusBadge';
 
 export { ToolBadge } from './ToolBadge';
-export type { ToolBadgeProps } from './ToolBadge';
+export type { ToolBadgeProps, ToolBadgeStatus } from './ToolBadge';
 
 export { Markdown, REMARK_PLUGINS, REHYPE_PLUGINS } from './Markdown';
 
@@ -67,6 +67,15 @@ export type { MultiSelectOption } from './MultiSelect';
 
 export { ProgressBar } from './ProgressBar';
 export type { ProgressBarProps } from './ProgressBar';
+
+export { ProgressRing } from './ProgressRing';
+export type { ProgressRingProps } from './ProgressRing';
+
+export { Avatar } from './Avatar';
+export type { AvatarProps, AvatarTone, AvatarSize } from './Avatar';
+
+export { UsagePill } from './UsagePill';
+export type { UsagePillProps } from './UsagePill';
 
 export { Skeleton } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';

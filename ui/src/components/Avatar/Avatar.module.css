@@ -1,0 +1,76 @@
+/* ====== AVATAR ====== */
+.avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ====== SIZES ====== */
+.sm {
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+}
+
+.md {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+
+.lg {
+  width: 36px;
+  height: 36px;
+  font-size: 15px;
+}
+
+/* ====== TONES ====== */
+.neutral {
+  background: var(--sc-bg-hover);
+  color: var(--sc-text-primary);
+}
+
+.accent {
+  background: var(--sc-accent-soft-2);
+  color: var(--sc-accent-text);
+}
+
+.inverse {
+  background: var(--sc-accent);
+  color: var(--sc-on-accent);
+}
+
+/* ====== INTERACTION ====== */
+.clickable {
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.clickable:hover {
+  filter: brightness(0.95);
+}
+
+/* ====== SPINNING RING ====== */
+.spinning::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(from 40deg, transparent 0 55%, var(--sc-accent) 85%, transparent 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  animation: avatarSpin 1s linear infinite;
+}
+
+@keyframes avatarSpin {
+  to { transform: rotate(360deg); }
+}

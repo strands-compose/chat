@@ -1,7 +1,8 @@
 /* ====== WORKFLOW PANEL (outer container) ====== */
 .workflowPanel {
+  /* Lets the header react to the panel's own width (it is user-resizable). */
+  container-type: inline-size;
   background: var(--sc-bg-secondary);
-  border: none;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -9,55 +10,127 @@
   font-size: 0.85rem;
 }
 
-/* ====== TITLE BAR — layout-only classes (bar itself uses shared.subheader) ====== */
-
-/* Match the panel body surface instead of the default primary background. */
-.workflowSubheader {
+/* ====== TITLE BAR ====== */
+.workflowPanel .workflowSubheader {
+  height: 56px;
+  min-height: 56px;
+  flex-wrap: nowrap;
   background: var(--sc-bg-secondary);
+  padding: 0 10px 0 18px;
 }
 
-.workflowPanelTitleLeft {
+/* The title group may shrink (instead of pushing the controls onto a second
+   line) so the header stays the same height as the chat top bar. */
+.workflowSubheader > :first-child {
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.headerUsage {
+  display: inline-flex;
+}
+
+/* Narrow panel: drop the token pill, keep title, status and close button. */
+@container (max-width: 400px) {
+  .headerUsage {
+    display: none;
+  }
+}
+
+.titleLeft {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  flex-shrink: 1;
   white-space: nowrap;
 }
 
-.workflowPanelTitleIcon {
-  color: var(--aws-orange);
+.titleIcon {
+  color: var(--sc-accent-text);
   flex-shrink: 0;
 }
 
-.workflowPanelTitleText {
+.titleText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--aws-orange);
+  color: var(--sc-text-primary);
+  margin-right: 2px;
+  min-width: 0;
+}
+
+/* ====== AGENT CHIPS ====== */
+.agentChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 18px 10px;
   flex-shrink: 0;
+}
+
+.agentChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  border-radius: var(--sc-radius-pill);
+  background: var(--sc-bg-tertiary);
+  font-size: 12px;
+  color: var(--sc-text-secondary);
+}
+
+.agentDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--agent);
+}
+
+.agentChipName {
+  font-weight: 500;
+  color: var(--sc-text-primary);
 }
 
 /* ====== CONTENT AREA ====== */
+.contentWrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .workflowPanelContent {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 10px;
+  padding: 6px 18px 24px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
   color: var(--sc-text-secondary);
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 12.8px;
+  line-height: 1.62;
 }
 
 .workflowPanelEmpty {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  gap: 12px;
+  padding: 24px;
   color: var(--sc-text-tertiary);
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 13px;
   line-height: 1.5;
+}
+
+.emptyIcon {
+  color: var(--sc-border-primary);
 }
 
 .workflowText {
@@ -65,73 +138,195 @@
   word-break: break-word;
 }
 
-/* ====== AGENT EVENTS ====== */
-.agentEvent {
+/* ====== AGENT RUN (lane) ====== */
+.run {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.runNested {
+  margin-top: 2px;
+  margin-left: 2px;
+}
+
+.runHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+}
+
+.runAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--agent) 15%, transparent);
+  color: var(--agent);
+  flex-shrink: 0;
+}
+
+.runName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sc-text-primary);
+  white-space: nowrap;
+}
+
+.runKind {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: var(--sc-radius-pill);
+  font-size: 11.5px;
+  color: var(--sc-text-tertiary);
+  white-space: nowrap;
+}
+
+.runMeta {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--sc-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.runBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: 12px;
+  padding: 6px 0 6px 22px;
+  border-left: 2px solid color-mix(in srgb, var(--agent, var(--sc-border-secondary)) 28%, transparent);
+}
+
+.runFoot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  margin-left: 5px;
+  font-size: 12.5px;
+  color: var(--sc-text-tertiary);
+}
+
+.runFootIcon {
+  color: var(--agent);
+}
+
+/* ====== TEXT ====== */
+.workflowPanelContent .streamingTextBox {
+  flex-shrink: 0;
+  font-size: 12.8px;
+  line-height: 1.62;
+  color: var(--sc-text-secondary);
+}
+
+.workflowPanelContent .streamingTextBox p {
+  margin-bottom: 8px;
+}
+
+.workflowPanelContent .streamingTextBox h1,
+.workflowPanelContent .streamingTextBox h2 {
+  font-size: 14.5px;
+  margin: 12px 0 6px;
+}
+
+.workflowPanelContent .streamingTextBox h3,
+.workflowPanelContent .streamingTextBox h4 {
+  font-size: 13.5px;
+  margin: 10px 0 4px;
+}
+
+.workflowPanelContent .streamingTextBox strong {
+  color: var(--sc-text-primary);
+}
+
+/* Block caret after the latest streamed text. */
+.streamingTextLive > *:last-child::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  margin-left: 3px;
+  border-radius: 2px;
+  background: var(--sc-accent);
+  vertical-align: -2px;
+  animation: caretBlink 1s steps(2, start) infinite;
+}
+
+@keyframes caretBlink {
+  to { visibility: hidden; }
+}
+
+/* ====== REASONING ====== */
+.reasoning {
+  flex-shrink: 0;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--sc-border-secondary);
+}
+
+.reasoningLabel {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0.25rem;
-  font-size: 0.75rem;
-  color: var(--sc-text-tertiary);
-  border-bottom: 1px solid var(--sc-border-secondary);
-  border-top: 1px solid var(--sc-border-secondary);
-  flex-shrink: 0;
-  margin: 0 0 0.5rem 0;
-}
-
-.agentEventIcon {
-  font-size: 1.1rem;
-  scale: 1.2;
-  color: var(--aws-orange);
-  flex-shrink: 0;
-  margin-right: 0.25rem;
-}
-
-.agentEventText {
+  margin-bottom: 4px;
+  font-size: 12px;
   font-weight: 500;
+  color: var(--sc-text-secondary);
 }
 
-/* ====== MODAL ====== */
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.modalBox {
-  background: var(--sc-bg-primary);
-  border: 1px solid var(--sc-border-secondary);
-  border-radius: 6px;
-  width: 90vw;
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-}
-
-[data-theme="dark"] .modalBox {
-  border-color: #2a2a2a;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-}
-
-/* Streaming text items: grows to natural height, outer panel handles scroll */
-.streamingTextBox {
-  flex-shrink: 0;
-  margin-bottom: 0.5rem;
-}
-
-/* ====== INLINE REASONING ====== */
-.inlineReasoning {
+.reasoningText {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
   font-style: italic;
   color: var(--sc-text-tertiary);
-  font-size: 0.78rem;
-  line-height: 1.5;
-  margin: 0 0 0.5rem 0;
+  white-space: pre-wrap;
+}
+
+/* ====== HANDOFF ====== */
+.handoff {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px dashed var(--sc-border-primary);
+  border-radius: var(--sc-radius-pill);
+  font-size: 13px;
+  color: var(--sc-text-secondary);
   flex-shrink: 0;
+}
+
+/* ====== JUMP TO LATEST ====== */
+.jump {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px 0 10px;
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: var(--sc-radius-pill);
+  background: var(--sc-bg-primary);
+  box-shadow: var(--sc-shadow-2);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--sc-text-primary);
+  cursor: pointer;
+}
+
+.jump:hover {
+  background: var(--sc-bg-secondary);
 }

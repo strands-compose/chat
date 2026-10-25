@@ -7,16 +7,28 @@
  */
 
 import type { ReactElement } from 'react';
-import { lazy, memo, Suspense, useCallback } from 'react';
+import { lazy, memo, Suspense, useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useChatStore } from '@/store';
 import { useCollapseContext } from '@/contexts';
+import { cn } from '@/services/utils';
 import { ChatControlBar } from './ControlBar';
 import { MessageList } from './MessageList';
 import { ConnectedComposer } from './ConnectedComposer';
 import styles from './ChatView.module.css';
 
 const WelcomeView = lazy(() => import('./WelcomeView'));
+
+const FULL_WIDTH_KEY = 'chatFullWidth';
+
+/** Read the persisted width preference. Full width unless compact was chosen explicitly. */
+const readFullWidth = (): boolean => {
+  try {
+    return localStorage.getItem(FULL_WIDTH_KEY) !== '0';
+  } catch {
+    return true;
+  }
+};
 
 const ChatViewComponent = (): ReactElement => {
   const { messageOrder, sessionId } = useChatStore(
@@ -27,6 +39,20 @@ const ChatViewComponent = (): ReactElement => {
   );
 
   const { collapseAll, expandAll } = useCollapseContext();
+  const [isFullWidth, setIsFullWidth] = useState(readFullWidth);
+
+  const handleToggleWidth = useCallback(() => {
+    setIsFullWidth((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(FULL_WIDTH_KEY, next ? '1' : '0');
+      } catch {
+        // Storage unavailable: the preference just won't persist.
+      }
+      return next;
+    });
+  }, []);
+  const isWelcome = !sessionId && messageOrder.length === 0;
 
   const handleCollapseAll = useCallback(
     () => collapseAll(messageOrder),
@@ -35,9 +61,14 @@ const ChatViewComponent = (): ReactElement => {
 
   return (
     <>
-      <ChatControlBar onCollapseAll={handleCollapseAll} onExpandAll={expandAll} />
+      <ChatControlBar
+        onCollapseAll={handleCollapseAll}
+        onExpandAll={expandAll}
+        isFullWidth={isFullWidth}
+        onToggleWidth={isWelcome ? undefined : handleToggleWidth}
+      />
 
-      {!sessionId && messageOrder.length === 0 ? (
+      {isWelcome ? (
         <main className={styles.chatContainerEmpty}>
           <Suspense fallback={null}>
             <WelcomeView />
@@ -45,8 +76,10 @@ const ChatViewComponent = (): ReactElement => {
         </main>
       ) : (
         <>
-          <MessageList />
-          <ConnectedComposer />
+          <MessageList isFullWidth={isFullWidth} />
+          <div className={cn(styles.composerDock, isFullWidth && styles.composerDockFull)}>
+            <ConnectedComposer />
+          </div>
         </>
       )}
     </>

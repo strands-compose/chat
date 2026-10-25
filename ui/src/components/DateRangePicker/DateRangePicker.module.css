@@ -8,7 +8,7 @@
   align-items: center;
   gap: 7px;
   padding: 6px 10px;
-  font-family: var(--aws-font-stack);
+  font-family: var(--sc-font-ui);
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--sc-text-primary);
@@ -26,8 +26,8 @@
 
 .trigger:focus-visible {
   outline: none;
-  border-color: var(--aws-orange);
-  box-shadow: 0 0 0 2px color-mix(in srgb, transparent 78%, var(--aws-orange) 22%);
+  border-color: var(--sc-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, transparent 78%, var(--sc-accent) 22%);
 }
 
 .triggerIcon,
@@ -38,15 +38,12 @@
   background: var(--sc-bg-primary);
   border: 1px solid var(--sc-border-primary);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--sc-shadow-3);
   z-index: 1100;
   overflow: hidden;
   animation: popIn 0.12s ease-out;
 }
 
-[data-theme='dark'] .popover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.48);
-}
 
 @keyframes popIn {
   from { opacity: 0; transform: translateY(-4px); }
@@ -89,7 +86,7 @@
 
 .presetBtn:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--aws-orange);
+  box-shadow: inset 0 0 0 2px var(--sc-accent);
 }
 
 /* ── Calendar area ── */
@@ -176,7 +173,7 @@
   content: '';
   position: absolute;
   inset: 4px 0;
-  background: color-mix(in srgb, transparent 80%, var(--aws-orange) 20%);
+  background: color-mix(in srgb, transparent 80%, var(--sc-accent) 20%);
   z-index: 0;
 }
 
@@ -185,7 +182,7 @@
   content: '';
   position: absolute;
   inset: 4px 0 4px 50%;
-  background: color-mix(in srgb, transparent 80%, var(--aws-orange) 20%);
+  background: color-mix(in srgb, transparent 80%, var(--sc-accent) 20%);
   z-index: 0;
 }
 
@@ -194,7 +191,7 @@
   content: '';
   position: absolute;
   inset: 4px 50% 4px 0;
-  background: color-mix(in srgb, transparent 80%, var(--aws-orange) 20%);
+  background: color-mix(in srgb, transparent 80%, var(--sc-accent) 20%);
   z-index: 0;
 }
 
@@ -228,8 +225,8 @@
 
 /* Selected (start / end): filled circle */
 .dayBtnSelected {
-  background: var(--aws-orange) !important;
-  color: #fff !important;
+  background: var(--sc-accent) !important;
+  color: var(--sc-on-accent) !important;
   font-weight: 700;
 }
 

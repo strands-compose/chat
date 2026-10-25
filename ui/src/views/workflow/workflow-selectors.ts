@@ -6,42 +6,78 @@
  */
 
 import type { WorkflowItem, ChatStore } from '@/types';
-import type { AgentRun } from './workflow-types';
+import type { AgentRun, AgentSummary } from './workflow-types';
+
+/** Number of colours in the per-agent palette (`--sc-agent-1` … `--sc-agent-5`). */
+const AGENT_PALETTE_SIZE = 5;
 
 /**
  * Split the flat trace into per-agent runs so agents streaming in parallel
- * render under their own separator instead of interleaved line by line.
+ * render under their own lane instead of interleaved line by line.
  *
- * Runs appear in the order they opened, and consecutive items of the same type
- * within a run are merged into one group. An agent that delegates opens a fresh
- * run when the sub-agent it launched ends, so its continuation reads below that
- * sub-agent's block rather than inside its own earlier one. Items the backend
- * left unattributed collect in a nameless run at the end.
+ * A delegation is a tool call named after the sub-agent it invokes (names are
+ * display-normalized and differ only in case). When a sub-agent starts while
+ * such a call is pending in its delegator's open run, the sub-agent's run is
+ * nested under that tool item (`children`) and the delegator's run simply
+ * continues after it. Calls are matched first-in-first-out, skipping calls
+ * that already failed (a rejected parallel call never starts a run).
+ *
+ * Sub-agents that cannot be matched to a call stay top-level; their delegator
+ * then opens a fresh run once they end, so its continuation reads below them.
+ * Items the backend left unattributed collect in a nameless run at the end.
  */
 export function buildAgentRuns(items: WorkflowItem[]): AgentRun[] {
   const runs: AgentRun[] = [];
   const openRuns = new Map<string, AgentRun>();
-  /** Agents whose delegate has ended and whose next item therefore opens a new run. */
+  /** Agents whose unmatched delegate has ended and whose next item therefore opens a new run. */
   const resumingAgents = new Set<string>();
   /** Sub-agent name -> the agent whose delegation tool launched it. */
   const delegatedBy = new Map<string, string>();
+  /** Sub-agent name -> delegation calls not yet matched to a run, oldest first. */
+  const pendingCalls = new Map<string, Array<{ run: AgentRun; item: WorkflowItem }>>();
+  /** Sub-agents whose current run is nested under a delegation call. */
+  const nestedAgents = new Set<string>();
   const orchestrators = new Set<string>();
   const unattributed: AgentRun = {
     key: 'unattributed',
     isOrchestrator: false,
     hasEnded: false,
     groups: [],
+    children: new Map(),
   };
+
+  const takePendingCall = (agentKey: string): { run: AgentRun; item: WorkflowItem } | undefined => {
+    const queue = pendingCalls.get(agentKey);
+    if (!queue) return undefined;
+    while (queue.length > 0) {
+      const call = queue.shift()!;
+      if (call.item.toolStatus !== 'error') return call;
+    }
+    return undefined;
+  };
+
+  /** Counts every run (top-level and nested) so keys stay unique and stable. */
+  let runCounter = 0;
 
   const startRun = (agentKey: string, agentName: string): AgentRun => {
     const run: AgentRun = {
-      key: `${agentKey}#${runs.length}`,
+      key: `${agentKey}#${runCounter++}`,
       agentName,
       isOrchestrator: orchestrators.has(agentKey),
       hasEnded: false,
       groups: [],
+      children: new Map(),
     };
-    runs.push(run);
+    const call = takePendingCall(agentKey);
+    if (call) {
+      const siblings = call.run.children.get(call.item) ?? [];
+      siblings.push(run);
+      call.run.children.set(call.item, siblings);
+      nestedAgents.add(agentKey);
+    } else {
+      runs.push(run);
+      nestedAgents.delete(agentKey);
+    }
     openRuns.set(agentKey, run);
     resumingAgents.delete(agentKey);
     return run;
@@ -53,7 +89,7 @@ export function buildAgentRuns(items: WorkflowItem[]): AgentRun[] {
 
     if (item.isOrchestrator) orchestrators.add(agentKey);
 
-    // Start/stop items are run boundaries; the separators are rendered from the run itself.
+    // Start/stop items are run boundaries; the lane header/footer is rendered from the run itself.
     if (item.type === 'agent_start') {
       if (agentName && !openRuns.has(agentKey)) startRun(agentKey, agentName);
       continue;
@@ -62,9 +98,14 @@ export function buildAgentRuns(items: WorkflowItem[]): AgentRun[] {
       const ending = openRuns.get(agentKey);
       if (!ending) continue;
       ending.hasEnded = true;
+      ending.inputTokens = item.inputTokens;
+      ending.outputTokens = item.outputTokens;
       openRuns.delete(agentKey);
       const delegator = delegatedBy.get(agentKey);
-      if (delegator && openRuns.has(delegator)) resumingAgents.add(delegator);
+      if (delegator && openRuns.has(delegator) && !nestedAgents.has(agentKey)) {
+        resumingAgents.add(delegator);
+      }
+      nestedAgents.delete(agentKey);
       continue;
     }
 
@@ -74,10 +115,12 @@ export function buildAgentRuns(items: WorkflowItem[]): AgentRun[] {
     } else {
       const open = openRuns.get(agentKey);
       target = !open || resumingAgents.has(agentKey) ? startRun(agentKey, agentName) : open;
-      // A delegation tool is named after the sub-agent it invokes; both names are
-      // display-normalized and differ only in case.
       if (item.type === 'tool' && item.toolName) {
-        delegatedBy.set(item.toolName.toUpperCase(), agentKey);
+        const callee = item.toolName.toUpperCase();
+        delegatedBy.set(callee, agentKey);
+        const queue = pendingCalls.get(callee) ?? [];
+        queue.push({ run: target, item });
+        pendingCalls.set(callee, queue);
       }
     }
 
@@ -89,6 +132,35 @@ export function buildAgentRuns(items: WorkflowItem[]): AgentRun[] {
   if (unattributed.groups.length > 0) runs.push(unattributed);
 
   return runs;
+}
+
+/**
+ * Distinct agents in a trace, in order of first appearance, with their run
+ * count and a stable colour from the per-agent palette.
+ */
+export function summarizeAgents(items: WorkflowItem[]): AgentSummary[] {
+  const byName = new Map<string, AgentSummary>();
+  for (const item of items) {
+    if (item.type !== 'agent_start' || !item.agentName) continue;
+    const existing = byName.get(item.agentName);
+    if (existing) {
+      existing.runCount += 1;
+      existing.isOrchestrator ||= !!item.isOrchestrator;
+      continue;
+    }
+    byName.set(item.agentName, {
+      agentName: item.agentName,
+      isOrchestrator: !!item.isOrchestrator,
+      runCount: 1,
+      color: `var(--sc-agent-${(byName.size % AGENT_PALETTE_SIZE) + 1})`,
+    });
+  }
+  return [...byName.values()];
+}
+
+/** Names of all agents that started in the trace (to recognise delegation tool calls). */
+export function agentNameSet(summaries: AgentSummary[]): Set<string> {
+  return new Set(summaries.map((s) => s.agentName.toUpperCase()));
 }
 
 /**

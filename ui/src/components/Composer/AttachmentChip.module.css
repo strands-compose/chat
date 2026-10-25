@@ -3,11 +3,11 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  max-width: 10rem;
-  border: 1px solid var(--sc-border-primary);
-  border-radius: 0.625rem;
-  background: var(--sc-bg-secondary);
-  overflow: hidden;
+  max-width: 14rem;
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: var(--sc-radius-md);
+  background: var(--sc-bg-primary);
+  overflow: visible;
 }
 
 /* Clickable content area opening the preview */
@@ -32,8 +32,9 @@
 /* Image thumbnail fills the chip */
 .thumbnail {
   display: block;
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--sc-radius-md);
   object-fit: cover;
 }
 
@@ -41,20 +42,26 @@
 .document {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 10px;
+  height: 50px;
+  padding: 0 14px 0 8px;
   min-width: 0;
 }
 
 .documentIcon {
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  color: var(--sc-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--sc-radius-sm);
+  background: var(--sc-agent-2);
+  color: var(--sc-bg-primary);
 }
 
 .name {
-  font-size: 0.8rem;
+  font-size: 13px;
   color: var(--sc-text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -64,8 +71,8 @@
 /* Remove control, top-right */
 .remove {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: -7px;
+  right: -7px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,15 +81,13 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: var(--sc-bg-primary);
-  color: var(--sc-text-secondary);
+  background: var(--sc-text-primary);
+  color: var(--sc-bg-primary);
   cursor: pointer;
-  opacity: 0.85;
+  opacity: 0.9;
   transition: background 0.15s, color 0.15s, opacity 0.15s;
 }
 
 .remove:hover {
-  background: var(--sc-bg-tertiary);
-  color: var(--sc-text-primary);
   opacity: 1;
 }
