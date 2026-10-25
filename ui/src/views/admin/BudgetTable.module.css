@@ -51,7 +51,7 @@
   border: none;
   background: transparent;
   color: var(--sc-text-primary);
-  font-family: var(--aws-font-stack);
+  font-family: var(--sc-font-ui);
   font-size: 0.8rem;
   outline: none;
 }

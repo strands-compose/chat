@@ -3,7 +3,7 @@
  *
  * Renders either:
  *  - a single-series cost bar chart (`chartMode === 'cost'`), bars filled
- *    with `--aws-orange`, or
+ *    with `--sc-accent`, or
  *  - a stacked two-series token bar chart (`chartMode === 'tokens'`), one
  *    series per token direction using distinct design-token colors.
  *
@@ -63,7 +63,7 @@ const UsageChartComponent = ({ data, chartMode, interval, isLoading }: UsageChar
 
     // Input tokens: a muted blue-ish color derived from the theme.
     // Output tokens: the brand orange. Both remain legible on light and dark.
-    const orange = cssVar('--aws-orange');
+    const orange = cssVar('--sc-accent');
     const inputColor = cssVar('--sc-chart-primary');
 
     const labels = data.map((b) => formatBucketLabel(b.label, interval));

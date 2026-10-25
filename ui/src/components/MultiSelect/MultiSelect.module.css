@@ -10,7 +10,7 @@
   border: 1px solid var(--sc-border-primary);
   border-radius: 0.375rem;
   background: var(--sc-bg-primary);
-  font-family: var(--aws-font-stack);
+  font-family: var(--sc-font-ui);
   cursor: pointer;
   transition: border-color 0.12s ease;
   user-select: none;
@@ -21,7 +21,7 @@
 }
 
 .trigger:focus-visible {
-  outline: 2px solid var(--aws-orange);
+  outline: 2px solid var(--sc-accent);
   outline-offset: 1px;
 }
 
@@ -67,7 +67,7 @@
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--sc-text-primary);
-  font-family: var(--aws-font-stack);
+  font-family: var(--sc-font-ui);
 }
 
 /* × on each badge */
@@ -124,7 +124,7 @@
   border: 1px solid var(--sc-border-primary);
   border-radius: 0.5rem;
   background: var(--sc-bg-primary);
-  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.18);
+  box-shadow: var(--sc-shadow-3);
 }
 
 /* Single top bar: filter input (grows) + Select all / Clear */
@@ -148,7 +148,7 @@
   border: none;
   background: transparent;
   color: var(--sc-text-primary);
-  font-family: var(--aws-font-stack);
+  font-family: var(--sc-font-ui);
   font-size: 0.8rem;
   outline: none;
 }
@@ -177,8 +177,8 @@
 .actionBtn {
   border: none;
   background: transparent;
-  color: var(--aws-orange);
-  font-family: var(--aws-font-stack);
+  color: var(--sc-accent);
+  font-family: var(--sc-font-ui);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
@@ -211,7 +211,7 @@
   border-radius: 0.375rem;
   background: transparent;
   color: var(--sc-text-primary);
-  font-family: var(--aws-font-stack);
+  font-family: var(--sc-font-ui);
   font-size: 0.82rem;
   cursor: pointer;
   text-align: left;
@@ -230,12 +230,12 @@
   height: 1rem;
   border: 1px solid var(--sc-border-primary);
   border-radius: 0.25rem;
-  color: #ffffff;
+  color: var(--sc-on-accent);
 }
 
 .checkboxChecked {
-  background: var(--aws-orange);
-  border-color: var(--aws-orange);
+  background: var(--sc-accent);
+  border-color: var(--sc-accent);
 }
 
 .optionLabel {
@@ -248,6 +248,6 @@
   padding: 0.75rem 0.5rem;
   text-align: center;
   color: var(--sc-text-tertiary);
-  font-family: var(--aws-font-stack);
+  font-family: var(--sc-font-ui);
   font-size: 0.8rem;
 }

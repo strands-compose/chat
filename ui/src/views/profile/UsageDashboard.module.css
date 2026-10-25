@@ -64,8 +64,8 @@
 }
 
 .segmentActive {
-  background: var(--aws-orange);
-  color: #fff;
+  background: var(--sc-accent);
+  color: var(--sc-on-accent);
   font-weight: 600;
 }
 

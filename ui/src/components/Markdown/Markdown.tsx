@@ -11,13 +11,37 @@ import type { ComponentProps, ReactElement } from 'react';
 import { memo, useCallback, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { Components, ExtraProps } from 'react-markdown';
-import { FiCheck, FiCopy } from 'react-icons/fi';
+import { LuCheck, LuCopy } from 'react-icons/lu';
 import { cn } from '@/services/utils';
 import { REMARK_PLUGINS, REHYPE_PLUGINS } from './plugins';
 import { highlightToHtml } from './syntaxHighlighter';
 import styles from './Markdown.module.css';
 
 type CodeProps = ComponentProps<'code'> & ExtraProps;
+
+/** Display names for common code-fence language ids; others show as written. */
+const LANGUAGE_LABELS: Record<string, string> = {
+  bash: 'Bash',
+  sh: 'Shell',
+  shell: 'Shell',
+  js: 'JavaScript',
+  javascript: 'JavaScript',
+  ts: 'TypeScript',
+  typescript: 'TypeScript',
+  tsx: 'TSX',
+  jsx: 'JSX',
+  json: 'JSON',
+  yaml: 'YAML',
+  yml: 'YAML',
+  py: 'Python',
+  python: 'Python',
+  html: 'HTML',
+  css: 'CSS',
+  sql: 'SQL',
+  md: 'Markdown',
+  markdown: 'Markdown',
+  toml: 'TOML',
+};
 
 /**
  * Highlighted code. Tokenizes to an HTML string and injects it; falls back to
@@ -75,18 +99,28 @@ const CodeBlockComponent = ({ className, children, ...props }: CodeProps): React
   return (
     <div className={styles.codeBlockWrapper}>
       <div className={styles.codeBlockHeader}>
-        <span className={styles.codeBlockLang}>{match[1]}</span>
+        <span className={styles.codeBlockLang}>{LANGUAGE_LABELS[match[1].toLowerCase()] ?? match[1]}</span>
         <button
           className={styles.codeBlockCopy}
           onClick={handleCopy}
           type="button"
-          title="Copy code"
+          title={copied ? 'Copied' : 'Copy code'}
+          aria-label="Copy code"
         >
-          {copied ? <FiCheck size={13} /> : <FiCopy size={13} />}
-          {copied ? 'Copied' : 'Copy'}
+          {copied ? <LuCheck size={15} /> : <LuCopy size={15} />}
         </button>
       </div>
       <HighlightedCode code={code} language={match[1]} fallback={plainCode} />
+    </div>
+  );
+};
+
+// Wraps tables so the rounded border can clip them and wide tables can scroll.
+const TableWrapper = ({ children, node, ...props }: ComponentProps<'table'> & ExtraProps): ReactElement => {
+  void node; // react-markdown's AST node must not reach the DOM.
+  return (
+    <div className={styles.tableWrap}>
+      <table {...props}>{children}</table>
     </div>
   );
 };
@@ -104,6 +138,7 @@ const COMPONENTS: Components = {
   // default <pre> would only nest redundantly.
   pre: ({ children }) => <>{children}</>,
   a: ExternalLink,
+  table: TableWrapper,
 };
 
 interface MarkdownProps {

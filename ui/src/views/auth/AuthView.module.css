@@ -18,11 +18,12 @@
   gap: 1rem;
   width: 100%;
   max-width: 400px;
+  min-height: 20rem;
   padding: 32px;
   background: var(--sc-bg-primary);
   border: 1px solid var(--sc-border-secondary);
   border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--sc-shadow-2);
 }
 
 /* ====== HEADING ====== */
@@ -46,7 +47,7 @@
 }
 
 .accent {
-  color: var(--aws-orange);
+  color: var(--sc-accent);
 }
 
 /* ====== FORM ====== */
@@ -56,12 +57,19 @@
   gap: 16px;
 }
 
+/* Placeholder shown until the allowed auth methods are known */
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .formError {
   padding: 10px 12px;
-  background: rgba(217, 48, 37, 0.08);
-  border: 1px solid rgba(217, 48, 37, 0.3);
+  background: var(--sc-status-danger-soft);
+  border: 1px solid color-mix(in srgb, var(--sc-status-danger) 30%, transparent);
   border-radius: 8px;
-  color: #d93025;
+  color: var(--sc-status-danger);
   font-size: 0.82rem;
 }
 
@@ -73,7 +81,13 @@
 .providersRoot {
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
   gap: 0.5rem;
+  justify-content: center;
+}
+
+.borderTop {
+  border-top: 1px solid var(--sc-border-primary);
 }
 
 /* "or continue with" divider */
@@ -129,7 +143,7 @@
   background: none;
   border: none;
   padding: 0;
-  color: var(--aws-orange);
+  color: var(--sc-accent);
   font-family: inherit;
   font-size: inherit;
   font-weight: 600;

@@ -3,7 +3,7 @@
 
 .icon {
   flex-shrink: 0;
-  color: var(--aws-orange);
+  color: var(--sc-accent);
   width: 20px;
   height: 20px;
 }
@@ -19,12 +19,12 @@
 .confirmBtn {
   min-width: 90px;
   justify-content: center;
-  background: #d63031;
-  border-color: #d63031;
-  color: #ffffff;
+  background: var(--sc-status-danger);
+  border-color: var(--sc-status-danger);
+  color: var(--sc-bg-primary);
 }
 
 .confirmBtn:hover:not(:disabled) {
-  background: #b52828;
-  border-color: #b52828;
+  background: color-mix(in srgb, var(--sc-status-danger) 85%, var(--sc-text-primary));
+  border-color: color-mix(in srgb, var(--sc-status-danger) 85%, var(--sc-text-primary));
 }

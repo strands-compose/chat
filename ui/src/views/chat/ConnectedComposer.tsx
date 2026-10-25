@@ -14,12 +14,13 @@ import { useMediaCapabilities } from '@/contexts';
 import { Composer } from '@/components';
 
 const ConnectedComposerComponent = (): ReactElement => {
-  const { isLoading, sendMessage, guardInterrupt, selectedAgentMultimodal } = useChatStore(
+  const { isLoading, sendMessage, guardInterrupt, selectedAgentMultimodal, agentLabel } = useChatStore(
     useShallow((s) => ({
       isLoading: s.isLoading,
       sendMessage: s.sendMessage,
       guardInterrupt: s.guardInterrupt,
       selectedAgentMultimodal: s.selectedAgentMultimodal,
+      agentLabel: s.selectedAgentLabel,
     })),
   );
   const { capabilities } = useMediaCapabilities();
@@ -35,6 +36,7 @@ const ConnectedComposerComponent = (): ReactElement => {
       isLoading={isLoading}
       capabilities={capabilities}
       agentMultimodal={selectedAgentMultimodal}
+      placeholder={agentLabel ? `Ask ${agentLabel}` : undefined}
     />
   );
 };

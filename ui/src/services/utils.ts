@@ -147,6 +147,47 @@ export function toDateParam(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * Format a token count with a no-break space as the thousands separator
+ * (e.g. `32955` → `"32 955"`).
+ */
+export function formatTokenCount(n: number): string {
+  return n.toLocaleString('fr-FR').replace(/\u202f/g, '\u00a0');
+}
+
+/**
+ * Display label for an agent name: underscores and spaces collapse to single
+ * spaces and each word is capitalised (`"DOC EXPERT"`, `"doc_expert"` →
+ * `"Doc Expert"`). Display only — matching logic keeps the raw names.
+ */
+export function formatAgentLabel(name: string | undefined): string {
+  if (!name) return '';
+  return name
+    .replace(/[_\s]+/g, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * Short label for the first day of next month (e.g. `"Nov 1"`), when a
+ * monthly budget resets.
+ */
+export function formatNextMonthReset(now: Date = new Date()): string {
+  const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return next.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/**
+ * Status colour (CSS custom property) for a usage percentage:
+ * ok below 50 %, warn from 50 %, danger from 85 %.
+ */
+export function usageColor(pct: number): string {
+  if (pct >= 85) return 'var(--sc-status-danger)';
+  if (pct >= 50) return 'var(--sc-status-warn)';
+  return 'var(--sc-status-ok)';
+}
+
 // Viewport at or below this width is treated as mobile — the sidebar starts collapsed.
 const MOBILE_BREAKPOINT = 768;
 

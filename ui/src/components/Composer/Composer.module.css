@@ -1,31 +1,48 @@
-/* ====== COMPOSER-STYLE INPUT ====== */
+/* ====== COMPOSER-STYLE INPUT ======
+   The footer adds no spacing of its own; the hosting view positions it. */
 .inputArea {
-  padding: 14px 16px;
-  background: var(--sc-bg-primary);
+  padding: 0;
+  background: transparent;
 }
 
-/* Rounded composer container */
+/* Rounded composer pill */
 .form {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--sc-border-primary);
-  border-radius: 1rem;
-  background: var(--sc-bg-secondary);
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--sc-border-secondary);
+  border-radius: var(--sc-radius-xl);
+  background: var(--sc-bg-primary);
+  box-shadow: var(--sc-shadow-2);
   overflow: hidden;
   transition: border-color 0.15s, box-shadow 0.2s;
 }
 
 .form:focus-within {
-  border-color: var(--aws-orange);
-  box-shadow: 0 0 0 1px var(--aws-orange);
+  border-color: var(--sc-border-primary);
 }
 
-/* Textarea — clean, borderless inside the rounded form */
+[data-theme="dark"] .form {
+  background: var(--sc-bg-hover);
+  border-color: transparent;
+}
+
+/* Input row: attach button, textarea, send button */
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-height: 46px;
+}
+
+/* Textarea — clean, borderless inside the pill */
 .textarea {
   display: block;
-  width: 100%;
-  padding: 14px 18px 6px;
-  font-size: 0.9rem;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 6px;
+  font-size: 14.5px;
   font-family: inherit;
   line-height: 22px;
   border: none;
@@ -41,11 +58,10 @@
 
 .textarea::placeholder {
   color: var(--sc-text-tertiary);
-  opacity: 0.6;
 }
 
 .textarea:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 /* Prevent iOS Safari from auto-zooming the page when the textarea is focused.
@@ -58,27 +74,12 @@
   }
 }
 
-
-/* Action bar at bottom of composer */
-.actions {
+/* Buttons sit at the bottom of the row so they stay put as the textarea grows. */
+.slot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 4px 10px 10px;
-}
-
-/* Left actions (attachment button) */
-.actionsLeft {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Right actions (send/stop buttons) */
-.actionsRight {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  height: 46px;
+  flex-shrink: 0;
 }
 
 /* Circular send button */
@@ -88,18 +89,17 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: var(--aws-orange);
+  background: var(--sc-accent);
   border: none;
   border-radius: 50%;
-  color: #fff;
+  color: var(--sc-on-accent);
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s, transform 0.1s;
+  transition: background 0.15s, transform 0.1s;
   flex-shrink: 0;
 }
 
 .sendButton:hover:not(:disabled) {
-  background: var(--aws-orange-hover);
-  transform: scale(1.05);
+  background: color-mix(in srgb, var(--sc-accent) 88%, var(--sc-text-primary));
 }
 
 .sendButton:focus,
@@ -112,7 +112,8 @@
 }
 
 .sendButton:disabled {
-  opacity: 0.3;
+  background: var(--sc-bg-active);
+  color: var(--sc-bg-primary);
   cursor: not-allowed;
 }
 
@@ -123,18 +124,17 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: #d13212;
+  background: var(--sc-text-primary);
   border: none;
   border-radius: 50%;
-  color: #fff;
+  color: var(--sc-bg-primary);
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: opacity 0.15s, transform 0.1s;
   flex-shrink: 0;
 }
 
 .stopButton:hover {
-  background: #b02a0f;
-  transform: scale(1.05);
+  opacity: 0.85;
 }
 
 .stopButton:focus,
@@ -151,22 +151,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: transparent;
   border: none;
-  border-radius: 50%;
-  color: var(--sc-text-tertiary);
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-text-secondary);
   cursor: pointer;
-  font-size: 1.4rem;
-  font-weight: 300;
-  line-height: 1;
   flex-shrink: 0;
   transition: background 0.15s, color 0.15s;
 }
 
-.plusButton:hover:not(:disabled) {
-  background: var(--sc-bg-tertiary);
+.plusButton:hover:not(:disabled),
+.plusButton[data-state='open'] {
+  background: var(--sc-bg-hover);
   color: var(--sc-text-primary);
 }
 
@@ -189,5 +187,5 @@
 
 .plusButtonBlocked:hover {
   background: transparent;
-  color: var(--sc-text-tertiary);
+  color: var(--sc-text-secondary);
 }

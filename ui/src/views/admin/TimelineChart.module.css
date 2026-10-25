@@ -71,7 +71,7 @@
   border-radius: 0.375rem;
   background: var(--sc-bg-primary);
   color: var(--sc-text-secondary);
-  font-family: var(--aws-font-stack);
+  font-family: var(--sc-font-ui);
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -83,7 +83,7 @@
 }
 
 .stackTrigger:focus-visible {
-  outline: 2px solid var(--aws-orange);
+  outline: 2px solid var(--sc-accent);
   outline-offset: 1px;
 }
 

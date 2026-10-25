@@ -1,14 +1,30 @@
-import { Fragment, memo, useEffect, useMemo, useRef, useCallback } from 'react';
+import { Fragment, memo, useEffect, useMemo, useRef, useCallback, useState } from 'react';
+import type { CSSProperties, ReactElement } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { FiActivity, FiX, FiPlay, FiSquare, FiCpu, FiCheckCircle, FiArrowRight } from 'react-icons/fi';
-import type { IconType } from 'react-icons';
+import {
+  LuArrowDown,
+  LuArrowRightLeft,
+  LuBot,
+  LuBrain,
+  LuCircleCheck,
+  LuNetwork,
+  LuWorkflow,
+  LuX,
+} from 'react-icons/lu';
 import { useChatStore } from '@/store';
-import { Markdown, TokenBadges, IconButton, StatusBadge, SubheaderBar, ToolBadge } from '@/components';
-import { buildAgentRuns, selectWorkflowTrace, selectWorkflowTokens } from './workflow-selectors';
+import { IconButton, Markdown, StatusBadge, SubheaderBar, ToolBadge, UsagePill } from '@/components';
+import type { ToolBadgeStatus } from '@/components';
+import { cn, formatAgentLabel, formatTokenCount } from '@/services/utils';
+import {
+  agentNameSet,
+  buildAgentRuns,
+  selectWorkflowTrace,
+  selectWorkflowTokens,
+  summarizeAgents,
+} from './workflow-selectors';
 import styles from './WorkflowView.module.css';
 
-import type { ReactElement } from 'react';
-import type { AgentEventProps, AgentRun } from './workflow-types';
+import type { AgentRun, AgentSummary } from './workflow-types';
 import type { WorkflowItem, WorkflowGroupedItems } from '@/types';
 
 // ======================
@@ -16,59 +32,52 @@ import type { WorkflowItem, WorkflowGroupedItems } from '@/types';
 // ======================
 
 const EMPTY_ITEMS: WorkflowItem[] = [];
-
-// ======================
-// AGENT EVENT CONFIG
-// ======================
-
-type AgentEventConfig = { Icon: IconType; label: string };
-/** `orchestrator` is optional — only variants an orchestrator can emit define it. */
-type AgentEventConfigMap = Record<
-  AgentEventProps['variant'],
-  { agent: AgentEventConfig; orchestrator?: AgentEventConfig }
->
-
-const AGENT_EVENT_CONFIG: AgentEventConfigMap = {
-  agent_start: {
-    agent:        { Icon: FiPlay,        label: 'Agent started' },
-    orchestrator: { Icon: FiCpu,         label: 'Orchestrator started' },
-  },
-  agent_stop: {
-    agent:        { Icon: FiSquare,      label: 'Agent ended' },
-    orchestrator: { Icon: FiCheckCircle, label: 'Orchestrator ended' },
-  },
-  // A handoff is always a peer-to-peer transfer between agents (Swarm), never an
-  // orchestrator delegation — that arrives as a tool call and renders as a ToolBadge.
-  handoff: {
-    agent:        { Icon: FiArrowRight,  label: 'Handoff' },
-  },
-};
+const FALLBACK_AGENT_COLOR = 'var(--sc-text-tertiary)';
+/** Distance from the bottom (px) still treated as "at the latest item". */
+const STICK_THRESHOLD = 40;
 
 // ======================
 // BLOCK COMPONENTS (only used here)
 // ======================
 
 const InlineReasoning = memo(({ content }: { content: string }): ReactElement => (
-  <p className={styles.inlineReasoning}>{content}</p>
+  <div className={styles.reasoning}>
+    <span className={styles.reasoningLabel}>
+      <LuBrain size={13} />
+      Thinking
+    </span>
+    <p className={styles.reasoningText}>{content}</p>
+  </div>
 ));
 
-const StreamingTextBox = memo(({ content }: { content: string }): ReactElement => (
-  <Markdown className={styles.streamingTextBox}>
+const StreamingTextBox = memo(({ content, live }: { content: string; live: boolean }): ReactElement => (
+  <Markdown className={cn(styles.streamingTextBox, live && styles.streamingTextLive)}>
     {content}
   </Markdown>
 ));
 
-const AgentEvent = memo(({ variant, agentName, content, isOrchestrator }: AgentEventProps): ReactElement => {
-  const cfg = AGENT_EVENT_CONFIG[variant];
-  const { Icon, label } = (isOrchestrator && cfg.orchestrator) || cfg.agent;
-  const agentLabel = agentName ?? content ?? '';
-  return (
-    <div className={styles.agentEvent}>
-      <span className={styles.agentEventIcon}><Icon size={13} /></span>
-      <span className={styles.agentEventText}>{label}: {agentLabel}</span>
-    </div>
-  );
-});
+const Handoff = memo(({ content }: { content: string }): ReactElement => (
+  <div className={styles.handoff}>
+    <LuArrowRightLeft size={14} />
+    <span>{content}</span>
+  </div>
+));
+
+// ======================
+// HELPERS
+// ======================
+
+/** Tool status to show: the recorded one, or success when output exists without a status. */
+const resolveToolStatus = (item: WorkflowItem, isStreaming: boolean): ToolBadgeStatus | undefined => {
+  if (item.toolStatus === 'running') return isStreaming ? 'running' : undefined;
+  if (item.toolStatus) return item.toolStatus;
+  return item.toolOutput ? 'success' : undefined;
+};
+
+const formatRunTokens = (run: AgentRun): string | null => {
+  if (run.inputTokens == null && run.outputTokens == null) return null;
+  return `${formatTokenCount(run.inputTokens ?? 0)} in · ${formatTokenCount(run.outputTokens ?? 0)} out`;
+};
 
 // ======================
 // MAIN COMPONENT
@@ -140,6 +149,23 @@ const WorkflowViewComponent = (): ReactElement => {
 
   const contentRef = useRef<HTMLDivElement>(null);
   const autoScrollRef = useRef(true);
+  const [showJump, setShowJump] = useState(false);
+  const [jumpResetFor, setJumpResetFor] = useState(resolvedMessageId);
+
+  // A different message starts pinned to its latest item, so drop the jump button
+  // during render instead of in an effect (avoids a cascading re-render).
+  if (jumpResetFor !== resolvedMessageId) {
+    setJumpResetFor(resolvedMessageId);
+    setShowJump(false);
+  }
+
+  const agentRuns = useMemo(() => buildAgentRuns(workflowItems), [workflowItems]);
+  const agentSummaries = useMemo(() => summarizeAgents(workflowItems), [workflowItems]);
+  const agentColors = useMemo(
+    () => new Map(agentSummaries.map((a) => [a.agentName, a.color])),
+    [agentSummaries],
+  );
+  const agentNames = useMemo(() => agentNameSet(agentSummaries), [agentSummaries]);
 
   // ======================
   // EFFECTS
@@ -157,17 +183,34 @@ const WorkflowViewComponent = (): ReactElement => {
     if (el) el.scrollTop = el.scrollHeight;
   }, [workflowItems]);
 
+  // ======================
+  // HANDLERS
+  // ======================
+
   const handleScroll = useCallback(() => {
     const el = contentRef.current;
     if (!el) return;
-    autoScrollRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < STICK_THRESHOLD;
+    autoScrollRef.current = atBottom;
+    setShowJump(!atBottom);
   }, []);
+
+  const handleJumpToLatest = useCallback(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    // Jump instantly and re-pin: a smooth scroll chases content that keeps
+    // growing, and its intermediate scroll events would un-pin auto-scroll.
+    autoScrollRef.current = true;
+    setShowJump(false);
+    el.scrollTop = el.scrollHeight;
+  }, []);
+
+  const colorOf = (agentName: string | undefined): string =>
+    (agentName && agentColors.get(agentName)) || FALLBACK_AGENT_COLOR;
 
   // ======================
   // RENDER FUNCTIONS
   // ======================
-
-  const agentRuns = useMemo(() => buildAgentRuns(workflowItems), [workflowItems]);
 
   const renderTitleBar = (): ReactElement => {
     const statusBadge = (() => {
@@ -177,26 +220,25 @@ const WorkflowViewComponent = (): ReactElement => {
     })();
 
     const left = (
-      <div className={styles.workflowPanelTitleLeft}>
-        <FiActivity size={14} className={styles.workflowPanelTitleIcon} />
-        <span className={styles.workflowPanelTitleText}>Workflow</span>
+      <div className={styles.titleLeft}>
+        <LuWorkflow size={17} className={styles.titleIcon} />
+        <span className={styles.titleText}>Workflow</span>
         {statusBadge}
       </div>
     );
 
     const right = (
       <>
-        <TokenBadges
-          inputTokens={inputTokens}
-          outputTokens={outputTokens}
-          label="Tokens"
-        />
-        <IconButton
-          size="sm"
-          onClick={handleClose}
-          title="Close workflow panel"
-        >
-          <FiX size={16} />
+        <span className={styles.headerUsage}>
+          <UsagePill
+            inputTokens={inputTokens}
+            outputTokens={outputTokens}
+            size="sm"
+            title="Tokens for this turn"
+          />
+        </span>
+        <IconButton size="lg" onClick={handleClose} title="Close workflow panel">
+          <LuX size={18} />
         </IconButton>
       </>
     );
@@ -204,19 +246,64 @@ const WorkflowViewComponent = (): ReactElement => {
     return <SubheaderBar left={left} right={right} className={styles.workflowSubheader} />;
   };
 
+  const renderAgentChip = (agent: AgentSummary): ReactElement => (
+    <span
+      key={agent.agentName}
+      className={styles.agentChip}
+      style={{ '--agent': agent.color } as CSSProperties}
+    >
+      <i className={styles.agentDot} />
+      <b className={styles.agentChipName}>{formatAgentLabel(agent.agentName)}</b>
+      {agent.runCount > 1 && <span>×{agent.runCount}</span>}
+    </span>
+  );
+
+  const renderAgentChips = (): ReactElement | null => {
+    if (agentSummaries.length === 0) return null;
+    return <div className={styles.agentChips}>{agentSummaries.map(renderAgentChip)}</div>;
+  };
+
   const renderEmpty = (): ReactElement => (
     <div className={styles.workflowPanelEmpty}>
+      <LuWorkflow size={34} className={styles.emptyIcon} />
       Workflow steps will appear here when the agent runs.
     </div>
   );
 
-  const renderGroup = (group: WorkflowGroupedItems, groupKey: string): ReactElement | ReactElement[] | null => {
+  const renderTool = (item: WorkflowItem, run: AgentRun, key: string): ReactElement => {
+    const toolName = item.toolName || 'Unknown Tool';
+    const isDelegate = agentNames.has(toolName.toUpperCase());
+    const children = run.children.get(item) ?? [];
+    return (
+      <Fragment key={key}>
+        <ToolBadge
+          toolName={toolName}
+          toolInput={item.toolInput}
+          toolOutput={item.toolOutput}
+          status={resolveToolStatus(item, isStreaming)}
+          title={isDelegate ? `Ask ${formatAgentLabel(toolName)}` : undefined}
+          icon={isDelegate ? <LuBot size={15} /> : undefined}
+          accentColor={isDelegate ? colorOf(toolName.toUpperCase()) : undefined}
+          errorLabel={isDelegate ? 'Rejected' : 'Failed'}
+        />
+        {children.map((child) => renderRun(child, true))}
+      </Fragment>
+    );
+  };
+
+  const renderGroup = (
+    group: WorkflowGroupedItems,
+    run: AgentRun,
+    groupKey: string,
+    isLastGroup: boolean,
+  ): ReactElement | ReactElement[] | null => {
     switch (group.type) {
       case 'reasoning':
+        // Reasoning arrives as streamed deltas, so the chunks concatenate without a separator.
         return (
           <InlineReasoning
             key={groupKey}
-            content={group.items.map((item) => item.content).join('\n\n')}
+            content={group.items.map((item) => item.content).join('')}
           />
         );
       case 'text': {
@@ -227,27 +314,15 @@ const WorkflowViewComponent = (): ReactElement => {
           <StreamingTextBox
             key={groupKey}
             content={textContent}
+            live={isStreaming && !run.hasEnded && isLastGroup}
           />
         );
       }
       case 'tool':
-        return group.items.map((item, i) => (
-          <ToolBadge
-            key={`${groupKey}-${i}`}
-            toolName={item.toolName || 'Unknown Tool'}
-            toolInput={item.toolInput}
-            toolOutput={item.toolOutput}
-            agentName={item.agentName}
-          />
-        ));
+        return group.items.map((item, i) => renderTool(item, run, `${groupKey}-${i}`));
       case 'handoff':
         return group.items.map((item, i) => (
-          <AgentEvent
-            key={`${groupKey}-${i}`}
-            variant="handoff"
-            agentName={item.agentName}
-            content={item.content}
-          />
+          <Handoff key={`${groupKey}-${i}`} content={item.content} />
         ));
       default:
         return group.items.map((item, i) => (
@@ -258,39 +333,74 @@ const WorkflowViewComponent = (): ReactElement => {
     }
   };
 
-  /** Separators come from the run, not from the trace: an agent's end event can
-   *  arrive long after a parallel agent's items were appended. */
-  const renderRun = (run: AgentRun): ReactElement => (
-    <Fragment key={run.key}>
-      {run.agentName && (
-        <AgentEvent
-          variant="agent_start"
-          agentName={run.agentName}
-          isOrchestrator={run.isOrchestrator}
-        />
-      )}
-      {run.groups.map((group, i) => renderGroup(group, `${run.key}-${i}`))}
-      {run.hasEnded && (
-        <AgentEvent
-          variant="agent_stop"
-          agentName={run.agentName}
-          isOrchestrator={run.isOrchestrator}
-        />
-      )}
-    </Fragment>
-  );
+  const renderRunMeta = (run: AgentRun): string => {
+    if (run.hasEnded) return formatRunTokens(run) ?? '';
+    if (!isStreaming) return '';
+    return run.isOrchestrator ? 'running' : 'streaming…';
+  };
+
+  function renderRun(run: AgentRun, nested = false): ReactElement {
+    // Items the backend left unattributed have no lane chrome.
+    if (!run.agentName) {
+      return (
+        <div key={run.key} className={styles.runBody}>
+          {run.groups.map((group, i) => renderGroup(group, run, `${run.key}-${i}`, i === run.groups.length - 1))}
+        </div>
+      );
+    }
+
+    const label = formatAgentLabel(run.agentName);
+    const RunIcon = run.isOrchestrator ? LuNetwork : LuBot;
+    return (
+      <div
+        key={run.key}
+        className={cn(styles.run, nested && styles.runNested)}
+        style={{ '--agent': colorOf(run.agentName) } as CSSProperties}
+      >
+        <div className={styles.runHead}>
+          <span className={styles.runAvatar}><RunIcon size={14} /></span>
+          <span className={styles.runName}>{label}</span>
+          <span className={styles.runKind}>{run.isOrchestrator ? 'Orchestrator' : 'Agent'}</span>
+          <span className={styles.runMeta}>{renderRunMeta(run)}</span>
+        </div>
+        <div className={styles.runBody}>
+          {run.groups.map((group, i) => renderGroup(group, run, `${run.key}-${i}`, i === run.groups.length - 1))}
+        </div>
+        {run.hasEnded && (
+          <div className={styles.runFoot}>
+            <LuCircleCheck size={16} className={styles.runFootIcon} />
+            {label} finished
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const renderJump = (): ReactElement | null => {
+    if (!showJump || workflowItems === EMPTY_ITEMS) return null;
+    return (
+      <button type="button" className={styles.jump} onClick={handleJumpToLatest}>
+        <LuArrowDown size={15} />
+        Jump to latest
+      </button>
+    );
+  };
 
   const renderContent = (): ReactElement => (
-    <div ref={contentRef} className={styles.workflowPanelContent} onScroll={handleScroll}>
-      {resolvedMessageId === null && workflowItems === EMPTY_ITEMS
-        ? renderEmpty()
-        : agentRuns.map(renderRun)}
+    <div className={styles.contentWrap}>
+      <div ref={contentRef} className={styles.workflowPanelContent} onScroll={handleScroll}>
+        {resolvedMessageId === null && workflowItems === EMPTY_ITEMS
+          ? renderEmpty()
+          : agentRuns.map((run) => renderRun(run))}
+      </div>
+      {renderJump()}
     </div>
   );
 
   return (
     <div className={styles.workflowPanel}>
       {renderTitleBar()}
+      {hasAssistantMessages && renderAgentChips()}
       {!hasAssistantMessages ? renderEmpty() : renderContent()}
     </div>
   );

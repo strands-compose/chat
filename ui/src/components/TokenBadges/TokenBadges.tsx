@@ -8,6 +8,7 @@
 
 import type { ReactElement } from 'react';
 import { memo } from 'react';
+import { formatTokenCount } from '@/services/utils';
 import styles from './TokenBadges.module.css';
 
 export interface TokenBadgesProps {
@@ -16,10 +17,6 @@ export interface TokenBadgesProps {
   /** Optional prefix label shown before the badges (e.g. "Total"). */
   label?: string;
 }
-
-/** Format with a no-break space as the thousands separator (e.g. "32 955"). */
-const formatCount = (n: number): string =>
-  n.toLocaleString('fr-FR').replace(/\u202f/g, '\u00a0');
 
 const TokenBadgesComponent = ({ inputTokens, outputTokens, label }: TokenBadgesProps): ReactElement | null => {
   // ======================
@@ -30,7 +27,7 @@ const TokenBadgesComponent = ({ inputTokens, outputTokens, label }: TokenBadgesP
   const renderBadge = (badgeLabel: string, value: number): ReactElement => (
     <span className={styles.badge}>
       <span className={styles.badgeLabel}>{badgeLabel}</span>
-      {'\u00a0'}{formatCount(value)}
+      {'\u00a0'}{formatTokenCount(value)}
     </span>
   );
 

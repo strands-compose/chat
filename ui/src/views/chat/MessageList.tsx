@@ -11,7 +11,12 @@ import { cn } from '@/services';
 import { ChatMessage } from './Message';
 import styles from './ChatView.module.css';
 
-const MessageListComponent = (): ReactElement => {
+interface MessageListProps {
+  /** Let the message column span the full width instead of the compact 760px. */
+  isFullWidth?: boolean;
+}
+
+const MessageListComponent = ({ isFullWidth = false }: MessageListProps): ReactElement => {
   const messageOrder = useChatStore((s) => s.messageOrder);
   const restoringSession = useChatStore((s) => s.restoringSession);
 
@@ -26,7 +31,13 @@ const MessageListComponent = (): ReactElement => {
 
   return (
     <main className={styles.chatContainer} ref={containerRef}>
-      <div className={cn(styles.messages, restoringSession && styles.messagesRestoring)}>
+      <div
+        className={cn(
+          styles.messages,
+          isFullWidth && styles.messagesFull,
+          restoringSession && styles.messagesRestoring,
+        )}
+      >
         {messageOrder.map((msgId) => (
           <ChatMessage key={msgId} messageId={msgId} />
         ))}

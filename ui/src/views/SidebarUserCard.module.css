@@ -1,0 +1,150 @@
+/* ====== SETTLE FADE ======
+   Hidden while the sidebar width animates; fades in once it has settled. */
+.root {
+  opacity: 1;
+  transition: opacity 0.18s ease;
+}
+
+.pending {
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
+}
+
+/* ====== EXPANDED CARD ====== */
+.card {
+  border-top: 1px solid var(--sc-border-secondary);
+  padding: 10px 8px 6px;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px;
+  margin: 0 -4px;
+  width: calc(100% + 8px);
+  background: transparent;
+  border: none;
+  border-radius: var(--sc-radius-sm);
+  font-family: inherit;
+  color: var(--sc-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.userRow:hover,
+.userRow[data-state='open'] {
+  background: var(--sc-bg-hover);
+}
+
+.meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email {
+  font-size: 12px;
+  color: var(--sc-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--sc-text-secondary);
+  transition: transform 0.15s;
+}
+
+.userRow[data-state='open'] .chevron {
+  transform: rotate(180deg);
+}
+
+/* ====== BUDGET ====== */
+.budget {
+  margin-top: 10px;
+  padding: 0 2px;
+}
+
+.budgetRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--sc-text-secondary);
+  margin-bottom: 6px;
+}
+
+.amount {
+  font-weight: 600;
+  color: var(--sc-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.of {
+  color: var(--sc-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.budgetNote {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--sc-text-tertiary);
+  margin-top: 6px;
+}
+
+/* ====== COLLAPSED RAIL ====== */
+.railTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* ====== MENU ====== */
+.menuHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px 6px;
+}
+
+.menuUsername {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sc-text-primary);
+}
+
+.menuEmail {
+  font-size: 0.78rem;
+  color: var(--sc-text-tertiary);
+}
+
+.menuItemRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.itemDanger {
+  color: var(--sc-status-danger);
+}

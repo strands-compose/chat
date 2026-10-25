@@ -6,12 +6,9 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--sc-scrim);
 }
 
-[data-theme="dark"] .backdrop {
-  background: rgba(0, 0, 0, 0.65);
-}
 
 .dialog {
   position: fixed;
@@ -21,8 +18,8 @@
   z-index: 1001;
   background: var(--sc-bg-primary);
   border: 1px solid var(--sc-border-secondary);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.10);
+  border-radius: 20px;
+  box-shadow: var(--sc-shadow-3);
   width: calc(100vw - 48px);
   max-width: 480px;
   padding: 1rem;
@@ -32,9 +29,6 @@
   user-select: none;
 }
 
-[data-theme="dark"] .dialog {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
-}
 
 /* Floating mode: top-left anchored (position/size come from inline styles),
    no transform recentering so drag/resize track the cursor. */

@@ -1,6 +1,6 @@
 import type { ReactElement, KeyboardEvent, ChangeEvent, SyntheticEvent, MouseEvent } from 'react';
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { FiArrowUp, FiSquare, FiPaperclip, FiUploadCloud } from 'react-icons/fi';
+import { LuArrowUp, LuCloudUpload, LuPlus, LuSquare } from 'react-icons/lu';
 import type { Attachment, MediaCapabilities, MediaCategory } from '@/types/api';
 import { validateAttachments } from '@/services/utils';
 import { cn } from '@/services/utils';
@@ -26,6 +26,8 @@ interface ComposerProps {
   agentMultimodal?: boolean;
   /** When true, the entire composer is locked (textarea + buttons disabled). */
   disabled?: boolean;
+  /** Textarea placeholder. Defaults to "Ask anything…". */
+  placeholder?: string;
 }
 
 const CATEGORY_LABELS: Record<MediaCategory['category'], string> = {
@@ -68,6 +70,7 @@ const ComposerComponent = ({
   capabilities,
   agentMultimodal = false,
   disabled = false,
+  placeholder = 'Ask anything…',
 }: ComposerProps): ReactElement => {
   // ======================
   // STATE, HOOKS & REFS
@@ -358,7 +361,7 @@ const ComposerComponent = ({
           className={styles.stopButton}
           title="Stop generation"
         >
-          <FiSquare size={16} />
+          <LuSquare size={14} fill="currentColor" />
         </button>
       );
     }
@@ -369,7 +372,7 @@ const ComposerComponent = ({
         className={styles.sendButton}
         title="Send message"
       >
-        <FiArrowUp size={18} />
+        <LuArrowUp size={18} />
       </button>
     );
   };
@@ -385,7 +388,7 @@ const ComposerComponent = ({
           title="File upload not supported"
           onClick={notifyUploadUnsupported}
         >
-          <FiPaperclip size={16} />
+          <LuPlus size={20} />
         </button>
       );
     }
@@ -398,7 +401,7 @@ const ComposerComponent = ({
           title="Add attachment"
           disabled
         >
-          <FiPaperclip size={16} />
+          <LuPlus size={20} />
         </button>
       );
     }
@@ -407,7 +410,7 @@ const ComposerComponent = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button type="button" className={styles.plusButton} title="Add attachment">
-            <FiPaperclip size={16} />
+            <LuPlus size={20} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -428,20 +431,20 @@ const ComposerComponent = ({
     <footer className={styles.inputArea}>
       <form onSubmit={handleSubmit} onMouseDown={handleFormMouseDown} className={styles.form}>
         <AttachmentPreview attachments={attachments} onRemove={handleRemove} />
-        <textarea
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={() => window.scrollTo(0, 0)}
-          placeholder="Ask anything..."
-          disabled={isLoading || disabled}
-          className={styles.textarea}
-          rows={1}
-        />
-        <div className={styles.actions}>
-          <div className={styles.actionsLeft}>{renderAttachButton()}</div>
-          <div className={styles.actionsRight}>{renderSubmitButton()}</div>
+        <div className={styles.row}>
+          <div className={styles.slot}>{renderAttachButton()}</div>
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={() => window.scrollTo(0, 0)}
+            placeholder={placeholder}
+            disabled={isLoading || disabled}
+            className={styles.textarea}
+            rows={1}
+          />
+          <div className={styles.slot}>{renderSubmitButton()}</div>
         </div>
       </form>
       <input
@@ -460,7 +463,7 @@ const ComposerComponent = ({
       />
       <DropOverlay
         visible={isDragging}
-        icon={<FiUploadCloud size={40} />}
+        icon={<LuCloudUpload size={40} />}
         title="Drop your files here"
         subtitle="Release to attach them to your message"
       />

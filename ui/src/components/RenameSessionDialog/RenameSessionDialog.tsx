@@ -74,7 +74,7 @@ const RenameSessionDialogComponent = ({
       open={open}
       onClose={onCancel}
       title="Rename Session"
-      titleIcon={<FiEdit style={{ color: 'var(--aws-orange)' }} aria-hidden="true" />}
+      titleIcon={<FiEdit style={{ color: 'var(--sc-accent)' }} aria-hidden="true" />}
       description="Enter a new name for this chat session."
       actions={renderActions()}
     >

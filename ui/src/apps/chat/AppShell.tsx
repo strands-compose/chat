@@ -1,16 +1,20 @@
 import type { ReactElement } from 'react';
 import { lazy, Suspense, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Header, Sidebar } from '@/views';
+import { Sidebar } from '@/views';
 import { ConfirmDialog, ErrorDialog, SplitLayout } from '@/components';
 import { CollapseProvider, useAuth } from '@/contexts';
 import { useChatStore } from '@/store';
 import { LOGIN_URL } from '@/services/api';
+import { isMobileViewport } from '@/services/utils';
 import { useUrlState } from './useUrlState';
 import styles from './ChatApp.module.css';
 
 const ChatView = lazy(() => import('@/views/chat'));
 const WorkflowView = lazy(() => import('@/views/workflow'));
+const AgentDescriptionPanel = lazy(() =>
+  import('@/views/chat').then((m) => ({ default: m.AgentDescriptionPanel })),
+);
 
 const AppShell = (): ReactElement => {
   const { user, isLoading, authError } = useAuth();
@@ -21,6 +25,15 @@ const AppShell = (): ReactElement => {
     (s) =>
       !s.workflowPanelClosed &&
       (s.selectedWorkflowSeq !== null || s.isLoading || s.activeWorkflowItems.length > 0),
+  );
+  // The welcome screen shows the selected agent's description in the right slot.
+  // On mobile the right slot would cover the whole screen, so it stays hidden.
+  const descriptionOpen = useChatStore(
+    (s) =>
+      !s.sessionId &&
+      s.messageOrder.length === 0 &&
+      s.selectedAgentDescription.trim().length > 0 &&
+      !isMobileViewport(),
   );
   const { interruptConfirmOpen, confirmInterrupt, cancelInterrupt } = useChatStore(
     useShallow((s) => ({
@@ -43,11 +56,10 @@ const AppShell = (): ReactElement => {
 
   return (
     <div className={styles.app}>
-      <Header />
       <div className={styles.body}>
         <Sidebar />
         <SplitLayout
-          rightOpen={workflowOpen}
+          rightOpen={workflowOpen || descriptionOpen}
           left={
             <CollapseProvider>
               <Suspense fallback={null}>
@@ -56,11 +68,9 @@ const AppShell = (): ReactElement => {
             </CollapseProvider>
           }
           right={
-            workflowOpen ? (
-              <Suspense fallback={null}>
-                <WorkflowView />
-              </Suspense>
-            ) : null
+            <Suspense fallback={null}>
+              {workflowOpen ? <WorkflowView /> : descriptionOpen ? <AgentDescriptionPanel /> : null}
+            </Suspense>
           }
         />
       </div>

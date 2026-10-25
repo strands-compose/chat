@@ -24,8 +24,9 @@ import {
   SiKeycloak,
   SiOkta,
 } from 'react-icons/si';
-import { Button, TextField } from '@/components';
+import { Button, Skeleton, TextField } from '@/components';
 import { useAppConfig } from '@/contexts';
+import { cn } from "@/services/utils"
 import { fetchAuthProviders, login, register, startProviderLogin } from '@/services/api';
 import type { AuthProviderInfo } from '@/services/api';
 import styles from './AuthView.module.css';
@@ -65,6 +66,10 @@ const AuthViewComponent = (): ReactElement => {
   // Defaults to true: a failed providers fetch must not hide the only way in.
   const [localSigninEnabled, setLocalSigninEnabled] = useState(true);
 
+  // False until the providers fetch settles, so the card never flashes the
+  // local form before we know whether local sign-in is allowed.
+  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
+
   const isSignUp = mode === 'signup' && registrationEnabled;
 
   const form = useForm({
@@ -101,6 +106,9 @@ const AuthViewComponent = (): ReactElement => {
       })
       .catch(() => {
         // Keep defaults so the local form still works.
+      })
+      .finally(() => {
+        if (!cancelled) setIsConfigLoaded(true);
       });
     return () => {
       cancelled = true;
@@ -234,6 +242,15 @@ const AuthViewComponent = (): ReactElement => {
     );
   };
 
+  /** Fixed-height stand-in for the form while the allowed auth methods are unknown. */
+  const renderSkeleton = (): ReactElement => (
+    <div className={styles.skeleton} aria-busy="true" aria-label="Loading sign-in options">
+      <Skeleton height="62px" radius="8px" />
+      <Skeleton height="62px" radius="8px" />
+      <Skeleton height="40px" radius="8px" />
+    </div>
+  );
+
   const renderLocalForm = (): ReactElement | null => {
     if (!localSigninEnabled) return null;
     return (
@@ -271,7 +288,7 @@ const AuthViewComponent = (): ReactElement => {
 
   /** The "or continue with" wording only reads correctly when a local form precedes it. */
   const renderProvidersDivider = (): ReactElement => {
-    if (!localSigninEnabled) return <hr className={styles.providersRule} />;
+    if (!localSigninEnabled) return <></>;
     return (
       <p className={styles.providersDivider}>
         <span>or continue with</span>
@@ -283,7 +300,7 @@ const AuthViewComponent = (): ReactElement => {
     if (providers.length === 0) return null;
     if (mode === 'signup') return null;
     return (
-      <div className={styles.providersRoot}>
+      <div className={cn(styles.providersRoot, !localSigninEnabled ? styles.borderTop : null)}>
         {renderProvidersDivider()}
         {providers.map((p) => {
           const Icon = resolveProviderIcon(p.id, p.display_name);
@@ -321,9 +338,15 @@ const AuthViewComponent = (): ReactElement => {
     <div className={styles.root}>
       <div className={styles.card}>
         {renderHeading()}
-        {renderLocalForm()}
-        {renderFooter()}
-        {renderProviderButtons()}
+        {isConfigLoaded ? (
+          <>
+            {renderLocalForm()}
+            {renderFooter()}
+            {renderProviderButtons()}
+          </>
+        ) : (
+          renderSkeleton()
+        )}
       </div>
     </div>
   );

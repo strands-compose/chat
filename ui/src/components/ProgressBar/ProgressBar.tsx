@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { memo } from 'react';
-import { cn } from '@/services/utils';
+import { cn, usageColor } from '@/services/utils';
 import styles from './ProgressBar.module.css';
 
 // ======================
@@ -14,23 +14,11 @@ export interface ProgressBarProps {
   max: number;
   /** Optional label rendered before the bar. */
   label?: string;
-  /** Visual variant - 'onDark' uses a semi-transparent track for dark backgrounds. */
-  variant?: 'default' | 'onDark';
   /** Additional class applied to the root wrapper. */
   className?: string;
   /** Accessible label for the progressbar role. */
   ariaLabel?: string;
 }
-
-// ======================
-// HELPERS
-// ======================
-
-const getFillColor = (pct: number): string => {
-  if (pct >= 85) return 'var(--sc-status-danger)';
-  if (pct >= 50) return 'var(--sc-status-warn)';
-  return 'var(--sc-status-ok)';
-};
 
 // ======================
 // COMPONENT
@@ -40,7 +28,6 @@ const ProgressBarComponent = ({
   value,
   max,
   label,
-  variant = 'default',
   className,
   ariaLabel,
 }: ProgressBarProps): ReactElement => {
@@ -49,17 +36,13 @@ const ProgressBarComponent = ({
   // ======================
 
   const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
-  const fillColor = max > 0 ? getFillColor(pct) : 'var(--sc-border-secondary)';
+  const fillColor = max > 0 ? usageColor(pct) : 'var(--sc-border-secondary)';
 
   return (
     <div className={cn(styles.root, className)}>
-      {label !== undefined && (
-        <span className={cn(styles.label, variant === 'onDark' && styles.labelOnDark)}>
-          {label}
-        </span>
-      )}
+      {label !== undefined && <span className={styles.label}>{label}</span>}
       <div
-        className={cn(styles.track, variant === 'onDark' && styles.trackOnDark)}
+        className={styles.track}
         role="progressbar"
         aria-valuenow={Math.round(pct)}
         aria-valuemin={0}

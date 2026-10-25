@@ -1,0 +1,15 @@
+/* ====== PROGRESS RING ====== */
+.ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Gap between the ring and its content, matching the sidebar surface. */
+.inner {
+  display: inline-flex;
+  border-radius: 50%;
+  border: 3px solid var(--sc-bg-secondary);
+}

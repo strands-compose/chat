@@ -1,2 +1,2 @@
 export { ToolBadge } from './ToolBadge';
-export type { ToolBadgeProps } from './ToolBadge';
+export type { ToolBadgeProps, ToolBadgeStatus } from './ToolBadge';
