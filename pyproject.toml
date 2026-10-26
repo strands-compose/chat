@@ -56,7 +56,7 @@ dependencies = [
     "pydantic-settings>=2.14,<3.0",
     # TEMPORARY upper bound: sqladmin 0.32 cannot build admin forms for Float
     # columns on SQLAlchemy 2.1 (NoConverterFound). Remove once sqladmin supports 2.1.
-    "sqlalchemy[asyncio]>=2.0,<2.1",
+    "sqlalchemy[asyncio]>=2.0,<2.2",
     "sqladmin>=0.31,<1.0",
     "strands-compose-agentcore>=0.11.0,<1.0.0",
     "structlog>=26.1",
