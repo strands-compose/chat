@@ -157,16 +157,31 @@
   min-height: 32px;
 }
 
+/* The avatar is the run's fold toggle. */
 .runAvatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 26px;
   height: 26px;
+  padding: 0;
+  border: none;
   border-radius: 50%;
   background: color-mix(in srgb, var(--agent) 15%, transparent);
   color: var(--agent);
   flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.runAvatar:hover,
+.runAvatar:focus-visible {
+  background: color-mix(in srgb, var(--agent) 28%, transparent);
+}
+
+.runAvatar:focus-visible {
+  outline: 2px solid var(--agent);
+  outline-offset: 2px;
 }
 
 .runName {
@@ -203,6 +218,13 @@
   margin-left: 12px;
   padding: 6px 0 6px 22px;
   border-left: 2px solid color-mix(in srgb, var(--agent, var(--sc-border-secondary)) 28%, transparent);
+}
+
+/* A folded run keeps a short stretch of its rail between head and foot. */
+.runBodyCollapsed {
+  height: 10px;
+  margin-left: 12px;
+  border-left: 2px dashed color-mix(in srgb, var(--agent, var(--sc-border-secondary)) 40%, transparent);
 }
 
 .runFoot {

@@ -23,17 +23,29 @@
   z-index: 2;
 }
 
+/* The hit area extends only into the right panel so it never covers the left
+   panel's scrollbar, which sits right against the divider. */
 .splitter::before {
   content: "";
   position: absolute;
   top: 0;
   bottom: 0;
-  left: -4px;
-  right: -4px;
+  left: 0;
+  right: -8px;
 }
 
 .splitterOpen {
   width: 1px;
+}
+
+/* No hit area while the right panel is closed: the divider then sits on the
+   window edge, over the left panel's scrollbar, and cannot be dragged anyway. */
+.splitter:not(.splitterOpen) {
+  cursor: default;
+}
+
+.splitter:not(.splitterOpen)::before {
+  display: none;
 }
 
 .splitter:hover,

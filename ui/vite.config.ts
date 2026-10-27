@@ -96,6 +96,7 @@ export default defineConfig(({ mode }) => {
       outDir: process.env.VITE_OUT_DIR || 'dist',
       sourcemap: false,
       emptyOutDir: true,
+      cssCodeSplit: false,
       minify: true,
       rollupOptions: {
         input,

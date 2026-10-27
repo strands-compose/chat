@@ -151,12 +151,16 @@ const WorkflowViewComponent = (): ReactElement => {
   const autoScrollRef = useRef(true);
   const [showJump, setShowJump] = useState(false);
   const [jumpResetFor, setJumpResetFor] = useState(resolvedMessageId);
+  // Keys of agent runs the user folded via their avatar; run keys are only
+  // unique within one message's trace.
+  const [collapsedRuns, setCollapsedRuns] = useState<ReadonlySet<string>>(() => new Set());
 
-  // A different message starts pinned to its latest item, so drop the jump button
-  // during render instead of in an effect (avoids a cascading re-render).
+  // A different message starts pinned to its latest item with every run open,
+  // so reset during render instead of in an effect (avoids a cascading re-render).
   if (jumpResetFor !== resolvedMessageId) {
     setJumpResetFor(resolvedMessageId);
     setShowJump(false);
+    setCollapsedRuns(new Set());
   }
 
   const agentRuns = useMemo(() => buildAgentRuns(workflowItems), [workflowItems]);
@@ -203,6 +207,14 @@ const WorkflowViewComponent = (): ReactElement => {
     autoScrollRef.current = true;
     setShowJump(false);
     el.scrollTop = el.scrollHeight;
+  }, []);
+
+  const toggleRun = useCallback((runKey: string): void => {
+    setCollapsedRuns((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(runKey)) next.add(runKey);
+      return next;
+    });
   }, []);
 
   const colorOf = (agentName: string | undefined): string =>
@@ -351,6 +363,7 @@ const WorkflowViewComponent = (): ReactElement => {
 
     const label = formatAgentLabel(run.agentName);
     const RunIcon = run.isOrchestrator ? LuNetwork : LuBot;
+    const isCollapsed = collapsedRuns.has(run.key);
     return (
       <div
         key={run.key}
@@ -358,14 +371,26 @@ const WorkflowViewComponent = (): ReactElement => {
         style={{ '--agent': colorOf(run.agentName) } as CSSProperties}
       >
         <div className={styles.runHead}>
-          <span className={styles.runAvatar}><RunIcon size={14} /></span>
+          <button
+            type="button"
+            className={styles.runAvatar}
+            onClick={() => toggleRun(run.key)}
+            aria-expanded={!isCollapsed}
+            title={isCollapsed ? `Expand ${label}` : `Collapse ${label}`}
+          >
+            <RunIcon size={14} />
+          </button>
           <span className={styles.runName}>{label}</span>
           <span className={styles.runKind}>{run.isOrchestrator ? 'Orchestrator' : 'Agent'}</span>
           <span className={styles.runMeta}>{renderRunMeta(run)}</span>
         </div>
-        <div className={styles.runBody}>
-          {run.groups.map((group, i) => renderGroup(group, run, `${run.key}-${i}`, i === run.groups.length - 1))}
-        </div>
+        {isCollapsed ? (
+          <div className={styles.runBodyCollapsed} />
+        ) : (
+          <div className={styles.runBody}>
+            {run.groups.map((group, i) => renderGroup(group, run, `${run.key}-${i}`, i === run.groups.length - 1))}
+          </div>
+        )}
         {run.hasEnded && (
           <div className={styles.runFoot}>
             <LuCircleCheck size={16} className={styles.runFootIcon} />
