@@ -11,10 +11,15 @@
   transition: none;
 }
 
-/* ====== EXPANDED CARD ====== */
+/* ====== EXPANDED CARD ======
+   Raised on the primary surface with a hairline border so it stands out
+   from the secondary sidebar surface behind the session list. */
 .card {
-  border-top: 1px solid var(--sc-border-secondary);
-  padding: 10px 8px 6px;
+  margin: 8px 0;
+  padding: 10px 10px 8px;
+  background: var(--sc-bg-primary);
+  border: 1px solid var(--sc-border-primary);
+  border-radius: var(--sc-radius-sm);
 }
 
 .userRow {
