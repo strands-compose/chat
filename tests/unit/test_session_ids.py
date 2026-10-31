@@ -1,10 +1,14 @@
-"""Tests for ``sessions.ids``: user suffix sanitizing and session id minting."""
+"""Tests for ``sessions.ids``: user suffix sanitizing, session id minting and anonymising."""
 
 import re
 
 import pytest
 
-from strands_compose_chat.sessions.ids import new_session_id, user_session_suffix
+from strands_compose_chat.sessions.ids import (
+    anonymized_session_id,
+    new_session_id,
+    user_session_suffix,
+)
 from tests.factories import make_user
 
 
@@ -33,3 +37,28 @@ def test_new_session_id_has_uuid_and_suffix() -> None:
 def test_new_session_id_without_suffix_is_bare_uuid() -> None:
     session_id = new_session_id(make_user(email="", username="$$$"))
     assert re.fullmatch(r"[0-9a-f-]{36}", session_id)
+
+
+_UUID = "0f8fad5b-d9cb-469f-a165-70867728950e"
+
+
+@pytest.mark.parametrize(
+    "session_id",
+    [f"{_UUID}_JOHN-DOE-GMAIL-COM", _UUID, f"{_UUID}_ANONYMIZED"],
+    ids=["with-suffix", "bare-uuid", "already-anonymized"],
+)
+def test_anonymized_session_id_keeps_uuid_and_drops_suffix(session_id: str) -> None:
+    assert anonymized_session_id(session_id) == f"{_UUID}_ANONYMIZED"
+
+
+@pytest.mark.parametrize(
+    "session_id",
+    ["sess_" + "a" * 59, f"{_UUID}JOHN", None],
+    ids=["client-supplied", "uuid-without-separator", "none"],
+)
+def test_anonymized_session_id_mints_fresh_uuid_without_leading_uuid(
+    session_id: str | None,
+) -> None:
+    result = anonymized_session_id(session_id)
+    assert re.fullmatch(r"[0-9a-f-]{36}_ANONYMIZED", result)
+    assert not result.startswith(_UUID)

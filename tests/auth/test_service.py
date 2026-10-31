@@ -139,6 +139,42 @@ async def test_anonymize_user_tombstones_session_titles(db: AsyncSession) -> Non
     assert fresh_session.manifest_captured_at is None
 
 
+async def test_anonymize_user_removes_user_suffix_from_session_ids(db: AsyncSession) -> None:
+    """anonymize_user swaps the email suffix of session ids for an anonymised tag."""
+    session_uuid = "0f8fad5b-d9cb-469f-a165-70867728950e"
+    (user,) = await persist(db, make_user(email="john.doe@gmail.com"))
+    (chat_session,) = await persist(
+        db,
+        make_chat_session(user_id=user.id, session_id=f"{session_uuid}_JOHN-DOE-GMAIL-COM"),
+    )
+
+    await anonymize_user(db, user.id)
+
+    fresh_session = await db.get(ChatSession, chat_session.id)
+    assert fresh_session is not None
+    assert fresh_session.session_id == f"{session_uuid}_ANONYMIZED"
+
+
+async def test_anonymize_user_mints_fresh_session_id_when_anonymised_id_is_taken(
+    db: AsyncSession,
+) -> None:
+    """A session whose anonymised id another user already holds gets a fresh UUID."""
+    session_uuid = "0f8fad5b-d9cb-469f-a165-70867728950e"
+    (user, other) = await persist(db, make_user(), make_user())
+    (chat_session, _) = await persist(
+        db,
+        make_chat_session(user_id=user.id, session_id=f"{session_uuid}_JOHN-DOE-GMAIL-COM"),
+        make_chat_session(user_id=other.id, session_id=f"{session_uuid}_ANONYMIZED"),
+    )
+
+    await anonymize_user(db, user.id)
+
+    fresh_session = await db.get(ChatSession, chat_session.id)
+    assert fresh_session is not None
+    assert fresh_session.session_id.endswith("_ANONYMIZED")
+    assert not fresh_session.session_id.startswith(session_uuid)
+
+
 async def test_anonymize_user_raises_value_error_for_unknown_user(
     db: AsyncSession,
 ) -> None:

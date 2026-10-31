@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db.models import ChatMessage, ChatSession, Group, User, UserGroup
 from ..schemas.auth import MeOut, MePatchIn
+from ..sessions.ids import anonymized_session_id
 
 # Tombstone text written over a user's conversation content on anonymisation.
 # Markdown italic so the UI renders it as visibly redacted, not as real content.
@@ -132,7 +133,8 @@ async def anonymize_user(db: AsyncSession, user_id: str) -> User:
 
     Scrubs personally identifying fields on the user row, deactivates the
     account, and overwrites the text of the user's chat messages and session
-    titles/manifests with a tombstone. The stable ``id``, ``budget``,
+    titles/manifests with a tombstone. Session ids lose their user suffix, which
+    carries the email, but keep their UUID. The stable ``id``, ``budget``,
     ``auth_provider``, ``created_at``, and all ``token_usage`` rows are kept so
     financial and audit history stays intact. The operation cannot be undone.
 
@@ -175,20 +177,57 @@ async def anonymize_user(db: AsyncSession, user_id: str) -> User:
 
     # Overwrite conversation content the user authored. Row shape (role, seq) is
     # preserved; only personal content is replaced. Token usage is untouched.
-    session_ids = list(
-        (await db.execute(select(ChatSession.id).where(ChatSession.user_id == user_id))).scalars()
+    sessions = list(
+        (await db.execute(select(ChatSession).where(ChatSession.user_id == user_id))).scalars()
     )
-    if session_ids:
+    if sessions:
         await db.execute(
             update(ChatMessage)
-            .where(ChatMessage.chat_session_id.in_(session_ids))
+            .where(ChatMessage.chat_session_id.in_([s.id for s in sessions]))
             .values(content=_CONTENT_TOMBSTONE, attachments=None)
         )
-        await db.execute(
-            update(ChatSession)
-            .where(ChatSession.id.in_(session_ids))
-            .values(title=_TITLE_TOMBSTONE, manifest=None, manifest_captured_at=None)
-        )
+        await _anonymize_session_ids(db, user_id, sessions)
+        for chat_session in sessions:
+            chat_session.title = _TITLE_TOMBSTONE
+            chat_session.manifest = None
+            chat_session.manifest_captured_at = None
 
     await db.flush()
     return user
+
+
+async def _anonymize_session_ids(
+    db: AsyncSession, user_id: str, sessions: list[ChatSession]
+) -> None:
+    """Swap the identifying suffix of each session id for an anonymised tag.
+
+    Session ids are unique and clients may supply their own, so a derived id can
+    already be in use. Such a session gets a fresh UUID instead, which keeps the
+    erasure from failing on a unique-constraint violation.
+
+    Args:
+        db: An open async database session. The caller owns the commit.
+        user_id: Primary key of the user being anonymised.
+        sessions: All of that user's chat sessions.
+    """
+    candidates = {s.id: anonymized_session_id(s.session_id) for s in sessions}
+    taken = set(
+        (
+            await db.execute(
+                select(ChatSession.session_id).where(
+                    ChatSession.session_id.in_(candidates.values()),
+                    ChatSession.user_id != user_id,
+                )
+            )
+        ).scalars()
+    )
+    # Ids already anonymised keep their value, so reserve them first.
+    taken.update(s.session_id for s in sessions if candidates[s.id] == s.session_id)
+    for chat_session in sessions:
+        candidate = candidates[chat_session.id]
+        if candidate == chat_session.session_id:
+            continue
+        if candidate in taken:
+            candidate = anonymized_session_id(None)
+        taken.add(candidate)
+        chat_session.session_id = candidate
