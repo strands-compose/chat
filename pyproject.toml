@@ -58,7 +58,7 @@ dependencies = [
     # columns on SQLAlchemy 2.1 (NoConverterFound). Remove once sqladmin supports 2.1.
     "sqlalchemy[asyncio]>=2.0,<2.1",
     "sqladmin>=0.31,<1.0",
-    "strands-compose-agentcore>=0.11.0,<1.0.0",
+    "strands-compose-agentcore>=0.12.0,<1.0.0",
     "structlog>=26.1",
     "uvicorn>=0.49,<1.0",
     "uvicorn-worker>=0.4,<1.0",
