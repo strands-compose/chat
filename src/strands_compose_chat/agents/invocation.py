@@ -10,16 +10,14 @@ from strands_compose_agentcore import (
     AgentCoreClient,
     AgentCoreClientError,
     AsyncLocalClient,
-    ClientConnectionError,
 )
 
 from ..analytics.service import get_monthly_spend
 from ..auth.current_user import ApiKeyOrSessionUser
-from ..deps import DbSession
+from ..deps import AgentClients, DbSession
 from ..errors import ProblemDetailsException
 from ..sessions.ids import new_session_id
 from ..sessions.service import lock_or_create, touch_last_used
-from .client import build_client
 from .payload import parse_request
 from .service import get_visible, load_user_groups
 from .streaming import (
@@ -44,6 +42,7 @@ async def invoke(
     request: Request,
     current_user: ApiKeyOrSessionUser,
     db: DbSession,
+    agent_clients: AgentClients,
 ) -> StreamingResponse:
     """Forward an agent invocation and stream events back as SSE."""
     body, prompt, attachments = await parse_request(request)
@@ -113,7 +112,7 @@ async def invoke(
     # the shared DB connection back to the pool before the stream begins.
     await db.commit()
 
-    client = build_client(agent)
+    client = agent_clients.get(agent)
 
     async def event_stream():
         stream_finished = False
@@ -139,7 +138,7 @@ async def invoke(
         # Both handlers persist what they emit: the failure never reached the
         # stream as an error event, so nothing else would record it and the
         # restored thread would end on the user's prompt alone.
-        except (AgentCoreClientError, ClientConnectionError):
+        except AgentCoreClientError:
             stream_finished = True
             logger.warning(
                 "upstream agent error",
@@ -160,20 +159,15 @@ async def invoke(
                     await client.aclose()
                 except Exception:
                     logger.warning("client close failed", exc_info=True)
-            elif stream_finished:
-                # AgentCoreClient — stream ended normally, just close.
-                try:
-                    await asyncio.to_thread(client.close)
-                except Exception:
-                    logger.warning("client close failed", exc_info=True)
-            else:
+            elif not stream_finished:
                 # AgentCoreClient — client disconnected mid-stream; stop the
-                # remote session before closing so the runtime doesn't keep running.
+                # remote session so the runtime doesn't keep running. The client
+                # is shared across invocations, so it stays open.
                 logger.info(
                     "stream interrupted by client disconnect",
                     session_id=session_id,
                 )
-                task = asyncio.ensure_future(_stop_and_close_agentcore(client, session_id))
+                task = asyncio.ensure_future(_stop_agentcore_session(client, session_id))
                 _stop_tasks.add(task)
                 task.add_done_callback(_stop_tasks.discard)
 
@@ -184,14 +178,14 @@ async def invoke(
     )
 
 
-async def _stop_and_close_agentcore(
+async def _stop_agentcore_session(
     client: AgentCoreClient,
     session_id: str,
 ) -> None:
-    """Signal the AgentCore runtime to stop the session, then close the client.
+    """Signal the AgentCore runtime to stop the session.
 
     Args:
-        client: The ``AgentCoreClient`` whose session should be stopped.
+        client: The shared ``AgentCoreClient`` for the session's runtime.
         session_id: The session identifier to stop.
     """
     try:
@@ -207,8 +201,3 @@ async def _stop_and_close_agentcore(
             session_id=session_id,
             exc_info=True,
         )
-    finally:
-        try:
-            await asyncio.to_thread(client.close)
-        except Exception:
-            logger.warning("client close failed", exc_info=True)

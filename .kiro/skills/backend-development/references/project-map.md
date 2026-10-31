@@ -23,7 +23,7 @@ src/strands_compose_chat/
 ├── schemas/          # Pydantic v2 DTOs, one module per feature surface (…In / …Out)
 ├── middleware/       # ASGI/Starlette middleware, one concern per file (e.g. security headers)
 ├── admin/            # sqladmin: auth.py (backend + resolve_admin_user) + views/ (one ModelView per file)
-├── agents/           # FEATURE: registry read + visibility, per-invocation client, SSE invocation + persistence
+├── agents/           # FEATURE: registry read + visibility, agent client cache (one per runtime), SSE invocation + persistence
 ├── auth/             # FEATURE: local login, OIDC, API keys, sessions, JIT provisioning, current-user deps
 ├── sessions/         # FEATURE: chat-session CRUD + message history
 ├── media/            # FEATURE: attachment capabilities + Strands content-block building

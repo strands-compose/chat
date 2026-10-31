@@ -26,6 +26,7 @@ from .admin.views import (
     TokenUsageAdmin,
     UserAdmin,
 )
+from .agents.client import AgentClientCache
 from .agents.invocation import router as invocation_router
 from .agents.routes import router as agents_router
 from .analytics.routes_admin import router as analytics_admin_router
@@ -62,6 +63,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
     yield
 
+    await app.state.agent_clients.aclose()
+
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     """Create and configure the FastAPI application."""
@@ -78,6 +81,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         redoc_url=None,
         openapi_url=None,
     )
+    # One client per AgentCore runtime for the process; closed in ``lifespan``.
+    app.state.agent_clients = AgentClientCache()
 
     register_exception_handlers(app)
 

@@ -5,6 +5,7 @@ resets the schema per test instead of relying on transaction rollback.
 """
 
 import asyncio
+import uuid
 from collections.abc import AsyncIterator
 
 import pytest
@@ -124,7 +125,7 @@ async def test_streaming_success_persists_one_assistant_turn(
     ]
     fake = FakeAgentClient(events=scripted_events)
     monkeypatch.setattr(
-        "strands_compose_chat.agents.invocation.build_client",
+        "strands_compose_chat.agents.client.build_client",
         lambda agent: fake,
     )
 
@@ -185,7 +186,7 @@ async def test_invocation_passes_username_to_agent_client(
 
     fake = FakeAgentClient(events=[])
     monkeypatch.setattr(
-        "strands_compose_chat.agents.invocation.build_client",
+        "strands_compose_chat.agents.client.build_client",
         lambda agent: fake,
     )
 
@@ -197,6 +198,50 @@ async def test_invocation_passes_username_to_agent_client(
 
     assert resp.status_code == 200
     assert fake.invoke_user_ids == ["alice"]
+
+
+async def test_agentcore_client_stays_open_across_invocations(
+    client: AsyncClient,
+    db: AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A runtime's shared client serves consecutive turns and is never closed by one."""
+    user = make_user()
+    group = make_group()
+    agent = make_agent(
+        agent_kind="agentcore_runtime",
+        agent_runtime_arn=f"arn:aws:bedrock-agentcore:eu-central-1:0:runtime/{uuid.uuid4().hex}",
+        region="eu-central-1",
+        endpoint_url=None,
+    )
+    await persist(db, user, group, agent)
+    db.add(UserGroup(user_id=user.id, group_id=group.id))
+    db.add(AgentGroup(agent_id=agent.id, group_id=group.id))
+    await db.flush()
+    headers = await as_user(db, user)
+
+    fake = FakeAgentClient(
+        events=[StreamEvent(type=EventType.SESSION_END, agent_name="a", data={"text": "hi"})]
+    )
+    monkeypatch.setattr(
+        "strands_compose_chat.agents.client.build_client",
+        lambda agent: fake,
+    )
+
+    turns = [
+        await client.post(
+            "/api/v1/invocations",
+            json={"agent_id": agent.id, "prompt": prompt},
+            headers=headers,
+        )
+        for prompt in ("first", "second")
+    ]
+
+    for resp in turns:
+        assert resp.status_code == 200
+        assert _parse_sse_frames(resp.content)[-1]["event"] == str(EventType.SESSION_END)
+    assert fake.invoke_user_ids == [user.username, user.username]
+    assert fake.close_called is False
 
 
 async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
@@ -247,7 +292,7 @@ async def test_streaming_slow_agent_sends_heartbeat_without_dropping_stream(
     gate = asyncio.Event()
     fake = FakeAgentClient(events=scripted_events, gate_before={2: gate}, blocked_at={2: blocked})
     monkeypatch.setattr(
-        "strands_compose_chat.agents.invocation.build_client",
+        "strands_compose_chat.agents.client.build_client",
         lambda agent: fake,
     )
 
@@ -325,7 +370,7 @@ async def test_streaming_mid_stream_error_persists_a_failed_assistant_turn(
     ]
     fake = FakeAgentClient(events=scripted_events, raise_after=1)
     monkeypatch.setattr(
-        "strands_compose_chat.agents.invocation.build_client",
+        "strands_compose_chat.agents.client.build_client",
         lambda agent: fake,
     )
 

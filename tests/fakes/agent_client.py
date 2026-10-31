@@ -6,7 +6,7 @@ Lets streaming tests drive ``agents.streaming.stream_turn`` (and the
 Inject via::
 
     monkeypatch.setattr(
-        "strands_compose_chat.agents.invocation.build_client",
+        "strands_compose_chat.agents.client.build_client",
         lambda agent: fake,
     )
 """

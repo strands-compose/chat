@@ -1,9 +1,13 @@
-"""Build the per-invocation agent client for an Agent row.
+"""Build the agent client for an Agent row, reusing AgentCore clients per runtime.
 
-Each invocation builds its own client and closes it when the stream ends —
-there is no shared cache, so the service is correct under horizontal scaling
-without any cross-task cache invalidation.
+An ``AgentCoreClient`` costs about 150 ms of CPU and 10 MB to build and streams
+many invocations at once, so one is kept per runtime (ARN + region) for the
+life of the process. Each replica holds its own cache of connections only — no
+data that could go stale — so horizontal scaling needs no invalidation. Local
+agents keep a fresh ``AsyncLocalClient`` per invocation.
 """
+
+import asyncio
 
 import httpx
 from strands_compose_agentcore import AgentCoreClient, AsyncLocalClient
@@ -11,6 +15,48 @@ from strands_compose_agentcore import AgentCoreClient, AsyncLocalClient
 from ..db.models import Agent
 
 AgentClient = AgentCoreClient | AsyncLocalClient
+
+
+class AgentClientCache:
+    def __init__(self) -> None:
+        """Process-wide cache of ``AgentCoreClient`` objects, keyed by runtime ARN and region.
+
+        Create one per app and close it at shutdown with :meth:`aclose`.
+        """
+        self._runtime_clients: dict[tuple[str | None, str | None], AgentClient] = {}
+
+    def get(self, agent: Agent) -> AgentClient:
+        """Return the client for *agent*.
+
+        ``agentcore_runtime`` agents share one cached client per runtime; it is
+        built on first use and must not be closed by the caller. ``local``
+        agents get a new client that the caller closes when the stream ends.
+
+        Args:
+            agent: The agent registry row to invoke.
+
+        Returns:
+            The cached ``AgentCoreClient`` or a new ``AsyncLocalClient``.
+
+        Raises:
+            ValueError: When required fields for the agent kind are missing or
+                the kind is unknown.
+        """
+        if agent.agent_kind != "agentcore_runtime":
+            return build_client(agent)
+        key = (agent.agent_runtime_arn, agent.region)
+        client = self._runtime_clients.get(key)
+        if client is None:
+            client = build_client(agent)
+            self._runtime_clients[key] = client
+        return client
+
+    async def aclose(self) -> None:
+        """Close every cached client; later :meth:`get` calls build new ones."""
+        clients = list(self._runtime_clients.values())
+        self._runtime_clients.clear()
+        for client in clients:
+            await asyncio.to_thread(client.close)
 
 
 def build_client(agent: Agent) -> AgentClient:
