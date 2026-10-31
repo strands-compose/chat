@@ -120,6 +120,8 @@ class SessionUsageSummaryOut(BaseModel):
 
     input_tokens: int
     output_tokens: int
+    cache_read_input_tokens: int
+    cache_write_input_tokens: int
     total_cost: Cost
 
 

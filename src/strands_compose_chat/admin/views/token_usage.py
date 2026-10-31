@@ -45,6 +45,8 @@ class TokenUsageAdmin(BaseModelView, model=TokenUsage):
         TokenUsage.cost,
         TokenUsage.input_tokens,
         TokenUsage.output_tokens,
+        TokenUsage.cache_read_input_tokens,
+        TokenUsage.cache_write_input_tokens,
         TokenUsage.model_id,
         TokenUsage.provider,
         TokenUsage.created_at,
@@ -57,6 +59,8 @@ class TokenUsageAdmin(BaseModelView, model=TokenUsage):
         TokenUsage.cost,
         TokenUsage.input_tokens,
         TokenUsage.output_tokens,
+        TokenUsage.cache_read_input_tokens,
+        TokenUsage.cache_write_input_tokens,
         TokenUsage.created_at,
     ]
 
@@ -134,18 +138,13 @@ class TokenUsageAdmin(BaseModelView, model=TokenUsage):
                         if row.model_id and row.provider
                         else None
                     )
-                    if pricing:
-                        in_price = float(pricing.input_token_price)
-                        out_price = float(pricing.output_token_price)
-                    else:
-                        in_price = 0.0
-                        out_price = 0.0
-
-                    new_cost = round(
-                        compute_cost(in_price, out_price, row.input_tokens, row.output_tokens),
-                        6,
+                    row.cost = compute_cost(
+                        pricing,
+                        input_tokens=row.input_tokens,
+                        output_tokens=row.output_tokens,
+                        cache_read_input_tokens=row.cache_read_input_tokens,
+                        cache_write_input_tokens=row.cache_write_input_tokens,
                     )
-                    row.cost = new_cost
                     updated += 1
 
                 await session.commit()

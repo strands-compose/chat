@@ -5,7 +5,7 @@
  * shape of the streaming pipeline only, not the React/store contract.
  */
 
-import type { Message, WorkflowItem } from '../../types';
+import type { Message, TurnTokens, WorkflowItem } from '../../types';
 
 /**
  * Mutable buffer that accumulates events for a single in-flight assistant turn.
@@ -25,10 +25,8 @@ export interface StreamingState {
    */
   openTextItemByAgent: Map<string, WorkflowItem>;
 
-  /** Input tokens summed across this turn's `agent_complete` events. */
-  inputTokens: number;
-  /** Output tokens summed across this turn's `agent_complete` events. */
-  outputTokens: number;
+  /** Token totals summed across this turn's `agent_complete` events. Mutated in place. */
+  tokens: TurnTokens;
 
   /** First error message received in this turn — subsequent errors are ignored. */
   errorMessage: string | null;
@@ -39,14 +37,6 @@ export interface StreamingState {
    * a `session_end` (or multiple `error` events arrive before `session_end`).
    */
   isFinalized: boolean;
-}
-
-/**
- * Token totals for a single turn, summed across `agent_complete` events.
- */
-export interface TurnTokens {
-  input: number;
-  output: number;
 }
 
 /**

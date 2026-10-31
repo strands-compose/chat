@@ -8,7 +8,7 @@
  *   so updates align with the browser repaint cadence.
  */
 
-import type { WorkflowItem } from '../../types';
+import type { TurnTokens, WorkflowItem } from '../../types';
 import { streamingState } from './state';
 
 /** Minimum gap between flushes — caps store updates at ~10/sec, smooth on 60Hz displays. */
@@ -21,7 +21,7 @@ const FLUSH_INTERVAL_MS = 100;
  */
 interface SchedulerHooks {
   applyWorkflowItems: (items: WorkflowItem[]) => void;
-  applyWorkflowTokens: (tokens: { input: number; output: number }) => void;
+  applyWorkflowTokens: (tokens: TurnTokens) => void;
 }
 
 let hooks: SchedulerHooks | null = null;
@@ -59,10 +59,7 @@ export function scheduleFlush(): void {
     if (!hooks) return;
 
     hooks.applyWorkflowItems([...streamingState.workflowItemsBuffer]);
-    hooks.applyWorkflowTokens({
-      input: streamingState.inputTokens,
-      output: streamingState.outputTokens,
-    });
+    hooks.applyWorkflowTokens({ ...streamingState.tokens });
   });
 }
 

@@ -98,14 +98,13 @@ const pushAgentStopOnce = (
   agentName: string | undefined,
   effects: StreamingSideEffects,
   isOrchestrator = false,
-  usage?: { inputTokens?: number; outputTokens?: number },
+  totalTokens?: number,
 ): void => {
   const buffer = streamingState.workflowItemsBuffer;
   const last = buffer[buffer.length - 1];
   if (last?.type === 'agent_stop' && last.agentName === agentName) {
     // A duplicate stop (e.g. node_stop then agent_complete) may carry the usage.
-    if (usage?.inputTokens != null) last.inputTokens = usage.inputTokens;
-    if (usage?.outputTokens != null) last.outputTokens = usage.outputTokens;
+    if (totalTokens != null) last.totalTokens = totalTokens;
     return;
   }
   pushItem(
@@ -114,8 +113,7 @@ const pushAgentStopOnce = (
       content: '',
       agentName,
       isOrchestrator,
-      inputTokens: usage?.inputTokens,
-      outputTokens: usage?.outputTokens,
+      totalTokens,
     },
     effects,
   );
@@ -133,7 +131,7 @@ export function handleSessionEnd(event: ChatStreamEvent, effects: StreamingSideE
   // Snapshot the trace and token totals before finalizeMessage resets the
   // per-turn buffer, otherwise onSessionEnd would persist empty values.
   const trace = [...streamingState.workflowItemsBuffer];
-  const tokens = { input: streamingState.inputTokens, output: streamingState.outputTokens };
+  const tokens = { ...streamingState.tokens };
   finalizeMessage(event, effects);
   effects.onSessionEnd(trace, tokens);
 }
@@ -249,22 +247,26 @@ const handleCompleteLike = (
   event: ChatStreamEvent,
   effects: StreamingSideEffects,
   isOrchestrator: boolean,
-  usage?: { inputTokens?: number; outputTokens?: number },
+  totalTokens?: number,
 ): void => {
-  pushAgentStopOnce(normalizeAgentName(event.agent_name), effects, isOrchestrator, usage);
+  pushAgentStopOnce(normalizeAgentName(event.agent_name), effects, isOrchestrator, totalTokens);
 };
 
 export function handleComplete(event: ChatStreamEvent, effects: StreamingSideEffects): void {
+  const input = event.input_tokens ?? 0;
+  const output = event.output_tokens ?? 0;
+  const cacheRead = event.cache_read_input_tokens ?? 0;
+  const cacheWrite = event.cache_write_input_tokens ?? 0;
   // Accumulate per-turn token usage from agent_complete events only. This
   // mirrors the backend, which persists usage on AGENT_COMPLETE (not
   // multiagent_complete) so the orchestrator total isn't double-counted.
-  streamingState.inputTokens += event.input_tokens ?? 0;
-  streamingState.outputTokens += event.output_tokens ?? 0;
-  // The agent's own usage is also kept on its stop item for the panel's run header.
-  handleCompleteLike(event, effects, false, {
-    inputTokens: event.input_tokens,
-    outputTokens: event.output_tokens,
-  });
+  const { tokens } = streamingState;
+  tokens.input += input;
+  tokens.output += output;
+  tokens.cacheRead += cacheRead;
+  tokens.cacheWrite += cacheWrite;
+  // The agent's own total is also kept on its stop item for the panel's run header.
+  handleCompleteLike(event, effects, false, input + output + cacheRead + cacheWrite);
 }
 
 export function handleMultiagentComplete(event: ChatStreamEvent, effects: StreamingSideEffects): void {

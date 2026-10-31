@@ -78,20 +78,9 @@ async def summary_handler(
         body: Summary request parameters including date range and optional filters.
 
     Returns:
-        SummaryOut with total_cost, input_tokens, output_tokens, hits,
-        and active_users.
+        SummaryOut with the cost, the four token totals, hits, and active users.
     """
-    cost, input_tokens, output_tokens, hits, active_users = await get_summary(
-        db, body.from_date, body.to_date, body.filters
-    )
-
-    return SummaryOut(
-        total_cost=cost,
-        input_tokens=input_tokens,
-        output_tokens=output_tokens,
-        hits=hits,
-        active_users=active_users,
-    )
+    return await get_summary(db, body.from_date, body.to_date, body.filters)
 
 
 @router.post("/breakdown", response_model=BreakdownOut)

@@ -149,6 +149,8 @@ class SummaryOut(BaseModel):
         total_cost: Sum of TokenUsage.cost in the range.
         input_tokens: Sum of TokenUsage.input_tokens in the range.
         output_tokens: Sum of TokenUsage.output_tokens in the range.
+        cache_read_input_tokens: Sum of TokenUsage.cache_read_input_tokens in the range.
+        cache_write_input_tokens: Sum of TokenUsage.cache_write_input_tokens in the range.
         hits: Count of assistant messages that are not errors in the range.
         active_users: Count of distinct users with token usage in the range.
     """
@@ -156,6 +158,8 @@ class SummaryOut(BaseModel):
     total_cost: Cost
     input_tokens: int
     output_tokens: int
+    cache_read_input_tokens: int
+    cache_write_input_tokens: int
     hits: int
     active_users: int
 
@@ -310,12 +314,16 @@ class MeUsagePoint(BaseModel):
         cost: Total cost in this bucket.
         input_tokens: Total input tokens in this bucket.
         output_tokens: Total output tokens in this bucket.
+        cache_read_input_tokens: Total prompt-cache read tokens in this bucket.
+        cache_write_input_tokens: Total prompt-cache write tokens in this bucket.
     """
 
     label: str
     cost: Cost
     input_tokens: int
     output_tokens: int
+    cache_read_input_tokens: int
+    cache_write_input_tokens: int
 
 
 class MeUsageOut(BaseModel):

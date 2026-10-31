@@ -27,6 +27,7 @@ import {
 } from '@/components/charts';
 import type { ECOption } from '@/components/charts';
 import type { MeUsagePoint } from '@/types/analytics';
+import { pointTotalTokens } from './usage-points';
 import styles from './CurrentMonthPanel.module.css';
 
 // ======================
@@ -118,10 +119,7 @@ const CurrentMonthPanelComponent = ({
     [points],
   );
 
-  const tokenSeries = useMemo(
-    () => points.map((p) => p.input_tokens + p.output_tokens),
-    [points],
-  );
+  const tokenSeries = useMemo(() => points.map(pointTotalTokens), [points]);
 
   const costSeries = useMemo(
     () => points.map((p) => p.cost),

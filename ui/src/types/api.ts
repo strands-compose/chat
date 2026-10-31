@@ -108,6 +108,8 @@ export interface ChatStreamEvent {
   /** Aggregated token usage reported by `agent_complete` / `multiagent_complete`. */
   input_tokens?: number;
   output_tokens?: number;
+  cache_read_input_tokens?: number;
+  cache_write_input_tokens?: number;
 
   /** Backend-minted session id, carried on `session_start` for a new conversation. */
   session_id?: string;

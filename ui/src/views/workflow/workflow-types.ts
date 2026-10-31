@@ -13,9 +13,8 @@ export interface AgentRun {
   /** True once the agent's stop event arrived; false while it runs or is paused mid-delegation. */
   hasEnded: boolean;
   groups: WorkflowGroupedItems[];
-  /** Tokens reported when the agent finished. */
-  inputTokens?: number;
-  outputTokens?: number;
+  /** All tokens (input, output and cache) reported when the agent finished. */
+  totalTokens?: number;
   /** Sub-agent runs launched by a delegation tool call in this run, keyed by that tool item. */
   children: Map<WorkflowItem, AgentRun[]>;
 }

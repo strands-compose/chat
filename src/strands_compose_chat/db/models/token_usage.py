@@ -48,6 +48,12 @@ class TokenUsage(Base):
     provider: Mapped[str | None] = mapped_column(String, nullable=True)
     input_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     output_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    cache_read_input_tokens: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    cache_write_input_tokens: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
     cost: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=func.now()

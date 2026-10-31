@@ -12,8 +12,7 @@ export function makeInitialStreamingState(): StreamingState {
   return {
     workflowItemsBuffer: [],
     openTextItemByAgent: new Map(),
-    inputTokens: 0,
-    outputTokens: 0,
+    tokens: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
     errorMessage: null,
     isFinalized: false,
   };

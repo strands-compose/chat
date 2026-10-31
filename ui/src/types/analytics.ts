@@ -44,6 +44,8 @@ export interface SummaryOut {
   total_cost: number;
   input_tokens: number;
   output_tokens: number;
+  cache_read_input_tokens: number;
+  cache_write_input_tokens: number;
   hits: number;
   active_users: number;
 }
@@ -108,6 +110,8 @@ export interface MeUsagePoint {
   cost: number;
   input_tokens: number;
   output_tokens: number;
+  cache_read_input_tokens: number;
+  cache_write_input_tokens: number;
 }
 
 export interface MeUsageOut {

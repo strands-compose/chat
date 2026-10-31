@@ -4,11 +4,20 @@ import re
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Any
 
-from sqlalchemy import Date, Select, cast, func, literal, select
+from sqlalchemy import Date, Row, Select, cast, func, literal, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
-from ..db.models import Agent, ChatMessage, ChatSession, Group, TokenUsage, User, UserGroup
+from ..db.models import (
+    Agent,
+    ChatMessage,
+    ChatSession,
+    Group,
+    ModelPricing,
+    TokenUsage,
+    User,
+    UserGroup,
+)
 from ..schemas.analytics import (
     BreakdownOut,
     BreakdownRequest,
@@ -22,14 +31,42 @@ from ..schemas.analytics import (
     MeUsageOut,
     MeUsagePoint,
     SeriesItem,
+    SummaryOut,
     TimelineOut,
     TimelineRequest,
 )
+from ..schemas.sessions import SessionUsageSummaryOut
 
 _UUID_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     re.IGNORECASE,
 )
+
+# The four token counts of a usage row: input and output plus the prompt-cache
+# reads and writes, which providers report separately from input.
+_TOKEN_COLUMNS = (
+    TokenUsage.input_tokens,
+    TokenUsage.output_tokens,
+    TokenUsage.cache_read_input_tokens,
+    TokenUsage.cache_write_input_tokens,
+)
+
+# All tokens a usage row was billed for.
+_TOTAL_TOKENS = (
+    TokenUsage.input_tokens
+    + TokenUsage.output_tokens
+    + TokenUsage.cache_read_input_tokens
+    + TokenUsage.cache_write_input_tokens
+)
+
+
+def _token_sums() -> tuple[ColumnElement[Any], ...]:
+    """Return the sum of each token count, labelled with its column name.
+
+    Each sum is 0 instead of NULL when no rows match, so the labels can be read
+    straight into a response schema.
+    """
+    return tuple(func.coalesce(func.sum(column), 0).label(column.key) for column in _TOKEN_COLUMNS)
 
 
 def _day_bucket(column: Any, dialect_name: str) -> ColumnElement[Any]:
@@ -312,7 +349,7 @@ def _build_cost_tokens_stmt(
     if metric == Metric.cost:
         agg_col = func.sum(TokenUsage.cost).label("value")
     else:
-        agg_col = func.sum(TokenUsage.input_tokens + TokenUsage.output_tokens).label("value")
+        agg_col = func.sum(_TOTAL_TOKENS).label("value")
 
     dim_col = _get_dim_col(dimension)
 
@@ -657,7 +694,7 @@ async def get_summary(
     from_date: date,
     to_date: date,
     filters: FiltersIn | None = None,
-) -> tuple[float, int, int, int, int]:
+) -> SummaryOut:
     """Return aggregate KPI totals for the given date range and filters.
 
     Cost and token sums come from a single ``TokenUsage`` aggregate; hits and
@@ -672,7 +709,7 @@ async def get_summary(
             group membership.
 
     Returns:
-        A tuple of (total_cost, input_tokens, output_tokens, hits, active_users).
+        A SummaryOut with the cost, the four token totals, hits, and active users.
 
     Raises:
         ValueError: When any provided filter ID is malformed.
@@ -682,13 +719,16 @@ async def get_summary(
     from_dt = datetime.combine(from_date, time.min, tzinfo=UTC)
     to_dt = datetime.combine(to_date + timedelta(days=1), time.min, tzinfo=UTC)
 
-    total_cost, input_tokens, output_tokens = await _get_summary_token_totals(
-        db, from_dt, to_dt, filters
+    totals = await _get_summary_token_totals(db, from_dt, to_dt, filters)
+    return SummaryOut(
+        total_cost=totals.total_cost,
+        input_tokens=totals.input_tokens,
+        output_tokens=totals.output_tokens,
+        cache_read_input_tokens=totals.cache_read_input_tokens,
+        cache_write_input_tokens=totals.cache_write_input_tokens,
+        hits=await _get_summary_hits(db, from_dt, to_dt, filters),
+        active_users=await _get_summary_active_users(db, from_dt, to_dt, filters),
     )
-    hits = await _get_summary_hits(db, from_dt, to_dt, filters)
-    active_users = await _get_summary_active_users(db, from_dt, to_dt, filters)
-
-    return total_cost, input_tokens, output_tokens, hits, active_users
 
 
 async def _get_summary_token_totals(
@@ -696,8 +736,8 @@ async def _get_summary_token_totals(
     from_dt: datetime,
     to_dt: datetime,
     filters: FiltersIn | None,
-) -> tuple[float, int, int]:
-    """Sum cost, input tokens, and output tokens from TokenUsage in one query.
+) -> Row[Any]:
+    """Sum cost and the four token counts from TokenUsage in one query.
 
     Args:
         db: Async database session.
@@ -706,14 +746,14 @@ async def _get_summary_token_totals(
         filters: Optional filter constraints.
 
     Returns:
-        A tuple of (total_cost, input_tokens, output_tokens); zeros when no
-        rows match.
+        A row with ``total_cost``, ``input_tokens``, ``output_tokens``,
+        ``cache_read_input_tokens`` and ``cache_write_input_tokens``; zeros when
+        no rows match.
     """
     stmt = (
         select(
-            func.coalesce(func.sum(TokenUsage.cost), 0.0),
-            func.coalesce(func.sum(TokenUsage.input_tokens), 0),
-            func.coalesce(func.sum(TokenUsage.output_tokens), 0),
+            func.coalesce(func.sum(TokenUsage.cost), 0.0).label("total_cost"),
+            *_token_sums(),
         )
         .select_from(TokenUsage)
         .where(
@@ -726,8 +766,7 @@ async def _get_summary_token_totals(
         stmt = stmt.join(ChatSession, ChatSession.id == TokenUsage.chat_session_id)
         stmt = _apply_filters(stmt, filters)
 
-    row = (await db.execute(stmt)).one()
-    return float(row[0]), int(row[1]), int(row[2])
+    return (await db.execute(stmt)).one()
 
 
 async def _get_summary_hits(
@@ -1084,7 +1123,7 @@ def _build_cross_tab_cost_tokens(
     if metric == Metric.cost:
         agg_col = func.sum(TokenUsage.cost).label("value")
     else:
-        agg_col = func.sum(TokenUsage.input_tokens + TokenUsage.output_tokens).label("value")
+        agg_col = func.sum(_TOTAL_TOKENS).label("value")
 
     cat_col = _get_dim_col_aliased(category_dim, "cat_key")
     stack_col = _get_dim_col_aliased(stack_by_dim, "stack_key")
@@ -1249,8 +1288,8 @@ async def get_monthly_spend(db: AsyncSession, user_id: str) -> float:
 async def get_session_usage_summary(
     db: AsyncSession,
     chat_session_id: str,
-) -> tuple[int, int, float]:
-    """Return (input_tokens, output_tokens, total_cost) for a chat session.
+) -> SessionUsageSummaryOut:
+    """Return token totals and total cost for a chat session.
 
     Single aggregate query over all ``token_usage`` rows for the given session.
 
@@ -1259,43 +1298,51 @@ async def get_session_usage_summary(
         chat_session_id: The primary key of the owning chat session.
 
     Returns:
-        A tuple of (input_tokens, output_tokens, total_cost). All values are
-        zero when no usage records exist for the session.
+        A SessionUsageSummaryOut with the four token totals and the total cost.
+        All values are zero when no usage records exist for the session.
     """
     result = await db.execute(
         select(
-            func.coalesce(func.sum(TokenUsage.input_tokens), 0),
-            func.coalesce(func.sum(TokenUsage.output_tokens), 0),
-            func.coalesce(func.sum(TokenUsage.cost), 0.0),
+            *_token_sums(),
+            func.coalesce(func.sum(TokenUsage.cost), 0.0).label("total_cost"),
         ).where(TokenUsage.chat_session_id == chat_session_id)
     )
-    row = result.one()
-    return int(row[0]), int(row[1]), float(row[2])
+    return SessionUsageSummaryOut.model_validate(result.one(), from_attributes=True)
 
 
 def compute_cost(
-    input_cost_per_million: float,
-    output_cost_per_million: float,
+    pricing: ModelPricing | None,
+    *,
     input_tokens: int,
     output_tokens: int,
+    cache_read_input_tokens: int,
+    cache_write_input_tokens: int,
 ) -> float:
-    """Compute token cost from per-million pricing and token counts.
+    """Price token usage with a model's per-million token rates.
+
+    Input tokens exclude cache tokens (Bedrock Converse and Anthropic report
+    them separately), so each of the four counts is billed at its own rate.
 
     Args:
-        input_cost_per_million: Price per 1,000,000 input tokens.
-        output_cost_per_million: Price per 1,000,000 output tokens.
+        pricing: The model's pricing row, or ``None`` when the model has none
+            (the usage is then recorded as free).
         input_tokens: Number of input tokens consumed.
         output_tokens: Number of output tokens consumed.
+        cache_read_input_tokens: Number of tokens read from the prompt cache.
+        cache_write_input_tokens: Number of tokens written to the prompt cache.
 
     Returns:
-        The total cost as a float. Returns 0.0 when both token counts are 0.
+        The cost in USD, rounded to 6 decimal places.
     """
-    if input_tokens == 0 and output_tokens == 0:
+    if pricing is None:
         return 0.0
-    return (
-        input_tokens / 1_000_000 * input_cost_per_million
-        + output_tokens / 1_000_000 * output_cost_per_million
-    )
+    cost = (
+        input_tokens * pricing.input_token_price
+        + output_tokens * pricing.output_token_price
+        + cache_read_input_tokens * pricing.cache_read_token_price
+        + cache_write_input_tokens * pricing.cache_write_token_price
+    ) / 1_000_000
+    return round(cost, 6)
 
 
 async def get_user_usage(
@@ -1307,9 +1354,10 @@ async def get_user_usage(
 ) -> MeUsageOut:
     """Return pre-bucketed cost and token usage for a single user.
 
-    Fetches daily buckets for cost, input_tokens, and output_tokens scoped to
-    the given user, rolls them up by interval, generates labels covering the
-    full range, and fills zeros for missing buckets.
+    Fetches daily buckets for cost and the four token counts (input, output,
+    cache read, cache write) scoped to the given user, rolls them up by
+    interval, generates labels covering the full range, and fills zeros for
+    missing buckets.
 
     Args:
         db: Async database session.
@@ -1325,14 +1373,20 @@ async def get_user_usage(
     """
     daily = await _get_daily_user_usage(db, from_date, to_date, user_id)
 
-    daily_cost: dict[date, float] = {day: cost for day, (cost, _i, _o) in daily.items()}
-    daily_input: dict[date, int] = {day: inp for day, (_c, inp, _o) in daily.items()}
-    daily_output: dict[date, int] = {day: out for day, (_c, _i, out) in daily.items()}
-
     labels = _generate_labels(interval, from_date, to_date)
-    rolled_cost = _roll_up_daily(daily_cost, interval)
-    rolled_input = _roll_up_daily_int(daily_input, interval)
-    rolled_output = _roll_up_daily_int(daily_output, interval)
+    rolled_cost = _roll_up_daily({day: row.cost for day, row in daily.items()}, interval)
+    rolled_input = _roll_up_daily_int(
+        {day: row.input_tokens for day, row in daily.items()}, interval
+    )
+    rolled_output = _roll_up_daily_int(
+        {day: row.output_tokens for day, row in daily.items()}, interval
+    )
+    rolled_cache_read = _roll_up_daily_int(
+        {day: row.cache_read_input_tokens for day, row in daily.items()}, interval
+    )
+    rolled_cache_write = _roll_up_daily_int(
+        {day: row.cache_write_input_tokens for day, row in daily.items()}, interval
+    )
 
     points: list[MeUsagePoint] = []
     for label in labels:
@@ -1342,6 +1396,8 @@ async def get_user_usage(
                 cost=rolled_cost.get(label, 0.0),
                 input_tokens=rolled_input.get(label, 0),
                 output_tokens=rolled_output.get(label, 0),
+                cache_read_input_tokens=rolled_cache_read.get(label, 0),
+                cache_write_input_tokens=rolled_cache_write.get(label, 0),
             )
         )
 
@@ -1353,8 +1409,8 @@ async def _get_daily_user_usage(
     from_date: date,
     to_date: date,
     user_id: str,
-) -> dict[date, tuple[float, int, int]]:
-    """Fetch per-day cost, input, and output token sums for a single user.
+) -> dict[date, Row[Any]]:
+    """Fetch per-day cost and token sums for a single user.
 
     Args:
         db: Async database session.
@@ -1363,7 +1419,9 @@ async def _get_daily_user_usage(
         user_id: The user to scope the query to.
 
     Returns:
-        A dict mapping dates to (cost, input_tokens, output_tokens) tuples.
+        A dict mapping dates to rows with ``cost``, ``input_tokens``,
+        ``output_tokens``, ``cache_read_input_tokens`` and
+        ``cache_write_input_tokens``.
     """
     from_dt = datetime.combine(from_date, time.min, tzinfo=UTC)
     to_dt = datetime.combine(to_date + timedelta(days=1), time.min, tzinfo=UTC)
@@ -1372,9 +1430,8 @@ async def _get_daily_user_usage(
     stmt = (
         select(
             day_col,
-            func.sum(TokenUsage.cost).label("total_cost"),
-            func.sum(TokenUsage.input_tokens).label("total_input"),
-            func.sum(TokenUsage.output_tokens).label("total_output"),
+            func.sum(TokenUsage.cost).label("cost"),
+            *_token_sums(),
         )
         .select_from(TokenUsage)
         .join(ChatSession, ChatSession.id == TokenUsage.chat_session_id)
@@ -1388,14 +1445,7 @@ async def _get_daily_user_usage(
     )
 
     result = await db.execute(stmt)
-    buckets: dict[date, tuple[float, int, int]] = {}
-    for row in result.all():
-        buckets[_coerce_day(row.day)] = (
-            float(row.total_cost or 0.0),
-            int(row.total_input or 0),
-            int(row.total_output or 0),
-        )
-    return buckets
+    return {_coerce_day(row.day): row for row in result.all()}
 
 
 def _roll_up_daily_int(daily: dict[date, int], interval: Interval) -> dict[str, int]:

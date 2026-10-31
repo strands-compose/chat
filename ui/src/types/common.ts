@@ -32,15 +32,22 @@ export interface WorkflowItem {
   /** Tool lifecycle — `running` from `tool_start` until `tool_end` sets the outcome. */
   toolStatus?: 'running' | 'success' | 'error';
 
-  /** Tokens the agent used, carried on its `agent_stop` item (from `agent_complete`). */
-  inputTokens?: number;
-  outputTokens?: number;
+  /** All tokens the agent used (input, output and cache), carried on its `agent_stop` item. */
+  totalTokens?: number;
 
   /** Originating agent — used for filtering and the agent separator label. */
   agentName?: string;
 
   /** True when the separator was emitted by an orchestrator (multiagent_start/complete) rather than a plain agent. */
   isOrchestrator?: boolean;
+}
+
+/** Token totals for a single turn, summed across its `agent_complete` events. */
+export interface TurnTokens {
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheWrite: number;
 }
 
 /** A consecutive group of WorkflowItems sharing the same type & agent. */

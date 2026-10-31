@@ -4,7 +4,7 @@
  * Left slot:  agent name, then collapse-all / expand-all buttons and the
  *             compact/full-width toggle for the message column (only when
  *             `onToggleWidth` is given).
- * Right slot: session usage pill (cost + input/output tokens), then the
+ * Right slot: session usage pill (cost + total tokens), then the
  *             light/dark theme toggle.
  *
  * Uses the shared SubheaderBar so it matches the WorkflowView title bar.
@@ -43,9 +43,7 @@ const ChatControlBarComponent = ({
   // ======================
   // STATE, HOOKS & REFS
   // ======================
-  const inputTokens = useChatStore((s) => s.sessionInputTokens);
-  const outputTokens = useChatStore((s) => s.sessionOutputTokens);
-  const sessionCost = useChatStore((s) => s.sessionCost);
+  const usage = useChatStore((s) => s.sessionUsage);
   const agentLabel = useChatStore((s) => s.selectedAgentLabel);
   const { toggle, isDark } = useTheme();
 
@@ -90,9 +88,11 @@ const ChatControlBarComponent = ({
     <div className={styles.rightGroup}>
       <span className={styles.usage}>
         <UsagePill
-          cost={sessionCost}
-          inputTokens={inputTokens}
-          outputTokens={outputTokens}
+          cost={usage?.total_cost}
+          inputTokens={usage?.input_tokens}
+          outputTokens={usage?.output_tokens}
+          cacheReadTokens={usage?.cache_read_input_tokens}
+          cacheWriteTokens={usage?.cache_write_input_tokens}
           title="Session usage"
         />
       </span>

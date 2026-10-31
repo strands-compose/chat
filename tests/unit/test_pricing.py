@@ -5,107 +5,85 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from strands_compose_chat.analytics.service import compute_cost
+from tests.factories import make_model_pricing
+
+# USD per 1M tokens. Each token kind has its own rate, so every case shows
+# which rate was applied to which count.
+_RATES = {
+    "input_token_price": 3.0,
+    "output_token_price": 15.0,
+    "cache_read_token_price": 0.30,
+    "cache_write_token_price": 3.75,
+}
+_NO_CACHE_RATES = {**_RATES, "cache_read_token_price": 0.0, "cache_write_token_price": 0.0}
 
 
-def test_compute_cost_returns_zero_when_both_token_counts_are_zero() -> None:
+@pytest.mark.parametrize(
+    ("rates", "input_tokens", "output_tokens", "cache_read", "cache_write", "expected"),
+    [
+        pytest.param(_RATES, 0, 0, 0, 0, 0.0, id="no-tokens"),
+        pytest.param(_RATES, 500_000, 200_000, 0, 0, 1.50 + 3.00, id="input-and-output"),
+        pytest.param(_RATES, 2_000_000, 0, 0, 0, 6.0, id="input-only"),
+        pytest.param(_RATES, 0, 3_000_000, 0, 0, 45.0, id="output-only"),
+        pytest.param(_RATES, 0, 0, 2_000_000, 1_000_000, 0.60 + 3.75, id="cache-read-and-write"),
+        pytest.param(
+            _RATES,
+            1_000_000,
+            1_000_000,
+            1_000_000,
+            1_000_000,
+            3.0 + 15.0 + 0.30 + 3.75,
+            id="all-four-kinds",
+        ),
+        pytest.param(_NO_CACHE_RATES, 0, 0, 5_000_000, 5_000_000, 0.0, id="no-cache-rates"),
+    ],
+)
+def test_compute_cost_bills_each_token_kind_at_its_own_rate(
+    rates: dict[str, float],
+    input_tokens: int,
+    output_tokens: int,
+    cache_read: int,
+    cache_write: int,
+    expected: float,
+) -> None:
+    pricing = make_model_pricing(**rates)
+
     result = compute_cost(
-        input_cost_per_million=3.0,
-        output_cost_per_million=15.0,
-        input_tokens=0,
-        output_tokens=0,
+        pricing,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        cache_read_input_tokens=cache_read,
+        cache_write_input_tokens=cache_write,
     )
+
+    assert result == pytest.approx(expected)
+
+
+def test_compute_cost_is_zero_when_the_model_has_no_pricing() -> None:
+    result = compute_cost(
+        None,
+        input_tokens=1_000_000,
+        output_tokens=1_000_000,
+        cache_read_input_tokens=1_000_000,
+        cache_write_input_tokens=1_000_000,
+    )
+
     assert result == 0.0
 
 
-def test_compute_cost_charges_only_input_tokens_when_output_is_zero() -> None:
+def test_compute_cost_rounds_to_six_decimal_places() -> None:
+    # 1 token @ $1.234567891/1M = $0.000001234567891
+    pricing = make_model_pricing(input_token_price=1.234567891, output_token_price=0.0)
+
     result = compute_cost(
-        input_cost_per_million=3.0,
-        output_cost_per_million=15.0,
-        input_tokens=1_000_000,
-        output_tokens=0,
-    )
-    assert result == pytest.approx(3.0)
-
-
-def test_compute_cost_charges_only_output_tokens_when_input_is_zero() -> None:
-    result = compute_cost(
-        input_cost_per_million=3.0,
-        output_cost_per_million=15.0,
-        input_tokens=0,
-        output_tokens=1_000_000,
-    )
-    assert result == pytest.approx(15.0)
-
-
-def test_compute_cost_sums_input_and_output_costs() -> None:
-    # 500_000 input @ $3.00/1M = $1.50; 200_000 output @ $15.00/1M = $3.00
-    result = compute_cost(
-        input_cost_per_million=3.0,
-        output_cost_per_million=15.0,
-        input_tokens=500_000,
-        output_tokens=200_000,
-    )
-    assert result == pytest.approx(4.50)
-
-
-def test_compute_cost_scales_linearly_with_token_counts() -> None:
-    result = compute_cost(
-        input_cost_per_million=1.0,
-        output_cost_per_million=2.0,
-        input_tokens=100,
-        output_tokens=100,
-    )
-    assert result == pytest.approx(0.0003)
-
-
-def test_compute_cost_return_type_is_float() -> None:
-    result = compute_cost(
-        input_cost_per_million=1.0,
-        output_cost_per_million=1.0,
-        input_tokens=0,
-        output_tokens=0,
-    )
-    assert isinstance(result, float)
-
-
-def test_compute_cost_return_type_is_float_for_nonzero_tokens() -> None:
-    result = compute_cost(
-        input_cost_per_million=1.0,
-        output_cost_per_million=1.0,
+        pricing,
         input_tokens=1,
-        output_tokens=1,
-    )
-    assert isinstance(result, float)
-
-
-def test_compute_cost_is_zero_when_rates_are_zero() -> None:
-    result = compute_cost(
-        input_cost_per_million=0.0,
-        output_cost_per_million=0.0,
-        input_tokens=1_000_000,
-        output_tokens=1_000_000,
-    )
-    assert result == pytest.approx(0.0)
-
-
-def test_compute_cost_applies_input_rate_independently_of_output_rate() -> None:
-    result = compute_cost(
-        input_cost_per_million=5.0,
-        output_cost_per_million=99.0,
-        input_tokens=2_000_000,
         output_tokens=0,
+        cache_read_input_tokens=0,
+        cache_write_input_tokens=0,
     )
-    assert result == pytest.approx(10.0)
 
-
-def test_compute_cost_applies_output_rate_independently_of_input_rate() -> None:
-    result = compute_cost(
-        input_cost_per_million=99.0,
-        output_cost_per_million=4.0,
-        input_tokens=0,
-        output_tokens=3_000_000,
-    )
-    assert result == pytest.approx(12.0)
+    assert result == 0.000001
 
 
 _token_count = st.integers(min_value=0, max_value=10_000_000)
@@ -115,23 +93,34 @@ _rate = st.floats(min_value=0.0, max_value=1_000.0, allow_nan=False, allow_infin
 @pytest.mark.property
 @settings(max_examples=100)
 @given(
-    input_cost_per_million=_rate,
-    output_cost_per_million=_rate,
+    rate=_rate,
     input_tokens=_token_count,
     output_tokens=_token_count,
+    cache_read=_token_count,
+    cache_write=_token_count,
 )
 def test_compute_cost_is_non_negative_for_all_valid_inputs(
-    input_cost_per_million: float,
-    output_cost_per_million: float,
+    rate: float,
     input_tokens: int,
     output_tokens: int,
+    cache_read: int,
+    cache_write: int,
 ) -> None:
+    pricing = make_model_pricing(
+        input_token_price=rate,
+        output_token_price=rate,
+        cache_read_token_price=rate,
+        cache_write_token_price=rate,
+    )
+
     result = compute_cost(
-        input_cost_per_million=input_cost_per_million,
-        output_cost_per_million=output_cost_per_million,
+        pricing,
         input_tokens=input_tokens,
         output_tokens=output_tokens,
+        cache_read_input_tokens=cache_read,
+        cache_write_input_tokens=cache_write,
     )
+
     assert result >= 0.0
 
 
@@ -148,16 +137,21 @@ def test_compute_cost_is_monotonic_in_token_counts(
     token_count_b: int,
 ) -> None:
     a, b = min(token_count_a, token_count_b), max(token_count_a, token_count_b)
+    pricing = make_model_pricing(input_token_price=rate, output_token_price=rate)
+
     cost_a = compute_cost(
-        input_cost_per_million=rate,
-        output_cost_per_million=rate,
+        pricing,
         input_tokens=a,
         output_tokens=0,
+        cache_read_input_tokens=0,
+        cache_write_input_tokens=0,
     )
     cost_b = compute_cost(
-        input_cost_per_million=rate,
-        output_cost_per_million=rate,
+        pricing,
         input_tokens=b,
         output_tokens=0,
+        cache_read_input_tokens=0,
+        cache_write_input_tokens=0,
     )
+
     assert cost_a <= cost_b

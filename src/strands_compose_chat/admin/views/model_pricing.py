@@ -23,6 +23,8 @@ class ModelPricingAdmin(BaseModelView, model=ModelPricing):
         ModelPricing.provider,
         ModelPricing.input_token_price,
         ModelPricing.output_token_price,
+        ModelPricing.cache_read_token_price,
+        ModelPricing.cache_write_token_price,
         ModelPricing.created_at,
         ModelPricing.updated_at,
     ]
@@ -31,6 +33,8 @@ class ModelPricingAdmin(BaseModelView, model=ModelPricing):
         ModelPricing.provider,
         ModelPricing.input_token_price,
         ModelPricing.output_token_price,
+        ModelPricing.cache_read_token_price,
+        ModelPricing.cache_write_token_price,
         ModelPricing.created_at,
         ModelPricing.updated_at,
     ]
@@ -39,6 +43,8 @@ class ModelPricingAdmin(BaseModelView, model=ModelPricing):
         ModelPricing.provider,
         ModelPricing.input_token_price,
         ModelPricing.output_token_price,
+        ModelPricing.cache_read_token_price,
+        ModelPricing.cache_write_token_price,
     ]
 
     column_searchable_list: ClassVar[Sequence[Any]] = [ModelPricing.model_id, ModelPricing.provider]
@@ -50,5 +56,11 @@ class ModelPricingAdmin(BaseModelView, model=ModelPricing):
         },
         "output_token_price": {
             "description": "Price in USD per 1 million output tokens.",
+        },
+        "cache_read_token_price": {
+            "description": "Price in USD per 1 million prompt-cache read tokens.",
+        },
+        "cache_write_token_price": {
+            "description": "Price in USD per 1 million prompt-cache write tokens.",
         },
     }

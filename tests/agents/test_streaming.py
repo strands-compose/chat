@@ -13,12 +13,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from strands_compose import EventType, StreamEvent
 
+from strands_compose_chat.agents.streaming import save_token_usage
 from strands_compose_chat.db.base import AsyncSessionLocal, Base, engine
-from strands_compose_chat.db.models import AgentGroup, UserGroup
+from strands_compose_chat.db.models import AgentGroup, ModelPricing, TokenUsage, UserGroup
 from strands_compose_chat.db.models.chat_message import ChatMessage
 from tests.factories import (
     as_user,
     make_agent,
+    make_chat_session,
     make_group,
     make_user,
     persist,
@@ -357,3 +359,125 @@ async def test_streaming_mid_stream_error_persists_a_failed_assistant_turn(
         f"expected one assistant ChatMessage row after error; found {len(assistant_messages)}"
     )
     assert assistant_messages[0].is_success is False
+
+
+# ----------------------------------------------------------------------------
+# save_token_usage
+# ----------------------------------------------------------------------------
+
+_USAGE_MANIFEST = {
+    "agents": [{"name": "test-agent", "model": {"model_id": "model-x", "provider": "bedrock"}}]
+}
+
+
+async def _persist_pricing_for_model_x() -> None:
+    async with AsyncSessionLocal() as session:
+        session.add(
+            ModelPricing(
+                model_id="model-x",
+                provider="bedrock",
+                input_token_price=3.0,
+                output_token_price=15.0,
+                cache_read_token_price=0.30,
+                cache_write_token_price=3.75,
+            )
+        )
+        await session.commit()
+
+
+async def _persist_chat_session() -> tuple[str, str]:
+    """Commit a user, an agent and their chat session; return ``(chat_session_id, user_id)``.
+
+    ``save_token_usage`` writes on its own session, so the row its foreign key
+    points at has to be committed, not just flushed.
+    """
+    async with AsyncSessionLocal() as session:
+        user, agent = await persist(session, make_user(), make_agent())
+        (chat_session,) = await persist(
+            session, make_chat_session(user_id=user.id, agent_id=agent.id)
+        )
+        await session.commit()
+        return chat_session.id, user.id
+
+
+async def _saved_usage_rows() -> list[TokenUsage]:
+    async with AsyncSessionLocal() as session:
+        return list((await session.execute(select(TokenUsage))).scalars().all())
+
+
+def _agent_complete(usage: dict[str, int]) -> StreamEvent:
+    return StreamEvent(
+        type=EventType.AGENT_COMPLETE,
+        agent_name="test-agent",
+        data={"text": "done", "usage": usage},
+    )
+
+
+async def test_save_token_usage_stores_cache_tokens_and_prices_them() -> None:
+    await _persist_pricing_for_model_x()
+    chat_session_id, user_id = await _persist_chat_session()
+    event = _agent_complete(
+        {
+            "input_tokens": 1_000_000,
+            "output_tokens": 1_000_000,
+            "cache_read_input_tokens": 1_000_000,
+            "cache_write_input_tokens": 1_000_000,
+        }
+    )
+
+    await save_token_usage(chat_session_id, user_id, event, _USAGE_MANIFEST)
+
+    (row,) = await _saved_usage_rows()
+    assert row.input_tokens == 1_000_000
+    assert row.output_tokens == 1_000_000
+    assert row.cache_read_input_tokens == 1_000_000
+    assert row.cache_write_input_tokens == 1_000_000
+    assert row.cost == pytest.approx(3.0 + 15.0 + 0.30 + 3.75)
+
+
+async def test_save_token_usage_accepts_usage_without_cache_keys() -> None:
+    await _persist_pricing_for_model_x()
+    chat_session_id, user_id = await _persist_chat_session()
+    event = _agent_complete({"input_tokens": 1_000_000, "output_tokens": 1_000_000})
+
+    await save_token_usage(chat_session_id, user_id, event, _USAGE_MANIFEST)
+
+    (row,) = await _saved_usage_rows()
+    assert row.cache_read_input_tokens == 0
+    assert row.cache_write_input_tokens == 0
+    assert row.cost == pytest.approx(3.0 + 15.0)
+
+
+async def test_save_token_usage_records_cache_only_usage() -> None:
+    await _persist_pricing_for_model_x()
+    chat_session_id, user_id = await _persist_chat_session()
+    event = _agent_complete(
+        {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cache_read_input_tokens": 2_000_000,
+            "cache_write_input_tokens": 0,
+        }
+    )
+
+    await save_token_usage(chat_session_id, user_id, event, _USAGE_MANIFEST)
+
+    (row,) = await _saved_usage_rows()
+    assert row.cache_read_input_tokens == 2_000_000
+    assert row.cost == pytest.approx(0.60)
+
+
+async def test_save_token_usage_skips_row_when_all_counts_are_zero() -> None:
+    chat_session_id, user_id = await _persist_chat_session()
+    event = _agent_complete(
+        {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+        }
+    )
+
+    await save_token_usage(chat_session_id, user_id, event, _USAGE_MANIFEST)
+
+    assert await _saved_usage_rows() == []

@@ -4,8 +4,9 @@
  * Renders either:
  *  - a single-series cost bar chart (`chartMode === 'cost'`), bars filled
  *    with `--sc-accent`, or
- *  - a stacked two-series token bar chart (`chartMode === 'tokens'`), one
- *    series per token direction using distinct design-token colors.
+ *  - a stacked token bar chart (`chartMode === 'tokens'`), one series per
+ *    token kind (input, output, and cache read / write when present) using
+ *    distinct design-token colors.
  *
  * Chart colors are read at render time from CSS custom properties via
  * `getComputedStyle(document.documentElement)` so they update correctly when
@@ -62,7 +63,8 @@ const UsageChartComponent = ({ data, chartMode, interval, isLoading }: UsageChar
     const isCost = chartMode === 'cost';
 
     // Input tokens: a muted blue-ish color derived from the theme.
-    // Output tokens: the brand orange. Both remain legible on light and dark.
+    // Output tokens: the brand orange. Cache read / write: green / purple from
+    // the data-viz palette. All remain legible on light and dark.
     const orange = cssVar('--sc-accent');
     const inputColor = cssVar('--sc-chart-primary');
 
@@ -92,14 +94,28 @@ const UsageChartComponent = ({ data, chartMode, interval, isLoading }: UsageChar
       };
     }
 
-    // Tokens mode — stacked bar.
+    // Tokens mode — stacked bar. The cache series are added only when the range
+    // has cache tokens, so the legend never lists an empty series.
+    const tokenSeries = [
+      { name: 'Input tokens', values: data.map((b) => b.input_tokens), color: inputColor },
+      { name: 'Output tokens', values: data.map((b) => b.output_tokens), color: orange },
+    ];
+    const cacheRead = data.map((b) => b.cache_read_input_tokens);
+    const cacheWrite = data.map((b) => b.cache_write_input_tokens);
+    if (cacheRead.some((v) => v > 0)) {
+      tokenSeries.push({ name: 'Cache read tokens', values: cacheRead, color: cssVar('--sc-agent-3') });
+    }
+    if (cacheWrite.some((v) => v > 0)) {
+      tokenSeries.push({ name: 'Cache write tokens', values: cacheWrite, color: cssVar('--sc-agent-4') });
+    }
+
     return {
       tooltip: {
         ...buildTooltipBase(colors),
         formatter: buildTimeTooltipFormatter(colors, false),
       },
       legend: buildLegend({
-        names: ['Input tokens', 'Output tokens'],
+        names: tokenSeries.map((s) => s.name),
         colors,
       }),
       grid: buildGrid(true, 'horizontal', 0),
@@ -109,22 +125,13 @@ const UsageChartComponent = ({ data, chartMode, interval, isLoading }: UsageChar
         ...axis,
         axisLabel: { ...axis.axisLabel, formatter: intAxisLabel },
       },
-      series: [
-        {
-          name: 'Input tokens',
-          type: 'bar',
-          stack: 'tokens',
-          data: data.map((b) => b.input_tokens),
-          itemStyle: { color: inputColor },
-        },
-        {
-          name: 'Output tokens',
-          type: 'bar',
-          stack: 'tokens',
-          data: data.map((b) => b.output_tokens),
-          itemStyle: { color: orange },
-        },
-      ],
+      series: tokenSeries.map((s) => ({
+        name: s.name,
+        type: 'bar' as const,
+        stack: 'tokens',
+        data: s.values,
+        itemStyle: { color: s.color },
+      })),
     };
   }, [data, chartMode, interval, isDark]);
 

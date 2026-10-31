@@ -7,7 +7,7 @@
  */
 
 import { create } from 'zustand';
-import type { Attachment, Message, WorkflowItem } from '../types';
+import type { Attachment, Message, TurnTokens, WorkflowItem } from '../types';
 import {
   streamChat,
   fetchSessions,
@@ -19,7 +19,7 @@ import {
   deleteSession as deleteSessionApi,
   isMobileViewport,
 } from '../services';
-import type { Session, Agent, SessionMessage } from '../services';
+import type { Session, Agent, SessionMessage, SessionUsageSummary } from '../services';
 import {
   dispatchStreamEvent,
   configureScheduler,
@@ -28,6 +28,11 @@ import {
   resetStreamingState,
 } from './streaming';
 import type { StreamingSideEffects } from './streaming';
+
+// ====== CONSTANTS ======
+
+/** Token totals of a turn that has not reported usage yet. Shared, never mutated. */
+const NO_TOKENS: TurnTokens = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
 
 // ====== SHARED LOADERS ======
 
@@ -104,23 +109,19 @@ export interface ChatStore {
   agentsError: boolean;
   /** Whether the "agent is running" interrupt-confirmation dialog is open. */
   interruptConfirmOpen: boolean;
-  /** Aggregated token usage fetched from the backend after every turn and on restore.
-   *  Both are undefined until the first successful fetch. */
-  sessionInputTokens: number | undefined;
-  sessionOutputTokens: number | undefined;
-  /** Total inferred cost for the session, fetched from the backend.
-   *  Undefined until first fetch completes. */
-  sessionCost: number | undefined;
+  /** Aggregated token usage and inferred cost, fetched from the backend after
+   *  every turn and on restore. Undefined until the first successful fetch. */
+  sessionUsage: SessionUsageSummary | undefined;
   /** Live workflow trace by backend assistant seq. Decoupled from Message so the
    *  thread is purely backend-derived. Empty on restore (traces are never persisted). */
   workflowTraces: Record<number, WorkflowItem[]>;
   /** Per-turn token totals by backend assistant seq, summed from agent_complete
    *  events. Empty on restore (not persisted; recomputed only for live turns). */
-  workflowTokens: Record<number, { input: number; output: number }>;
+  workflowTokens: Record<number, TurnTokens>;
   /** Trace for the in-flight turn, before its backend seq is known. Rendered live. */
   activeWorkflowItems: WorkflowItem[];
   /** Token totals for the in-flight turn, rendered live in the workflow panel. */
-  activeWorkflowTokens: { input: number; output: number };
+  activeWorkflowTokens: TurnTokens;
   /** Selected assistant seq for the workflow panel; null = auto (latest). */
   selectedWorkflowSeq: number | null;
   /** True when the user has explicitly closed the workflow panel. Overrides the
@@ -264,13 +265,11 @@ export const useChatStore = create<ChatStore>((set, get) => {
     agentsLoaded: false,
     agentsError: false,
     interruptConfirmOpen: false,
-    sessionInputTokens: undefined,
-    sessionOutputTokens: undefined,
-    sessionCost: undefined,
+    sessionUsage: undefined,
     workflowTraces: {},
     workflowTokens: {},
     activeWorkflowItems: [],
-    activeWorkflowTokens: { input: 0, output: 0 },
+    activeWorkflowTokens: NO_TOKENS,
     selectedWorkflowSeq: null,
     workflowPanelClosed: false,
     lastCompletedSeq: null,
@@ -338,9 +337,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
           messageOrder: newMessageOrder,
           sessionId,
           restoringSession: false,
-          sessionInputTokens: undefined,
-          sessionOutputTokens: undefined,
-          sessionCost: undefined,
+          sessionUsage: undefined,
           lastCompletedSeq: null,
           workflowPanelClosed: false,
           ...(isSameSession
@@ -349,7 +346,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
                 workflowTraces: {},
                 workflowTokens: {},
                 activeWorkflowItems: [],
-                activeWorkflowTokens: { input: 0, output: 0 },
+                activeWorkflowTokens: NO_TOKENS,
                 selectedWorkflowSeq: null,
               }),
         });
@@ -383,13 +380,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
         // Fetch usage summary (tokens + cost) in the background after messages are rendered.
         fetchSessionUsage(sessionId).then((usage) => {
-          if (get().sessionId === sessionId) {
-            set({
-              sessionInputTokens: usage.input_tokens > 0 ? usage.input_tokens : undefined,
-              sessionOutputTokens: usage.output_tokens > 0 ? usage.output_tokens : undefined,
-              sessionCost: usage.total_cost,
-            });
-          }
+          if (get().sessionId === sessionId) set({ sessionUsage: usage });
         }).catch((err) => {
           console.error('[chatStore] failed to fetch session usage in background:', err);
         });
@@ -487,11 +478,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
               // Guard against a session switch while this request was in flight,
               // so stale usage isn't written onto the now-current session.
               if (get().sessionId !== completedSessionId) return;
-              set({
-                sessionInputTokens: usage.input_tokens > 0 ? usage.input_tokens : undefined,
-                sessionOutputTokens: usage.output_tokens > 0 ? usage.output_tokens : undefined,
-                sessionCost: usage.total_cost,
-              });
+              set({ sessionUsage: usage });
             })
             .catch(() => { /* leave previous values on transient errors */ });
         }
@@ -513,13 +500,11 @@ export const useChatStore = create<ChatStore>((set, get) => {
         messageOrder: [],
         isLoading: false,
         sessionId: '',
-        sessionInputTokens: undefined,
-        sessionOutputTokens: undefined,
-        sessionCost: undefined,
+        sessionUsage: undefined,
         workflowTraces: {},
         workflowTokens: {},
         activeWorkflowItems: [],
-        activeWorkflowTokens: { input: 0, output: 0 },
+        activeWorkflowTokens: NO_TOKENS,
         selectedWorkflowSeq: null,
         workflowPanelClosed: false,
         lastCompletedSeq: null,

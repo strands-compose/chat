@@ -830,8 +830,16 @@
         "type": "object"
       },
       "MeUsagePoint": {
-        "description": "A single time-bucket data point for per-user usage.\n\nArgs:\n    label: Human-readable bucket label (date, week, or month string).\n    cost: Total cost in this bucket.\n    input_tokens: Total input tokens in this bucket.\n    output_tokens: Total output tokens in this bucket.",
+        "description": "A single time-bucket data point for per-user usage.\n\nArgs:\n    label: Human-readable bucket label (date, week, or month string).\n    cost: Total cost in this bucket.\n    input_tokens: Total input tokens in this bucket.\n    output_tokens: Total output tokens in this bucket.\n    cache_read_input_tokens: Total prompt-cache read tokens in this bucket.\n    cache_write_input_tokens: Total prompt-cache write tokens in this bucket.",
         "properties": {
+          "cache_read_input_tokens": {
+            "title": "Cache Read Input Tokens",
+            "type": "integer"
+          },
+          "cache_write_input_tokens": {
+            "title": "Cache Write Input Tokens",
+            "type": "integer"
+          },
           "cost": {
             "title": "Cost",
             "type": "number"
@@ -853,7 +861,9 @@
           "label",
           "cost",
           "input_tokens",
-          "output_tokens"
+          "output_tokens",
+          "cache_read_input_tokens",
+          "cache_write_input_tokens"
         ],
         "title": "MeUsagePoint",
         "type": "object"
@@ -1186,6 +1196,14 @@
       "SessionUsageSummaryOut": {
         "description": "Aggregated token usage and inferred cost for a session.\n\nReturned by ``GET /api/v1/sessions/{session_id}/usage``.\nSums all ``token_usage`` rows linked to the session in a single query.\nCost is computed from persisted ``cost`` values \u2014 models without a\npricing entry at invocation time contribute 0.",
         "properties": {
+          "cache_read_input_tokens": {
+            "title": "Cache Read Input Tokens",
+            "type": "integer"
+          },
+          "cache_write_input_tokens": {
+            "title": "Cache Write Input Tokens",
+            "type": "integer"
+          },
           "input_tokens": {
             "title": "Input Tokens",
             "type": "integer"
@@ -1202,16 +1220,26 @@
         "required": [
           "input_tokens",
           "output_tokens",
+          "cache_read_input_tokens",
+          "cache_write_input_tokens",
           "total_cost"
         ],
         "title": "SessionUsageSummaryOut",
         "type": "object"
       },
       "SummaryOut": {
-        "description": "Response body for POST /analytics/summary.\n\nArgs:\n    total_cost: Sum of TokenUsage.cost in the range.\n    input_tokens: Sum of TokenUsage.input_tokens in the range.\n    output_tokens: Sum of TokenUsage.output_tokens in the range.\n    hits: Count of assistant messages that are not errors in the range.\n    active_users: Count of distinct users with token usage in the range.",
+        "description": "Response body for POST /analytics/summary.\n\nArgs:\n    total_cost: Sum of TokenUsage.cost in the range.\n    input_tokens: Sum of TokenUsage.input_tokens in the range.\n    output_tokens: Sum of TokenUsage.output_tokens in the range.\n    cache_read_input_tokens: Sum of TokenUsage.cache_read_input_tokens in the range.\n    cache_write_input_tokens: Sum of TokenUsage.cache_write_input_tokens in the range.\n    hits: Count of assistant messages that are not errors in the range.\n    active_users: Count of distinct users with token usage in the range.",
         "properties": {
           "active_users": {
             "title": "Active Users",
+            "type": "integer"
+          },
+          "cache_read_input_tokens": {
+            "title": "Cache Read Input Tokens",
+            "type": "integer"
+          },
+          "cache_write_input_tokens": {
+            "title": "Cache Write Input Tokens",
             "type": "integer"
           },
           "hits": {
@@ -1235,6 +1263,8 @@
           "total_cost",
           "input_tokens",
           "output_tokens",
+          "cache_read_input_tokens",
+          "cache_write_input_tokens",
           "hits",
           "active_users"
         ],
@@ -1651,7 +1681,7 @@
     },
     "/api/v1/analytics/summary": {
       "post": {
-        "description": "Return aggregate KPI totals for the admin analytics summary cards.\n\nArgs:\n    _admin: Authenticated admin user (used for auth gating only).\n    db: Async database session.\n    body: Summary request parameters including date range and optional filters.\n\nReturns:\n    SummaryOut with total_cost, input_tokens, output_tokens, hits,\n    and active_users.",
+        "description": "Return aggregate KPI totals for the admin analytics summary cards.\n\nArgs:\n    _admin: Authenticated admin user (used for auth gating only).\n    db: Async database session.\n    body: Summary request parameters including date range and optional filters.\n\nReturns:\n    SummaryOut with the cost, the four token totals, hits, and active users.",
         "operationId": "summary_handler_api_v1_analytics_summary_post",
         "requestBody": {
           "content": {
@@ -2012,7 +2042,7 @@
     },
     "/api/v1/sessions/{session_id}/usage": {
       "get": {
-        "description": "Return the aggregated token usage and total cost for a session.\n\nRuns a single query that sums ``input_tokens``, ``output_tokens``, and\n``cost`` across all ``token_usage`` rows for the session. All fields are\n``0`` / ``0.0`` when no invocations have been recorded yet.\n\nArgs:\n    session_id: The session identifier from the URL path.\n    current_user: The authenticated user resolved by the ``CurrentUser``\n        dependency; raises HTTP 401 when unauthenticated.\n    db: The active async database session.\n\nReturns:\n    A :class:`~..schemas.sessions.SessionUsageSummaryOut` with\n    ``input_tokens``, ``output_tokens``, and ``total_cost``.\n\nRaises:\n    ProblemDetailsException: HTTP 404 when the session does not exist or\n        is not owned by the authenticated user.",
+        "description": "Return the aggregated token usage and total cost for a session.\n\nRuns a single query that sums the four token counts and ``cost`` across all\n``token_usage`` rows for the session. All fields are ``0`` / ``0.0`` when no\ninvocations have been recorded yet.\n\nArgs:\n    session_id: The session identifier from the URL path.\n    current_user: The authenticated user resolved by the ``CurrentUser``\n        dependency; raises HTTP 401 when unauthenticated.\n    db: The active async database session.\n\nReturns:\n    A :class:`~..schemas.sessions.SessionUsageSummaryOut` with the token\n    totals and ``total_cost``.\n\nRaises:\n    ProblemDetailsException: HTTP 404 when the session does not exist or\n        is not owned by the authenticated user.",
         "operationId": "get_usage_api_v1_sessions__session_id__usage_get",
         "parameters": [
           {

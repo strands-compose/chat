@@ -58,28 +58,23 @@ const KpiTilesComponent = (): ReactElement => {
     </div>
   );
 
+  const renderTile = (label: string, value: string): ReactElement => (
+    <div className={styles.tile}>
+      <p className={styles.tileLabel}>{label}</p>
+      {renderValue(value)}
+    </div>
+  );
+
+  // The cache tiles always show, so the grid keeps its shape while data loads.
   return (
     <div className={styles.grid}>
-      <div className={styles.tile}>
-        <p className={styles.tileLabel}>Total Cost</p>
-        {renderValue(data ? `$${data.total_cost.toFixed(2)}` : '$0.00')}
-      </div>
-      <div className={styles.tile}>
-        <p className={styles.tileLabel}>Input Tokens</p>
-        {renderValue(data ? formatInt(data.input_tokens) : '0')}
-      </div>
-      <div className={styles.tile}>
-        <p className={styles.tileLabel}>Output Tokens</p>
-        {renderValue(data ? formatInt(data.output_tokens) : '0')}
-      </div>
-      <div className={styles.tile}>
-        <p className={styles.tileLabel}>Hits</p>
-        {renderValue(data ? formatInt(data.hits) : '0')}
-      </div>
-      <div className={styles.tile}>
-        <p className={styles.tileLabel}>Active Users</p>
-        {renderValue(data ? formatInt(data.active_users) : '0')}
-      </div>
+      {renderTile('Total Cost', data ? `$${data.total_cost.toFixed(2)}` : '$0.00')}
+      {renderTile('Input Tokens', formatInt(data?.input_tokens ?? 0))}
+      {renderTile('Output Tokens', formatInt(data?.output_tokens ?? 0))}
+      {renderTile('Cache Read Tokens', formatInt(data?.cache_read_input_tokens ?? 0))}
+      {renderTile('Cache Write Tokens', formatInt(data?.cache_write_input_tokens ?? 0))}
+      {renderTile('Hits', formatInt(data?.hits ?? 0))}
+      {renderTile('Active Users', formatInt(data?.active_users ?? 0))}
     </div>
   );
 };

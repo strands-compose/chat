@@ -126,9 +126,9 @@ async def get_usage(
 ) -> SessionUsageSummaryOut:
     """Return the aggregated token usage and total cost for a session.
 
-    Runs a single query that sums ``input_tokens``, ``output_tokens``, and
-    ``cost`` across all ``token_usage`` rows for the session. All fields are
-    ``0`` / ``0.0`` when no invocations have been recorded yet.
+    Runs a single query that sums the four token counts and ``cost`` across all
+    ``token_usage`` rows for the session. All fields are ``0`` / ``0.0`` when no
+    invocations have been recorded yet.
 
     Args:
         session_id: The session identifier from the URL path.
@@ -137,8 +137,8 @@ async def get_usage(
         db: The active async database session.
 
     Returns:
-        A :class:`~..schemas.sessions.SessionUsageSummaryOut` with
-        ``input_tokens``, ``output_tokens``, and ``total_cost``.
+        A :class:`~..schemas.sessions.SessionUsageSummaryOut` with the token
+        totals and ``total_cost``.
 
     Raises:
         ProblemDetailsException: HTTP 404 when the session does not exist or
@@ -147,9 +147,4 @@ async def get_usage(
     session = await get_user_session(db, current_user.id, session_id)
     if session is None:
         raise _not_found(session_id)
-    input_tokens, output_tokens, total_cost = await get_session_usage_summary(db, session.id)
-    return SessionUsageSummaryOut(
-        input_tokens=input_tokens,
-        output_tokens=output_tokens,
-        total_cost=total_cost,
-    )
+    return await get_session_usage_summary(db, session.id)

@@ -75,8 +75,8 @@ const resolveToolStatus = (item: WorkflowItem, isStreaming: boolean): ToolBadgeS
 };
 
 const formatRunTokens = (run: AgentRun): string | null => {
-  if (run.inputTokens == null && run.outputTokens == null) return null;
-  return `${formatTokenCount(run.inputTokens ?? 0)} in · ${formatTokenCount(run.outputTokens ?? 0)} out`;
+  if (!run.totalTokens) return null;
+  return `${formatTokenCount(run.totalTokens)} tokens`;
 };
 
 // ======================
@@ -93,12 +93,10 @@ const WorkflowViewComponent = (): ReactElement => {
     isStreaming,
     resolvedMessageId,
     isSuccess,
-    inputTokens,
-    outputTokens
+    tokens,
   } = useChatStore(
     useShallow((s) => {
       const trace = selectWorkflowTrace(s);
-      const tokens = selectWorkflowTokens(s);
 
       // Resolve the message id for the active seq (for token display).
       let resolvedMessageId: string | null = null;
@@ -127,8 +125,7 @@ const WorkflowViewComponent = (): ReactElement => {
         isStreaming: trace.isStreaming,
         resolvedMessageId,
         isSuccess,
-        inputTokens: tokens.inputTokens,
-        outputTokens: tokens.outputTokens,
+        tokens: selectWorkflowTokens(s),
       };
     }),
   );
@@ -243,8 +240,10 @@ const WorkflowViewComponent = (): ReactElement => {
       <>
         <span className={styles.headerUsage}>
           <UsagePill
-            inputTokens={inputTokens}
-            outputTokens={outputTokens}
+            inputTokens={tokens?.input}
+            outputTokens={tokens?.output}
+            cacheReadTokens={tokens?.cacheRead}
+            cacheWriteTokens={tokens?.cacheWrite}
             size="sm"
             title="Tokens for this turn"
           />

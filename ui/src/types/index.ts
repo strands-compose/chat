@@ -1,5 +1,11 @@
 // Domain model
-export type { WorkflowItem, WorkflowGroupedItems, Message, AttachmentMetadata } from './common';
+export type {
+  WorkflowItem,
+  WorkflowGroupedItems,
+  TurnTokens,
+  Message,
+  AttachmentMetadata,
+} from './common';
 
 // API / streaming
 export type { ChatRequest, BackendStreamEvent, ChatStreamEvent } from './api';

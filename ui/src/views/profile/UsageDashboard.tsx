@@ -10,10 +10,11 @@
 
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { CostBadge, DateRangePicker, Segmented, Spinner, TokenBadges } from '@/components';
+import { DateRangePicker, Segmented, Spinner, UsagePill } from '@/components';
 import { formatBucketLabel } from '@/components/charts';
 import { UsageChart } from './UsageChart';
 import { useProfileContext } from './hooks/useProfileContext';
+import { pointTotalTokens } from './usage-points';
 import type { ChartMode, Interval, MeUsagePoint } from '@/types/analytics';
 import styles from './UsageDashboard.module.css';
 
@@ -52,6 +53,10 @@ const UsageTableComponent = ({ data, chartMode, interval, isLoading }: UsageTabl
     return <div className={styles.tableEmpty}>No data for selected range</div>;
   }
 
+  const hasCacheTokens = data.some(
+    (b) => b.cache_read_input_tokens + b.cache_write_input_tokens > 0,
+  );
+
   const renderTokensRows = (): ReactElement => (
     <table className={styles.table}>
       <thead>
@@ -59,16 +64,24 @@ const UsageTableComponent = ({ data, chartMode, interval, isLoading }: UsageTabl
           <th className={styles.th}>Date</th>
           <th className={styles.thNum}>In</th>
           <th className={styles.thNum}>Out</th>
+          {hasCacheTokens && <th className={styles.thNum}>Cache R</th>}
+          {hasCacheTokens && <th className={styles.thNum}>Cache W</th>}
         </tr>
       </thead>
       <tbody>
         {data
-          .filter((b) => b.input_tokens + b.output_tokens > 0)
+          .filter((b) => pointTotalTokens(b) > 0)
           .map((b) => (
             <tr key={b.label} className={styles.tr}>
               <td className={styles.td}>{formatBucketLabel(b.label, interval)}</td>
               <td className={styles.tdNum}>{b.input_tokens.toLocaleString()}</td>
               <td className={styles.tdNum}>{b.output_tokens.toLocaleString()}</td>
+              {hasCacheTokens && (
+                <td className={styles.tdNum}>{b.cache_read_input_tokens.toLocaleString()}</td>
+              )}
+              {hasCacheTokens && (
+                <td className={styles.tdNum}>{b.cache_write_input_tokens.toLocaleString()}</td>
+              )}
             </tr>
           ))}
       </tbody>
@@ -122,16 +135,18 @@ const UsageDashboardComponent = (): ReactElement => {
     isUsageLoading: isLoading,
   } = useProfileContext();
 
-  const totalCost = useMemo(
-    () => points.reduce((sum, b) => sum + b.cost, 0),
-    [points],
-  );
-  const totalInputTokens = useMemo(
-    () => points.reduce((sum, b) => sum + b.input_tokens, 0),
-    [points],
-  );
-  const totalOutputTokens = useMemo(
-    () => points.reduce((sum, b) => sum + b.output_tokens, 0),
+  const totals = useMemo(
+    () =>
+      points.reduce(
+        (sum, b) => ({
+          cost: sum.cost + b.cost,
+          input: sum.input + b.input_tokens,
+          output: sum.output + b.output_tokens,
+          cacheRead: sum.cacheRead + b.cache_read_input_tokens,
+          cacheWrite: sum.cacheWrite + b.cache_write_input_tokens,
+        }),
+        { cost: 0, input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+      ),
     [points],
   );
 
@@ -150,6 +165,20 @@ const UsageDashboardComponent = (): ReactElement => {
   // ======================
   // RENDER FUNCTIONS
   // ======================
+
+  const renderSummary = (): ReactElement | null => {
+    if (isLoading) return null;
+    return (
+      <UsagePill
+        cost={totals.cost}
+        inputTokens={totals.input}
+        outputTokens={totals.output}
+        cacheReadTokens={totals.cacheRead}
+        cacheWriteTokens={totals.cacheWrite}
+        title="Total usage in the selected timespan"
+      />
+    );
+  };
 
   const renderToolbar = (): ReactElement => (
     <div className={styles.toolbar}>
@@ -177,16 +206,7 @@ const UsageDashboardComponent = (): ReactElement => {
         </div>
 
         <aside className={styles.tableColumn}>
-          <div className={styles.tableSummary}>
-            {chartMode === 'cost'
-              ? <CostBadge cost={!isLoading ? totalCost : undefined} label="Total cost" />
-              : <TokenBadges
-                  inputTokens={!isLoading ? totalInputTokens : undefined}
-                  outputTokens={!isLoading ? totalOutputTokens : undefined}
-                  label="Total tokens"
-                />
-            }
-          </div>
+          <div className={styles.tableSummary}>{renderSummary()}</div>
           <UsageTable
             data={points}
             chartMode={chartMode}

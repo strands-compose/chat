@@ -105,6 +105,8 @@ def make_model_pricing(**overrides: object) -> ModelPricing:
         "provider": "bedrock",
         "input_token_price": 0.0003,
         "output_token_price": 0.0015,
+        "cache_read_token_price": 0.0,
+        "cache_write_token_price": 0.0,
     }
     return ModelPricing(**{**defaults, **overrides})
 

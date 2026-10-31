@@ -5,7 +5,7 @@
  * they're tightly coupled to the view's rendering rules.
  */
 
-import type { WorkflowItem, ChatStore } from '@/types';
+import type { WorkflowItem, ChatStore, TurnTokens } from '@/types';
 import type { AgentRun, AgentSummary } from './workflow-types';
 
 /** Number of colours in the per-agent palette (`--sc-agent-1` … `--sc-agent-5`). */
@@ -98,8 +98,7 @@ export function buildAgentRuns(items: WorkflowItem[]): AgentRun[] {
       const ending = openRuns.get(agentKey);
       if (!ending) continue;
       ending.hasEnded = true;
-      ending.inputTokens = item.inputTokens;
-      ending.outputTokens = item.outputTokens;
+      ending.totalTokens = item.totalTokens;
       openRuns.delete(agentKey);
       const delegator = delegatedBy.get(agentKey);
       if (delegator && openRuns.has(delegator) && !nestedAgents.has(agentKey)) {
@@ -212,28 +211,15 @@ export function selectWorkflowTrace(
 
 /**
  * Resolve the token totals the panel shows, mirroring selectWorkflowTrace.
- * Zero maps to `undefined` so the badge hides instead of showing "0".
+ * Returns the store's own objects (never a fresh one) so `useShallow` callers
+ * stay stable; `undefined` when the selected turn has no recorded totals.
  */
-export function selectWorkflowTokens(
-  state: ChatStore | null | undefined,
-): { inputTokens: number | undefined; outputTokens: number | undefined } {
-  const zeroToUndef = (n: number): number | undefined => (n > 0 ? n : undefined);
+export function selectWorkflowTokens(state: ChatStore | null | undefined): TurnTokens | undefined {
+  if (!state) return undefined;
 
-  if (!state) return { inputTokens: undefined, outputTokens: undefined };
-
-  if (state.isLoading) {
-    return {
-      inputTokens: zeroToUndef(state.activeWorkflowTokens.input),
-      outputTokens: zeroToUndef(state.activeWorkflowTokens.output),
-    };
-  }
-
-  // Just finished: prefer the live totals, mirroring selectWorkflowTrace.
-  if (state.activeWorkflowItems.length > 0) {
-    return {
-      inputTokens: zeroToUndef(state.activeWorkflowTokens.input),
-      outputTokens: zeroToUndef(state.activeWorkflowTokens.output),
-    };
+  // Streaming or just finished: the live totals, mirroring selectWorkflowTrace.
+  if (state.isLoading || state.activeWorkflowItems.length > 0) {
+    return state.activeWorkflowTokens;
   }
 
   let targetSeq: number | null = state.selectedWorkflowSeq;
@@ -247,17 +233,6 @@ export function selectWorkflowTokens(
     }
   }
 
-  if (targetSeq === null) {
-    return {
-      inputTokens: zeroToUndef(state.activeWorkflowTokens.input),
-      outputTokens: zeroToUndef(state.activeWorkflowTokens.output),
-    };
-  }
-
-  const tokens = state.workflowTokens[targetSeq];
-  if (!tokens) return { inputTokens: undefined, outputTokens: undefined };
-  return {
-    inputTokens: zeroToUndef(tokens.input),
-    outputTokens: zeroToUndef(tokens.output),
-  };
+  if (targetSeq === null) return state.activeWorkflowTokens;
+  return state.workflowTokens[targetSeq];
 }

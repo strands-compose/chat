@@ -33,14 +33,24 @@ def _format_manifest(model: Any, _prop: Any) -> Any:
 
 
 def _summarise_token_usage(rows: list[Any]) -> str:
-    """Return 'Total: X input, Y output' with narrow-space thousands separators."""
+    """Return 'Total: X input, Y output' with narrow-space thousands separators.
+
+    Prompt-cache read and write totals are appended only when non-zero.
+    """
     total_in = sum(r.input_tokens for r in rows)
     total_out = sum(r.output_tokens for r in rows)
+    total_cache_read = sum(r.cache_read_input_tokens for r in rows)
+    total_cache_write = sum(r.cache_write_input_tokens for r in rows)
 
     def fmt(n: int) -> str:
         return f"{n:,}".replace(",", "\u202f")
 
-    return f"Total: {fmt(total_in)} input, {fmt(total_out)} output"
+    parts = [f"{fmt(total_in)} input", f"{fmt(total_out)} output"]
+    if total_cache_read:
+        parts.append(f"{fmt(total_cache_read)} cache read")
+    if total_cache_write:
+        parts.append(f"{fmt(total_cache_write)} cache write")
+    return "Total: " + ", ".join(parts)
 
 
 class ChatSessionAdmin(BaseModelView, model=ChatSession):

@@ -29,13 +29,6 @@ export { ErrorBoundary } from './ErrorBoundary';
 
 export { Composer } from './Composer';
 
-export { TokenBadges } from './TokenBadges';
-export type { TokenBadgesProps } from './TokenBadges';
-
-export { CostBadge } from './CostBadge';
-export type { CostBadgeProps } from './CostBadge';
-
-
 export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusBadgeVariant } from './StatusBadge';
 

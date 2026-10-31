@@ -255,6 +255,8 @@ export async function fetchSessionMessages(sessionId: string): Promise<SessionMe
 export interface SessionUsageSummary {
   input_tokens: number;
   output_tokens: number;
+  cache_read_input_tokens: number;
+  cache_write_input_tokens: number;
   total_cost: number;
 }
 
@@ -271,11 +273,19 @@ export async function fetchSessionUsage(sessionId: string): Promise<SessionUsage
  * Pull token usage from a `agent_complete`/`multiagent_complete` payload, supporting
  * both top-level (`input_tokens`) and nested (`usage.input_tokens`) shapes.
  */
-const extractUsage = (data: Record<string, unknown>): { input_tokens?: number; output_tokens?: number } => {
+const extractUsage = (
+  data: Record<string, unknown>,
+): Pick<
+  ChatStreamEvent,
+  'input_tokens' | 'output_tokens' | 'cache_read_input_tokens' | 'cache_write_input_tokens'
+> => {
   const usage = (data.usage as Record<string, unknown> | undefined) ?? {};
+  const read = (key: string): number | undefined => (data[key] ?? usage[key]) as number | undefined;
   return {
-    input_tokens: (data.input_tokens ?? usage.input_tokens) as number | undefined,
-    output_tokens: (data.output_tokens ?? usage.output_tokens) as number | undefined,
+    input_tokens: read('input_tokens'),
+    output_tokens: read('output_tokens'),
+    cache_read_input_tokens: read('cache_read_input_tokens'),
+    cache_write_input_tokens: read('cache_write_input_tokens'),
   };
 };
 

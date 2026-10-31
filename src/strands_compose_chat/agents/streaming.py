@@ -111,8 +111,10 @@ async def save_token_usage(
     usage = event.data.get("usage", {})
     input_tokens = usage.get("input_tokens", 0)
     output_tokens = usage.get("output_tokens", 0)
+    cache_read_input_tokens = usage.get("cache_read_input_tokens", 0)
+    cache_write_input_tokens = usage.get("cache_write_input_tokens", 0)
 
-    if input_tokens == 0 and output_tokens == 0:
+    if not any((input_tokens, output_tokens, cache_read_input_tokens, cache_write_input_tokens)):
         return
 
     model_id, provider = resolve_model(event, manifest)
@@ -125,17 +127,12 @@ async def save_token_usage(
                     ModelPricing.provider == provider,
                 )
             )
-            pricing = pricing_result.scalar_one_or_none()
-            if pricing:
-                in_price = pricing.input_token_price
-                out_price = pricing.output_token_price
-            else:
-                in_price = 0.0
-                out_price = 0.0
-
-            cost = round(
-                compute_cost(in_price, out_price, input_tokens, output_tokens),
-                6,
+            cost = compute_cost(
+                pricing_result.scalar_one_or_none(),
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                cache_read_input_tokens=cache_read_input_tokens,
+                cache_write_input_tokens=cache_write_input_tokens,
             )
             session.add(
                 TokenUsage(
@@ -146,6 +143,8 @@ async def save_token_usage(
                     provider=provider,
                     input_tokens=input_tokens,
                     output_tokens=output_tokens,
+                    cache_read_input_tokens=cache_read_input_tokens,
+                    cache_write_input_tokens=cache_write_input_tokens,
                     cost=cost,
                     created_at=datetime.now(UTC),
                 )

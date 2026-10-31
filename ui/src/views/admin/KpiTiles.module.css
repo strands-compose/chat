@@ -1,19 +1,8 @@
+/* Seven tiles; the columns follow the available width and wrap when narrow. */
 .grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
   gap: 1rem;
-}
-
-@media (max-width: 56.25rem) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 37.5rem) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 .tile {

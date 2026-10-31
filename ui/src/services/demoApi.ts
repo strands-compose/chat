@@ -86,6 +86,8 @@ interface UsageDay {
   cost: number;
   input_tokens: number;
   output_tokens: number;
+  cache_read_input_tokens: number;
+  cache_write_input_tokens: number;
 }
 
 function toYMD(d: Date): string {
@@ -140,13 +142,15 @@ function dailyUsage(date: Date): UsageDay {
 
   const t = date.getTime();
   if (t < windowStart.getTime() || t > today.getTime()) {
-    return { cost: 0, input_tokens: 0, output_tokens: 0 };
+    return { cost: 0, input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, cache_write_input_tokens: 0 };
   }
 
   const rnd = mulberry32(hashStr(toYMD(date)));
   const r1 = rnd();
   const r2 = rnd();
   const r3 = rnd();
+  const r4 = rnd();
+  const r5 = rnd();
 
   // Weekends run lighter than weekdays; every day still has some activity.
   const isWeekend = date.getDay() === 0 || date.getDay() === 6;
@@ -154,10 +158,21 @@ function dailyUsage(date: Date): UsageDay {
 
   const input = Math.round((400_000 + r1 * 2_200_000) * dayFactor);
   const output = Math.round(input * (0.06 + r2 * 0.05));
-  // Blended $/token so cost tracks token volume for both chart modes.
-  const cost = input * 0.9e-6 + output * 9e-6;
+  // Prompt caching: cached system prompts are read back far more often than
+  // they are written.
+  const cacheRead = Math.round(input * (1.2 + r4 * 0.8));
+  const cacheWrite = Math.round(input * (0.05 + r5 * 0.1));
+  // Blended $/token so cost tracks token volume for both chart modes. Cache
+  // reads cost a tenth of the input rate, cache writes a quarter more.
+  const cost = input * 0.9e-6 + output * 9e-6 + cacheRead * 0.09e-6 + cacheWrite * 1.125e-6;
 
-  return { cost, input_tokens: input, output_tokens: output };
+  return {
+    cost,
+    input_tokens: input,
+    output_tokens: output,
+    cache_read_input_tokens: cacheRead,
+    cache_write_input_tokens: cacheWrite,
+  };
 }
 
 /** Bucket key for a date under the requested interval (matches formatBucketLabel). */
@@ -253,13 +268,22 @@ export async function fetchUserUsageSummary(
     const key = bucketKey(cursor, interval);
     let point = buckets.get(key);
     if (!point) {
-      point = { label: key, cost: 0, input_tokens: 0, output_tokens: 0 };
+      point = {
+        label: key,
+        cost: 0,
+        input_tokens: 0,
+        output_tokens: 0,
+        cache_read_input_tokens: 0,
+        cache_write_input_tokens: 0,
+      };
       buckets.set(key, point);
       points.push(point);
     }
     point.cost += usage.cost;
     point.input_tokens += usage.input_tokens;
     point.output_tokens += usage.output_tokens;
+    point.cache_read_input_tokens += usage.cache_read_input_tokens;
+    point.cache_write_input_tokens += usage.cache_write_input_tokens;
     cursor.setDate(cursor.getDate() + 1);
   }
 

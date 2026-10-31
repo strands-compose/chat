@@ -16,8 +16,9 @@ from strands_compose_chat.analytics.service import (
     get_monthly_spend,
     get_session_usage_summary,
     get_summary,
+    get_user_usage,
 )
-from strands_compose_chat.schemas.analytics import Dimension, Metric
+from strands_compose_chat.schemas.analytics import Dimension, Interval, Metric
 from tests.factories import (
     make_agent,
     make_chat_session,
@@ -65,11 +66,11 @@ async def test_session_usage_summary_equals_arithmetic_sum(db: AsyncSession) -> 
     ]
     await persist(db, *records)
 
-    inp, out, cost = await get_session_usage_summary(db, session.id)
+    usage = await get_session_usage_summary(db, session.id)
 
-    assert inp == 100 + 200 + 300
-    assert out == 50 + 80 + 120
-    assert cost == pytest.approx(0.01 + 0.02 + 0.03)
+    assert usage.input_tokens == 100 + 200 + 300
+    assert usage.output_tokens == 50 + 80 + 120
+    assert usage.total_cost == pytest.approx(0.01 + 0.02 + 0.03)
 
 
 async def test_session_usage_summary_returns_zeros_for_empty_session(db: AsyncSession) -> None:
@@ -80,11 +81,13 @@ async def test_session_usage_summary_returns_zeros_for_empty_session(db: AsyncSe
     session = make_chat_session(user_id=user.id, agent_id=agent.id)
     await persist(db, session)
 
-    inp, out, cost = await get_session_usage_summary(db, session.id)
+    usage = await get_session_usage_summary(db, session.id)
 
-    assert inp == 0
-    assert out == 0
-    assert cost == 0.0
+    assert usage.input_tokens == 0
+    assert usage.output_tokens == 0
+    assert usage.cache_read_input_tokens == 0
+    assert usage.cache_write_input_tokens == 0
+    assert usage.total_cost == 0.0
 
 
 async def test_session_usage_summary_scoped_to_session(db: AsyncSession) -> None:
@@ -117,11 +120,46 @@ async def test_session_usage_summary_scoped_to_session(db: AsyncSession) -> None
         ),
     )
 
-    inp, out, cost = await get_session_usage_summary(db, session_a.id)
+    usage = await get_session_usage_summary(db, session_a.id)
 
-    assert inp == 100
-    assert out == 50
-    assert cost == pytest.approx(0.01)
+    assert usage.input_tokens == 100
+    assert usage.output_tokens == 50
+    assert usage.total_cost == pytest.approx(0.01)
+
+
+async def test_session_usage_summary_reports_cache_tokens_separately_from_input(
+    db: AsyncSession,
+) -> None:
+    user = make_user()
+    agent = make_agent()
+    await persist(db, user, agent)
+    session = make_chat_session(user_id=user.id, agent_id=agent.id)
+    await persist(db, session)
+    await persist(
+        db,
+        make_token_usage(
+            chat_session_id=session.id,
+            user_id=user.id,
+            input_tokens=100,
+            output_tokens=50,
+            cache_read_input_tokens=1_000,
+            cache_write_input_tokens=200,
+        ),
+        make_token_usage(
+            chat_session_id=session.id,
+            user_id=user.id,
+            input_tokens=10,
+            output_tokens=5,
+            cache_read_input_tokens=3_000,
+            cache_write_input_tokens=0,
+        ),
+    )
+
+    usage = await get_session_usage_summary(db, session.id)
+
+    assert (usage.input_tokens, usage.output_tokens) == (110, 55)
+    assert usage.cache_read_input_tokens == 4_000
+    assert usage.cache_write_input_tokens == 200
 
 
 async def test_monthly_spend_equals_arithmetic_sum_of_records(db: AsyncSession) -> None:
@@ -222,30 +260,60 @@ async def test_summary_cost_and_token_totals_equal_arithmetic_sum(db: AsyncSessi
     from_date = date(2024, 1, 10)
     to_date = date(2024, 1, 20)
 
-    total_cost, inp_total, out_total, _hits, _active_users = await get_summary(
-        db, from_date, to_date
-    )
+    summary = await get_summary(db, from_date, to_date)
 
     expected_cost = sum(c for _, _, c in inputs)
     expected_inp = sum(i for i, _, _ in inputs)
     expected_out = sum(o for _, o, _ in inputs)
 
-    assert total_cost == pytest.approx(expected_cost)
-    assert inp_total == expected_inp
-    assert out_total == expected_out
+    assert summary.total_cost == pytest.approx(expected_cost)
+    assert summary.input_tokens == expected_inp
+    assert summary.output_tokens == expected_out
+
+
+async def test_summary_reports_cache_token_totals_separately_from_input(
+    db: AsyncSession,
+) -> None:
+    user = make_user()
+    agent = make_agent()
+    await persist(db, user, agent)
+    session = make_chat_session(user_id=user.id, agent_id=agent.id)
+    await persist(db, session)
+
+    records = []
+    for cache_read, cache_write in [(500, 100), (1_500, 0)]:
+        record = make_token_usage(
+            chat_session_id=session.id,
+            user_id=user.id,
+            input_tokens=10,
+            output_tokens=5,
+            cache_read_input_tokens=cache_read,
+            cache_write_input_tokens=cache_write,
+        )
+        record.created_at = datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)
+        records.append(record)
+    await persist(db, *records)
+
+    summary = await get_summary(db, date(2024, 1, 10), date(2024, 1, 20))
+
+    assert (summary.input_tokens, summary.output_tokens) == (20, 10)
+    assert summary.cache_read_input_tokens == 2_000
+    assert summary.cache_write_input_tokens == 100
 
 
 async def test_summary_returns_zeros_when_no_records_in_range(db: AsyncSession) -> None:
     from_date = date(2024, 1, 1)
     to_date = date(2024, 1, 31)
 
-    total_cost, inp, out, hits, active_users = await get_summary(db, from_date, to_date)
+    summary = await get_summary(db, from_date, to_date)
 
-    assert total_cost == 0.0
-    assert inp == 0
-    assert out == 0
-    assert hits == 0
-    assert active_users == 0
+    assert summary.total_cost == 0.0
+    assert summary.input_tokens == 0
+    assert summary.output_tokens == 0
+    assert summary.cache_read_input_tokens == 0
+    assert summary.cache_write_input_tokens == 0
+    assert summary.hits == 0
+    assert summary.active_users == 0
 
 
 async def test_summary_active_users_counts_distinct_users(db: AsyncSession) -> None:
@@ -288,9 +356,9 @@ async def test_summary_active_users_counts_distinct_users(db: AsyncSession) -> N
         r.created_at = ts
     await persist(db, *recs)
 
-    _, _, _, _, active_users = await get_summary(db, date(2024, 1, 10), date(2024, 1, 20))
+    summary = await get_summary(db, date(2024, 1, 10), date(2024, 1, 20))
 
-    assert active_users == 2
+    assert summary.active_users == 2
 
 
 @pytest.mark.postgres
@@ -349,18 +417,21 @@ async def test_daily_buckets_token_totals_equal_arithmetic_sum(db: AsyncSession)
     day = date(2024, 1, 10)
     ts = datetime.combine(day, time(12, 0, 0), tzinfo=UTC)
 
+    # (input, output, cache read, cache write); every kind counts towards the total.
     records = [
-        (100, 50),
-        (200, 80),
-        (300, 120),
+        (100, 50, 0, 0),
+        (200, 80, 1_000, 0),
+        (300, 120, 0, 400),
     ]
     orm_recs = []
-    for inp, out in records:
+    for inp, out, cache_read, cache_write in records:
         r = make_token_usage(
             chat_session_id=session.id,
             user_id=user.id,
             input_tokens=inp,
             output_tokens=out,
+            cache_read_input_tokens=cache_read,
+            cache_write_input_tokens=cache_write,
             cost=0.0,
         )
         r.created_at = ts
@@ -375,7 +446,7 @@ async def test_daily_buckets_token_totals_equal_arithmetic_sum(db: AsyncSession)
         dimension=Dimension.none,
     )
 
-    expected = sum(i + o for i, o in records)
+    expected = sum(sum(counts) for counts in records)
     assert buckets.get((day, "_total"), 0.0) == pytest.approx(expected)
 
 
@@ -495,3 +566,48 @@ async def test_day_bucket_separates_records_on_different_days(db: AsyncSession) 
     assert len(buckets) == 2
     assert (day1, "_total") in buckets
     assert (day2, "_total") in buckets
+
+
+async def test_user_usage_buckets_carry_cache_tokens_separately_from_input(
+    db: AsyncSession,
+) -> None:
+    user = make_user()
+    agent = make_agent()
+    await persist(db, user, agent)
+    session = make_chat_session(user_id=user.id, agent_id=agent.id)
+    await persist(db, session)
+
+    day_one = make_token_usage(
+        chat_session_id=session.id,
+        user_id=user.id,
+        input_tokens=10,
+        output_tokens=5,
+        cache_read_input_tokens=700,
+        cache_write_input_tokens=70,
+    )
+    day_one.created_at = _ts(date(2024, 1, 15))
+    day_two = make_token_usage(
+        chat_session_id=session.id,
+        user_id=user.id,
+        input_tokens=20,
+        output_tokens=6,
+        cache_read_input_tokens=300,
+        cache_write_input_tokens=30,
+    )
+    day_two.created_at = _ts(date(2024, 1, 16))
+    await persist(db, day_one, day_two)
+
+    daily = await get_user_usage(db, user.id, date(2024, 1, 15), date(2024, 1, 16), Interval.daily)
+    monthly = await get_user_usage(
+        db, user.id, date(2024, 1, 15), date(2024, 1, 16), Interval.monthly
+    )
+
+    assert [(p.input_tokens, p.cache_read_input_tokens) for p in daily.points] == [
+        (10, 700),
+        (20, 300),
+    ]
+    assert [p.cache_write_input_tokens for p in daily.points] == [70, 30]
+    assert len(monthly.points) == 1
+    assert monthly.points[0].input_tokens == 30
+    assert monthly.points[0].cache_read_input_tokens == 1_000
+    assert monthly.points[0].cache_write_input_tokens == 100
