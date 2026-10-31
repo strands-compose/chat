@@ -124,10 +124,14 @@ export interface ChatStore {
   activeWorkflowTokens: TurnTokens;
   /** Selected assistant seq for the workflow panel; null = auto (latest). */
   selectedWorkflowSeq: number | null;
-  /** True when the user has explicitly closed the workflow panel. Overrides the
-   *  auto-open conditions (selection / streaming / live buffer) so the panel
-   *  stays shut until the user reopens it or a new turn starts. */
+  /** True while the workflow panel is shut, which is the default. Overrides the
+   *  auto-open conditions (selection / streaming / live buffer). A new turn or a
+   *  message's Workflow button opens it; the user can close it again. Resets to
+   *  shut when the conversation changes. */
   workflowPanelClosed: boolean;
+  /** True while the welcome screen's agent description panel is shut, which is
+   *  the default. Opened from the help button next to the agent selector. */
+  descriptionPanelClosed: boolean;
   /** Backend seq of the assistant turn that completed in this session this
    *  load. Used to play the content reveal once for a fresh answer while
    *  restored history renders instantly. Null until a turn completes; reset
@@ -139,10 +143,14 @@ export interface ChatStore {
   clearChat: () => void;
   restoreSession: (sessionId: string) => Promise<void>;
   setSelectedWorkflowSeq: (seq: number | null) => void;
-  /** Explicitly close the workflow panel (user action). */
+  /** Close the workflow panel (user action). */
   closeWorkflowPanel: () => void;
-  /** Reopen the workflow panel after the user closed it. */
+  /** Open the workflow panel (user action). */
   openWorkflowPanel: () => void;
+  /** Close the agent description panel (user action). */
+  closeDescriptionPanel: () => void;
+  /** Open the agent description panel (user action). */
+  openDescriptionPanel: () => void;
   /** Apply an agent record as the current selection. */
   selectAgent: (agent: Agent) => void;
   /** Fetch the agent list once and auto-select a default. Idempotent. */
@@ -219,9 +227,10 @@ export const useChatStore = create<ChatStore>((set, get) => {
               lastAssistantSeq >= 0
                 ? { ...state.workflowTokens, [lastAssistantSeq]: tokens }
                 : state.workflowTokens,
-            // Keep the panel open and pointing at the just-completed turn.
-            // On mobile the panel takes full width, so close it automatically
-            // after the refetch so the chat thread is visible again.
+            // Point the panel at the just-completed turn; its open/closed state is
+            // left as the user set it. On mobile the panel takes full width, so
+            // close it automatically after the refetch so the chat thread is
+            // visible again.
             selectedWorkflowSeq: lastAssistantSeq >= 0 ? lastAssistantSeq : state.selectedWorkflowSeq,
             workflowPanelClosed: state.workflowPanelClosed || isMobileViewport(),
             // Remember the just-completed turn so its answer reveals once while
@@ -271,7 +280,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
     activeWorkflowItems: [],
     activeWorkflowTokens: NO_TOKENS,
     selectedWorkflowSeq: null,
-    workflowPanelClosed: false,
+    workflowPanelClosed: true,
+    descriptionPanelClosed: true,
     lastCompletedSeq: null,
 
     loadSessions: async (): Promise<void> => {
@@ -339,10 +349,10 @@ export const useChatStore = create<ChatStore>((set, get) => {
           restoringSession: false,
           sessionUsage: undefined,
           lastCompletedSeq: null,
-          workflowPanelClosed: false,
           ...(isSameSession
             ? {}
             : {
+                workflowPanelClosed: true,
                 workflowTraces: {},
                 workflowTokens: {},
                 activeWorkflowItems: [],
@@ -435,7 +445,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
         },
         messageOrder: [...state.messageOrder, userMsgId, assistantMsgId],
         isLoading: true,
-        // A new turn reopens the workflow panel unless the user closes it again.
+        // A new turn opens the workflow panel unless the user closes it again.
         workflowPanelClosed: false,
       }));
 
@@ -506,7 +516,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
         activeWorkflowItems: [],
         activeWorkflowTokens: NO_TOKENS,
         selectedWorkflowSeq: null,
-        workflowPanelClosed: false,
+        workflowPanelClosed: true,
+        descriptionPanelClosed: true,
         lastCompletedSeq: null,
       });
     },
@@ -523,6 +534,14 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
     openWorkflowPanel: (): void => {
       set({ workflowPanelClosed: false });
+    },
+
+    closeDescriptionPanel: (): void => {
+      set({ descriptionPanelClosed: true });
+    },
+
+    openDescriptionPanel: (): void => {
+      set({ descriptionPanelClosed: false });
     },
 
     selectAgent: (agent: Agent): void => {

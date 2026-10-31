@@ -276,12 +276,12 @@ export function handleMultiagentComplete(event: ChatStreamEvent, effects: Stream
 // ====== HANDOFF ======
 
 export function handleHandoff(event: ChatStreamEvent, effects: StreamingSideEffects): void {
-  const agentName = normalizeAgentName(event.agent_name);
   pushItem(
     {
       type: 'handoff',
-      content: `Handoff to ${agentName ?? 'next agent'}`,
-      agentName,
+      content: '',
+      agentName: normalizeAgentName(event.agent_name),
+      handoffTargets: event.to_node_ids?.map((id) => normalizeAgentName(id) ?? id),
     },
     effects,
   );

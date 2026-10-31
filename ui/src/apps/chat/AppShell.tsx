@@ -18,18 +18,22 @@ const AgentDescriptionPanel = lazy(() =>
 
 const AppShell = (): ReactElement => {
   const { user, isLoading, authError } = useAuth();
-  // Open while a turn is selected or running, and across the brief gap after a
+  // Shut by default. A new turn or a message's Workflow button opens it, and it
+  // then follows the selected or running turn, including the brief gap after a
   // turn ends (buffer still set) until the refetch restores selectedWorkflowSeq.
-  // The user can close it explicitly (workflowPanelClosed), which overrides all.
+  // workflowPanelClosed overrides all of that.
   const workflowOpen = useChatStore(
     (s) =>
       !s.workflowPanelClosed &&
       (s.selectedWorkflowSeq !== null || s.isLoading || s.activeWorkflowItems.length > 0),
   );
   // The welcome screen shows the selected agent's description in the right slot.
-  // On mobile the right slot would cover the whole screen, so it stays hidden.
+  // Shut by default (descriptionPanelClosed); the help button beside the agent
+  // selector opens it. On mobile the right slot would cover the
+  // whole screen, so it stays hidden.
   const descriptionOpen = useChatStore(
     (s) =>
+      !s.descriptionPanelClosed &&
       !s.sessionId &&
       s.messageOrder.length === 0 &&
       s.selectedAgentDescription.trim().length > 0 &&

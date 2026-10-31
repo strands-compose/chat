@@ -41,8 +41,16 @@ export interface ToolBadgeProps {
   defaultExpanded?: boolean;
 }
 
-/** Output length shown before "Show full output". */
-const OUTPUT_PREVIEW_LEN = 800;
+/** Characters of an input value or output shown before the "Show full" toggle. */
+const PREVIEW_LEN = 800;
+
+/** Cuts text to the preview length unless the full text was requested. */
+const clipText = (text: string, isFull: boolean): string =>
+  isFull || text.length <= PREVIEW_LEN ? text : `${text.substring(0, PREVIEW_LEN)}…`;
+
+/** Display string for one input argument value. */
+const formatInputValue = (value: unknown): string =>
+  typeof value === 'object' && value !== null ? JSON.stringify(value, null, 2) : String(value);
 
 /** True when there is meaningful input/output worth expanding. */
 const computeHasDetails = (toolInput: unknown, toolOutput?: string): boolean => {
@@ -67,6 +75,7 @@ const ToolBadgeComponent = ({
   // STATE
   // ======================
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [showFullInput, setShowFullInput] = useState(false);
   const [showFullOutput, setShowFullOutput] = useState(false);
 
   const hasDetails = computeHasDetails(toolInput, toolOutput);
@@ -104,28 +113,43 @@ const ToolBadgeComponent = ({
     return null;
   };
 
-  const renderInputObject = (inputData: Record<string, unknown>): ReactElement => (
-    <div className={styles.detailSection}>
-      <div className={styles.detailLabel}>Input</div>
-      <div className={styles.kv}>
-        {Object.entries(inputData).map(([key, value]) => (
-          <div key={key} className={styles.kvRow}>
-            <span className={styles.kvKey}>{key}</span>
-            <span className={styles.kvValue}>
-              {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
+  const renderMoreLink = (isFull: boolean, onToggle: () => void, label: string): ReactElement => (
+    <button type="button" className={styles.moreLink} onClick={onToggle}>
+      {isFull ? 'Show less' : label}
+    </button>
   );
 
-  const renderInputPre = (value: string): ReactElement => (
-    <div className={styles.detailSection}>
-      <div className={styles.detailLabel}>Input</div>
-      <pre className={styles.pre}>{value}</pre>
-    </div>
-  );
+  const renderInputObject = (inputData: Record<string, unknown>): ReactElement => {
+    const entries = Object.entries(inputData).map(([key, value]): [string, string] => [key, formatInputValue(value)]);
+    const isLong = entries.some(([, text]) => text.length > PREVIEW_LEN);
+    return (
+      <div className={styles.detailSection}>
+        <div className={styles.detailLabel}>Input</div>
+        <div className={styles.kv}>
+          {entries.map(([key, text]) => (
+            <div key={key} className={styles.kvRow}>
+              <span className={styles.kvKey}>{key}</span>
+              <span className={styles.kvValue}>{clipText(text, showFullInput)}</span>
+            </div>
+          ))}
+        </div>
+        {isLong && renderMoreLink(showFullInput, () => setShowFullInput((v) => !v), 'Show full input')}
+      </div>
+    );
+  };
+
+  const renderInputPre = (value: string): ReactElement => {
+    const isLong = value.length > PREVIEW_LEN;
+    return (
+      <div className={styles.detailSection}>
+        <div className={styles.detailLabel}>Input</div>
+        <pre className={cn(styles.pre, isLong && !showFullInput && styles.preClipped)}>
+          {clipText(value, showFullInput)}
+        </pre>
+        {isLong && renderMoreLink(showFullInput, () => setShowFullInput((v) => !v), 'Show full input')}
+      </div>
+    );
+  };
 
   const renderInput = (): ReactElement | null => {
     if (!toolInput) return null;
@@ -143,23 +167,14 @@ const ToolBadgeComponent = ({
 
   const renderOutput = (): ReactElement | null => {
     if (!toolOutput) return null;
-    const isLong = toolOutput.length > OUTPUT_PREVIEW_LEN;
-    const display = isLong && !showFullOutput ? toolOutput.substring(0, OUTPUT_PREVIEW_LEN) : toolOutput;
+    const isLong = toolOutput.length > PREVIEW_LEN;
     return (
       <div className={styles.detailSection}>
         <div className={styles.detailLabel}>{isError ? 'Error' : 'Output'}</div>
         <pre className={cn(styles.pre, isError && styles.preError, isLong && !showFullOutput && styles.preClipped)}>
-          {display}
+          {clipText(toolOutput, showFullOutput)}
         </pre>
-        {isLong && (
-          <button
-            type="button"
-            className={styles.moreLink}
-            onClick={() => setShowFullOutput((v) => !v)}
-          >
-            {showFullOutput ? 'Show less' : 'Show full output'}
-          </button>
-        )}
+        {isLong && renderMoreLink(showFullOutput, () => setShowFullOutput((v) => !v), 'Show full output')}
       </div>
     );
   };

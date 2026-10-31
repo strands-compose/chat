@@ -356,7 +356,13 @@ export const mapBackendEvent = (raw: BackendStreamEvent): ChatStreamEvent | null
       return { type: 'multiagent_start', agent_name };
 
     case 'handoff':
-      return { type: 'handoff', agent_name };
+      return {
+        type: 'handoff',
+        agent_name,
+        to_node_ids: Array.isArray(data.to_node_ids)
+          ? data.to_node_ids.filter((id): id is string => typeof id === 'string')
+          : undefined,
+      };
 
     default:
       if (type) console.warn('Unknown backend event type:', type, raw);

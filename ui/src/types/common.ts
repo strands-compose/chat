@@ -18,7 +18,7 @@ export interface WorkflowItem {
     | 'agent_stop'
     | 'handoff';
 
-  /** Plain text content (for `text`, `reasoning`, `handoff`, etc.). */
+  /** Plain text content (for `text` and `reasoning`). */
   content: string;
 
   /** Tool name — used by `tool` items. */
@@ -37,6 +37,9 @@ export interface WorkflowItem {
 
   /** Originating agent — used for filtering and the agent separator label. */
   agentName?: string;
+
+  /** Agents a `handoff` passes control to, normalized like `agentName`. */
+  handoffTargets?: string[];
 
   /** True when the separator was emitted by an orchestrator (multiagent_start/complete) rather than a plain agent. */
   isOrchestrator?: boolean;

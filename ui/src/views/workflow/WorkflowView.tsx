@@ -6,13 +6,24 @@ import {
   LuArrowRightLeft,
   LuBot,
   LuBrain,
+  LuChevronDown,
   LuCircleCheck,
   LuNetwork,
   LuWorkflow,
   LuX,
 } from 'react-icons/lu';
 import { useChatStore } from '@/store';
-import { IconButton, Markdown, StatusBadge, SubheaderBar, ToolBadge, UsagePill } from '@/components';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+  IconButton,
+  Markdown,
+  StatusBadge,
+  SubheaderBar,
+  ToolBadge,
+  UsagePill,
+} from '@/components';
 import type { ToolBadgeStatus } from '@/components';
 import { cn, formatAgentLabel, formatTokenCount } from '@/services/utils';
 import {
@@ -41,13 +52,18 @@ const STICK_THRESHOLD = 40;
 // ======================
 
 const InlineReasoning = memo(({ content }: { content: string }): ReactElement => (
-  <div className={styles.reasoning}>
-    <span className={styles.reasoningLabel}>
-      <LuBrain size={13} />
-      Thinking
-    </span>
-    <p className={styles.reasoningText}>{content}</p>
-  </div>
+  <Collapsible defaultOpen className={styles.reasoning}>
+    <CollapsibleTrigger asChild>
+      <button type="button" className={styles.reasoningLabel} title="Show or hide thinking">
+        <LuBrain size={13} />
+        Thinking
+        <LuChevronDown size={13} className={styles.reasoningChevron} aria-hidden="true" />
+      </button>
+    </CollapsibleTrigger>
+    <CollapsibleContent asChild>
+      <p className={styles.reasoningText}>{content}</p>
+    </CollapsibleContent>
+  </Collapsible>
 ));
 
 const StreamingTextBox = memo(({ content, live }: { content: string; live: boolean }): ReactElement => (
@@ -56,12 +72,15 @@ const StreamingTextBox = memo(({ content, live }: { content: string; live: boole
   </Markdown>
 ));
 
-const Handoff = memo(({ content }: { content: string }): ReactElement => (
-  <div className={styles.handoff}>
-    <LuArrowRightLeft size={14} />
-    <span>{content}</span>
-  </div>
-));
+const Handoff = memo(({ targets }: { targets: string[] | undefined }): ReactElement => {
+  const label = targets?.length ? targets.map(formatAgentLabel).join(', ') : 'next agent';
+  return (
+    <div className={styles.handoff}>
+      <LuArrowRightLeft size={14} />
+      <span>Handoff to {label}</span>
+    </div>
+  );
+});
 
 // ======================
 // HELPERS
@@ -333,7 +352,7 @@ const WorkflowViewComponent = (): ReactElement => {
         return group.items.map((item, i) => renderTool(item, run, `${groupKey}-${i}`));
       case 'handoff':
         return group.items.map((item, i) => (
-          <Handoff key={`${groupKey}-${i}`} content={item.content} />
+          <Handoff key={`${groupKey}-${i}`} targets={item.handoffTargets} />
         ));
       default:
         return group.items.map((item, i) => (

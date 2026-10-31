@@ -3,12 +3,13 @@
  *
  * Mounted by the app shell in the split layout's right slot while the welcome
  * screen is showing, so it spans the full height next to the chat column just
- * like the workflow panel does.
+ * like the workflow panel does. It can be closed here and reopened from the
+ * help button beside the agent selector.
  */
 
 import type { ReactElement } from 'react';
 import { memo, useCallback, useState } from 'react';
-import { LuBot, LuCheck, LuCopy } from 'react-icons/lu';
+import { LuBot, LuCheck, LuCopy, LuX } from 'react-icons/lu';
 import { useChatStore } from '@/store';
 import { IconButton, Markdown } from '@/components';
 import styles from './AgentDescriptionPanel.module.css';
@@ -21,6 +22,7 @@ const AgentDescriptionPanelComponent = (): ReactElement => {
   // ======================
   const agentDescription = useChatStore((s) => s.selectedAgentDescription);
   const agentLabel = useChatStore((s) => s.selectedAgentLabel);
+  const closeDescriptionPanel = useChatStore((s) => s.closeDescriptionPanel);
   const [copied, setCopied] = useState(false);
 
   // ======================
@@ -49,6 +51,14 @@ const AgentDescriptionPanelComponent = (): ReactElement => {
           aria-label="Copy description as Markdown"
         >
           {copied ? <LuCheck size={17} /> : <LuCopy size={17} />}
+        </IconButton>
+        <IconButton
+          size="lg"
+          onClick={closeDescriptionPanel}
+          title="Close description panel"
+          aria-label="Close description panel"
+        >
+          <LuX size={18} />
         </IconButton>
       </header>
       <div className={styles.body}>

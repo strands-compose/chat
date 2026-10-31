@@ -105,6 +105,9 @@ export interface ChatStreamEvent {
   /** Sub-agent id for Swarm/Graph topologies — used by `node_start` / `node_stop`. */
   node_id?: string;
 
+  /** Target node ids of a `handoff`. */
+  to_node_ids?: string[];
+
   /** Aggregated token usage reported by `agent_complete` / `multiagent_complete`. */
   input_tokens?: number;
   output_tokens?: number;

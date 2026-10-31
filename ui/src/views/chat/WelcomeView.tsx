@@ -8,15 +8,17 @@
  *   4. Suggestion chips
  *
  * The selected agent's description is shown by AgentDescriptionPanel, mounted
- * by the app shell in the right-hand panel slot.
+ * by the app shell in the right-hand panel slot. A help button next to the agent
+ * selector toggles it.
  */
 
 import type { ReactElement } from 'react';
 import { memo, useCallback, useEffect } from 'react';
-import { LuCircleAlert } from 'react-icons/lu';
+import { LuCircleAlert, LuCircleHelp } from 'react-icons/lu';
 import { useChatStore } from '@/store';
-import { Button } from '@/components';
+import { Button, IconButton } from '@/components';
 import { useAppConfig } from '@/contexts';
+import { isMobileViewport } from '@/services/utils';
 import { AgentSelector } from './AgentSelector';
 import { ConnectedComposer } from './ConnectedComposer';
 import styles from './WelcomeView.module.css';
@@ -31,6 +33,10 @@ const WelcomeViewComponent = (): ReactElement => {
   const agentsLoaded = useChatStore((s) => s.agentsLoaded);
   const agentsError = useChatStore((s) => s.agentsError);
   const loadAgents = useChatStore((s) => s.loadAgents);
+  const hasDescription = useChatStore((s) => s.selectedAgentDescription.trim().length > 0);
+  const descriptionPanelClosed = useChatStore((s) => s.descriptionPanelClosed);
+  const openDescriptionPanel = useChatStore((s) => s.openDescriptionPanel);
+  const closeDescriptionPanel = useChatStore((s) => s.closeDescriptionPanel);
   const { title } = useAppConfig();
 
   useEffect(() => {
@@ -47,6 +53,11 @@ const WelcomeViewComponent = (): ReactElement => {
   // ======================
   // HANDLERS
   // ======================
+  const handleToggleDescription = useCallback(() => {
+    if (descriptionPanelClosed) openDescriptionPanel();
+    else closeDescriptionPanel();
+  }, [descriptionPanelClosed, openDescriptionPanel, closeDescriptionPanel]);
+
   const handleChip = useCallback(
     (text: string) => () => sendMessage(text),
     [sendMessage],
@@ -61,6 +72,25 @@ const WelcomeViewComponent = (): ReactElement => {
       Welcome to <div className={styles.accent}>{title ?? 'Strands Compose'}</div>
     </h2>
   );
+
+  const renderDescriptionToggle = (): ReactElement | null => {
+    // The panel is not mounted on mobile, so the toggle would do nothing there.
+    if (!hasDescription || isMobileViewport()) return null;
+    const isOpen = !descriptionPanelClosed;
+    const label = isOpen ? 'Hide agent description' : 'Show agent description';
+    return (
+      <IconButton
+        size="lg"
+        onClick={handleToggleDescription}
+        isActive={isOpen}
+        title={label}
+        aria-label={label}
+        aria-pressed={isOpen}
+      >
+        <LuCircleHelp size={18} />
+      </IconButton>
+    );
+  };
 
   const renderNoAgentsBanner = (): ReactElement => (
     <div className={styles.centeredContent}>
@@ -105,6 +135,7 @@ const WelcomeViewComponent = (): ReactElement => {
       <div className={styles.agentRow}>
         <p className={styles.hint}>Choose your agent and start conversation</p>
         <AgentSelector />
+        {renderDescriptionToggle()}
       </div>
       <div className={styles.inputWrapper}>
         <ConnectedComposer />

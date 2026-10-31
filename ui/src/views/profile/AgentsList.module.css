@@ -52,8 +52,8 @@
 .agentName {
   flex: 1;
   min-width: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--sc-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
