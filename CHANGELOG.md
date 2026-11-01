@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.7.0 (2026-11-01)
+
+### Feat
+
+- **ui**: name handoff targets and keep side panels out of the way
+- **agents**: reuse AgentCore clients across invocations
+- **analytics**: record, price and show prompt-cache tokens
+
+### Fix
+
+- **auth**: strip the user's email from session ids on anonymisation
+
 ## v0.6.1 (2026-10-27)
 
 ### Fix
