@@ -11,10 +11,12 @@ ui/
 ├── package.json            # scripts: dev, build, build:backend, lint, test, preview
 ├── vite.config.ts          # @ alias → ./src; multi-entry build; /api+/auth+/admin proxy to :8000
 ├── tsconfig.app.json       # strict; "@/*" → "./src/*"; verbatimModuleSyntax (type-only imports)
-├── eslint.config.js
+├── biome.jsonc             # Biome: formatter (single quotes, width 100) + linter + import order
 ├── index.html              # main app entry  (#root)
 ├── login.html              # auth entry      (#auth-root)
 ├── admin/dashboard.html    # admin entry     (#admin-root)
+├── playwright.config.ts    # e2e config + test dev server (see the frontend-testing skill)
+├── e2e/                    # Playwright specs + support/ harness (fake backend)
 └── src/
     ├── apps/               # entry points + composition roots (one folder per HTML entry)
     │   ├── chat/           # index.tsx → ChatApp.tsx (providers) → AppShell.tsx (frame)
@@ -38,7 +40,7 @@ ui/
 | New HTML entry / composition root | `apps/chat/` (`index.tsx`, `ChatApp.tsx`, `AppShell.tsx`), then `apps/auth/`, `apps/admin/` |
 | New primitive | `components/Button/` (simplest), `components/index.ts` barrel |
 | Primitive wrapping a headless lib | `components/Tooltip/`, `components/DropdownMenu/`, `components/Collapsible/`, `components/Tabs/` (Radix); `components/MultiSelect/` (Radix + TanStack Virtual) |
-| Dialog / overlay primitive | `components/Dialog/` (base), `components/ConfirmDialog/`, `components/ErrorDialog/`, `components/DropOverlay/` |
+| Dialog / overlay primitive | `components/Dialog/` (base; `kind="dialog"` for ordinary windows, `kind="alert"` for questions and errors), `components/ConfirmDialog/`, `components/ErrorDialog/`, `components/DropOverlay/` |
 | Charts (primitive package) | `components/charts/` — `echartsCore.ts` (tree-shaken runtime + React wrapper), `chartOptions.ts` (option builders), `bucketLabels.ts`, `index.ts` barrel |
 | New app-shell piece | `views/Header.tsx`, `views/Sidebar.tsx`, `views/index.ts` |
 | New feature screen | `views/chat/` (full feature), `views/workflow/`, `views/auth/`, `views/profile/`, `views/admin/` |
@@ -112,7 +114,7 @@ token — add the token (light + dark) instead.
 - React 19, TypeScript ~5.9 (strict, `verbatimModuleSyntax` → type-only imports required).
 - **Zustand** for global store; inline selectors + `useShallow`.
 - **Radix** for headless primitives (tooltip, dropdown, collapsible, tabs,
-  popover, alert-dialog).
+  popover, dialog, alert-dialog).
 - **TanStack** Form (auth + account forms), Table (budget table), Virtual
   (multi-select option list).
 - **Markdown:** `react-markdown` + `remark-gfm`; code highlighting via

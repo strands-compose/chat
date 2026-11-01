@@ -32,7 +32,7 @@ database, so it is the fastest way to try the app or develop against it.
    ```bash
    python -m venv .venv
    source .venv/bin/activate      # Windows: .venv\Scripts\activate
-   pip install "strands-compose-chat==0.1.6"
+   pip install "strands-compose-chat==0.8.0"
    ```
 
    With the pip path, keep this virtual environment activated for the remaining
@@ -62,4 +62,4 @@ directory. Delete the database file to start over.
 
 To run against Postgres or deploy with containers, see
 [`../02-docker`](../02-docker). For configuration options and usage, see the
-project documentation.
+[documentation](../../docs/README.md).

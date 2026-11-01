@@ -248,6 +248,11 @@ apps/  →  views  →  components  →  services (pure helpers) + types
 - **Early returns.** Handle edge cases first; keep nesting shallow (max ~3).
 - **Error boundaries** may be class components (React requires it). Everything
   else is an arrow function.
+- **Accessibility follows WCAG 2.2 AA.** Every icon-only control has an
+  `aria-label` (a `title` alone is only a tooltip), form fields have labels,
+  repeated areas are named regions, and text colours meet AA contrast through
+  the tokens in light and dark. An `aria-label` must contain the control's
+  visible text. This is checked in review; there are no automated WCAG tests.
 
 ---
 
@@ -324,13 +329,21 @@ apps/  →  views  →  components  →  services (pure helpers) + types
 Run from the `ui/` directory:
 
 ```bash
-npm run lint     # eslint
-npm run build    # tsc -b && vite build (type-check + production build)
-npm run test     # vitest run
+npm run lint      # biome check: format, import order, lint (config: biome.jsonc)
+npm run format    # biome check --write: fix format, imports and safe lint findings
+npm run build     # tsc -b && vite build (type-check + production build)
+npm run test      # vitest run — unit tests beside the code
+npm run test:e2e  # playwright test — journeys against the fake backend
+npm run test:demo # build the GitHub Pages demo and smoke-test it
 ```
 
+Writing or changing tests? Load the `frontend-testing` skill first.
+
 `npm run build` is the type-check gate (`tsc -b`). Lint and build must pass before
-considering a change done. Don't start `npm run dev` to verify — it's a
+considering a change done. Run `npm run format` before committing; the pre-commit
+hook runs it too. A one-off exception to a lint rule is a
+`// biome-ignore lint/<group>/<rule>: <reason>` comment on the line above the
+element. Project-wide rule changes go only in `biome.jsonc`, each with its reason. Don't start `npm run dev` to verify — it's a
 long-running server; use `build`/`test` instead.
 
 ---

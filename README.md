@@ -38,7 +38,7 @@ Where it fits in the ecosystem:
 |-------|---------|-------------|
 | Define the agents | [strands-compose](https://github.com/strands-compose/sdk-python) | Developers |
 | Run / deploy the agents | [strands-compose-agentcore](https://github.com/strands-compose/bedrock-agentcore) | Developers, operations |
-| **Put the agents in front of people** | [**strands-compose-chat**](https://github.com/strands-compose/chat-ui) | **End users** |
+| **Put the agents in front of people** | [**strands-compose-chat**](https://github.com/strands-compose/chat) | **End users** |
 
 ---
 
@@ -100,10 +100,23 @@ Two worked setups are in the [`examples`](examples) directory:
 
 Each example has step-by-step instructions and a configuration template.
 
+## Documentation
+
+The full guide lives in [`docs/`](docs/README.md). Start with the part that fits you:
+
+| You want to | Read |
+|-------------|------|
+| Understand the app and how it works | [What Is This?](docs/Chapter_01.md), [Architecture](docs/Chapter_02.md) |
+| Run it and add your first agent | [Getting Started](docs/Chapter_03.md), [Agents](docs/Chapter_06.md) |
+| Chat with agents | [Using the Chat](docs/Chapter_04.md) |
+| Manage users, access, budgets and SSO | [Admin Panel](docs/Chapter_05.md), [Authentication](docs/Chapter_07.md), [Access, Budgets and Pricing](docs/Chapter_08.md) |
+| Configure and deploy to production | [Configuration](docs/Chapter_09.md), [Docker and Gunicorn](docs/Chapter_11.md), [ECS Fargate](docs/Chapter_12.md), [Operations](docs/Chapter_13.md) |
+| Call the API or change the code | [HTTP API and Streaming](docs/Chapter_14.md), [Developer Guide](docs/Chapter_16.md) |
+
 ## Technical overview
 
 The intent here is a brief map, not a deep reference — detailed documentation
-lives in separate documents.
+lives in [`docs/`](docs/README.md).
 
 **Architecture.**
 
@@ -138,3 +151,45 @@ Authentication, authorisation, and transport security are implemented to product
 | Transport | `TrustedHostMiddleware`, configurable `CORS_ALLOWED_ORIGINS`.|
 | Production hardening | `APP_ENV=prod` enforces HTTPS-only cookies, rejects SQLite and wildcard CORS/host settings at startup. |
 | Secrets handling | All credentials via environment variables; sensitive fields redacted in logs, diagnostics, and config repr. |
+
+## Development
+
+Everything runs through [`just`](https://just.systems) recipes, called with `uv run just <recipe>` so you need nothing installed besides `uv`. The UI has its own guide in [`ui/README.md`](ui/README.md); the full developer map is [Chapter 16](docs/Chapter_16.md).
+
+**Prerequisites:** Python 3.11+, [uv](https://docs.astral.sh/uv/), Node.js 22+, Git with [Git LFS](https://git-lfs.com) (`git lfs install` once).
+
+```bash
+git clone https://github.com/strands-compose/chat
+cd chat
+uv run just install           # Python dependencies + git hooks
+npm --prefix ui ci            # UI dependencies; the Biome hook needs them
+cp example.env .env           # then set SESSION_SECRET_KEY
+```
+
+Every command here runs as written in bash, zsh and PowerShell.
+
+**Everyday recipes** (`uv run just` lists all of them):
+
+| Recipe | What it does |
+|--------|--------------|
+| `check` | Python: fix import order and format, then `ruff` lint, `ty` types, `bandit` security |
+| `verify` | The same checks as `check`, but changes no file; CI runs it |
+| `format` | Python: sort imports and format with `ruff` |
+| `test` | Python tests (all but the `@postgres` tier), with coverage |
+| `check-ui` / `format-ui` | UI: check / fix format, import order and lint with Biome |
+| `build-ui` | Build the UI into the Python package (`src/strands_compose_chat/static`) |
+| `migrate` / `revision "msg"` | Apply migrations / generate a new one |
+| `check-hooks` | Run every git hook on every file |
+| `commit-files` | Write a commit message interactively (Commitizen) |
+
+**Git hooks** are installed by `just install` (again later: `uv run just install-hooks`). They run on every `git commit` and `git push`:
+
+| Hook | Checks |
+|------|--------|
+| File checks | Trailing whitespace, final newline, mixed line endings, merge markers, large files, YAML/TOML syntax |
+| `ruff`, `ruff-format` | Python lint and format |
+| `biome check (ui)` | UI format, import order and lint |
+| `detect-secrets` | No new secrets compared with `.secrets.baseline` |
+| `commitizen` | The commit message follows [Conventional Commits](https://www.conventionalcommits.org) (`feat:`, `fix:`, `docs:` …) |
+
+When a hook fixes a file, the commit stops: review the change, `git add` it, and commit again. Before a pull request, run `uv run just check test check-ui` and `npm --prefix ui test`. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full flow.

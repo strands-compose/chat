@@ -57,7 +57,7 @@ docker compose down -v             # stop and delete the database volume
   on small tasks (e.g. 0.25 vCPU / 512 MB) where an unbounded process gets OOM-killed.
   Tune it with the `GUNICORN_*` / `WEB_CONCURRENCY` environment variables —
   see `gunicorn.conf.py`
-- **Pin the version.** The image installs `strands-compose-chat==0.1.6`. Change
+- **Pin the version.** The image installs `strands-compose-chat==0.8.0`. Change
   it by editing the `STRANDS_COMPOSE_CHAT_VERSION` build arg in `Dockerfile`,
   or pass `--build-arg STRANDS_COMPOSE_CHAT_VERSION=X.Y.Z` to `docker build`.
 - **Database data** persists in the `pgdata` volume across restarts.
@@ -87,4 +87,6 @@ docker compose down -v             # stop and delete the database volume
 
 ## Next steps
 
-For configuration options and usage, see the project documentation.
+For configuration options and usage, see the [documentation](../../docs/README.md).
+[Chapter 11](../../docs/Chapter_11.md) explains this image and its gunicorn settings, and
+[Chapter 12](../../docs/Chapter_12.md) deploys it on ECS Fargate.

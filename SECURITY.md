@@ -20,11 +20,14 @@ Include:
 
 ## Security Practices
 
-strands-compose enforces the following (via Bandit + code review):
+strands-compose-chat follows these rules in code and review:
 
-- **No `eval()` or `exec()`** — config is parsed through Pydantic, never executed as code
-- **No `subprocess` with `shell=True`** — MCP stdio transports use direct command execution
-- **No hardcoded secrets** — all credentials resolved from environment variables
-- **No `pickle`** — serialization uses JSON/YAML only
-- **Bandit scanning** — automated static security analysis on every commit (`uv run just check-security`)
-- **Dependency auditing** — dependencies are pinned and regularly reviewed for known vulnerabilities
+- **No hardcoded secrets.** Every credential comes from environment variables; sensitive settings are redacted in logs and in the config repr.
+- **Passwords hashed with Argon2id.** Raw passwords are never stored or logged. API keys are stored only as SHA-256 hashes.
+- **Every endpoint is gated.** Auth dependencies on each route; agent visibility requires an explicit shared group.
+- **Parameterised queries only.** All database access goes through SQLAlchemy.
+- **Production checks at startup.** `APP_ENV=prod` rejects SQLite and wildcard hosts or origins, and makes the session cookie HTTPS-only.
+- **No raw HTML from agents.** The chat renders agent and tool output as Markdown without parsing embedded HTML.
+- **Automated scanning.** Bandit runs in `uv run just check-security`; `detect-secrets` runs as a pre-commit hook.
+
+The security model, headers and production checklist are described in the [documentation](docs/README.md), mainly [Chapter 07](docs/Chapter_07.md), [Chapter 09](docs/Chapter_09.md) and [Chapter 13](docs/Chapter_13.md).

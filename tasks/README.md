@@ -45,14 +45,19 @@ Tasks for cleaning project files and caches:
 ### Check Tasks (`check.just`)
 Tasks for running code quality checks:
 
-- `check`: Run all checks
+- `check`: Run all checks (fixes import order and format first)
   ```bash
   uv run just check
   ```
 
-- `check-lint`: Run linting checks
+- `check-format`: Fix import order and format, then check the format
   ```bash
-  uv run just check-lint
+  uv run just check-format
+  ```
+
+- `check-code`: Run linting checks
+  ```bash
+  uv run just check-code
   ```
 
 - `check-type`: Run type checking
@@ -60,9 +65,32 @@ Tasks for running code quality checks:
   uv run just check-type
   ```
 
+- `check-security`: Run the security scan
+  ```bash
+  uv run just check-security
+  ```
+
 - `check-test`: Run tests
   ```bash
   uv run just check-test
+  ```
+
+### Verify Tasks (`verify.just`)
+The same checks as `check`, but no file is changed. CI runs these:
+
+- `verify`: Run all checks without changing any file
+  ```bash
+  uv run just verify
+  ```
+
+- `verify-format`: Check import order and format without changing any file
+  ```bash
+  uv run just verify-format
+  ```
+
+- `verify-code`: Run linting checks without changing any file
+  ```bash
+  uv run just verify-code
   ```
 
 ### Format Tasks (`format.just`)
@@ -73,9 +101,14 @@ Tasks for code formatting:
   uv run just format
   ```
 
-- `format-check`: Check if code is formatted correctly
+- `format-import`: Sort imports
   ```bash
-  uv run just format-check
+  uv run just format-import
+  ```
+
+- `format-source`: Format code
+  ```bash
+  uv run just format-source
   ```
 
 ### Install Tasks (`install.just`)
@@ -121,14 +154,7 @@ Tasks for managing commits:
 
 ## Usage
 
-1. Install Just:
-   ```bash
-   # On Ubuntu/Debian
-   sudo apt install just
-
-   # On macOS
-   brew install just
-   ```
+1. Just comes with the dev dependencies (`rust-just`), so `uv run just` needs no extra install. Recipes run in `sh` on Linux and macOS and in PowerShell on Windows, so they avoid syntax that only one of them knows.
 
 2. Run tasks:
    ```bash
@@ -142,7 +168,7 @@ Tasks for managing commits:
 
 4. Get help for a specific task:
    ```bash
-   uv run just <task-name> --help
+   uv run just --usage <task-name>
    ```
 
 ## Task Dependencies
@@ -150,3 +176,4 @@ Tasks for managing commits:
 Some tasks depend on others. For example:
 - `clean` runs all clean tasks
 - `check` runs all check tasks
+- `verify` runs `verify-format`, `verify-code`, `check-type` and `check-security`

@@ -59,6 +59,7 @@ These principles guide every design decision in strands-compose. When contributi
 git clone https://github.com/strands-compose/chat
 cd chat
 uv run just install
+npm --prefix ui ci    # UI dependencies; the Biome hook needs them
 cp example.env .env   # then set SESSION_SECRET_KEY
 ```
 
@@ -77,7 +78,7 @@ Three hook stages are registered automatically by `just install-hooks`:
 
 | Stage | Triggered by | Runs |
 |---|---|---|
-| `pre-commit` | `git commit` | ruff lint + format, file checks, detect-secrets |
+| `pre-commit` | `git commit` | ruff lint + format, Biome (UI), file checks, detect-secrets |
 | `pre-push` | `git push` | same as above |
 | `commit-msg` | `git commit` | commitizen validates conventional commit format |
 
@@ -87,6 +88,7 @@ Three hook stages are registered automatically by `just install-hooks`:
 
 ```bash
 uv run just check    # format + lint + type check + security
+uv run just verify   # the same checks, changes no file (CI runs this)
 uv run just test     # pytest with coverage (≥70%)
 uv run just format   # auto-format with Ruff
 ```
@@ -107,7 +109,7 @@ To send us a pull request:
 
 1. Create a branch from `main`
 2. Make your changes — focus on the specific contribution
-3. Run `uv run just check && uv run just test`
+3. Run `uv run just check test`
 4. Commit using [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`)
 5. Open a PR with a clear description of what and why
 6. Pay attention to any automated CI failures and stay involved in the conversation

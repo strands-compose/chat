@@ -23,8 +23,9 @@ Each example contains its own README with step-by-step instructions and an
 - A first-run admin account is created from `ADMIN_BOOTSTRAP_USERNAME` /
   `ADMIN_BOOTSTRAP_PASSWORD`; create further users from the admin panel.
 
-See the project documentation for the full configuration reference and an
-explanation of how the app works.
+See the [documentation](../docs/README.md) for the full
+[configuration reference](../docs/Chapter_09.md) and an
+[explanation of how the app works](../docs/Chapter_02.md).
 
 ## Running on ECS, Kubernetes, or other orchestrators
 
