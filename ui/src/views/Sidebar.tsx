@@ -117,6 +117,9 @@ const SidebarComponent = (): ReactElement => {
   const sessions = useChatStore((s) => s.sessions);
   const sessionsLoading = useChatStore((s) => s.sessionsLoading);
   const loadSessions = useChatStore((s) => s.loadSessions);
+  const hasMoreSessions = useChatStore((s) => s.hasMoreSessions);
+  const loadingMoreSessions = useChatStore((s) => s.loadingMoreSessions);
+  const loadMoreSessions = useChatStore((s) => s.loadMoreSessions);
   const renameSession = useChatStore((s) => s.renameSession);
   const deleteSession = useChatStore((s) => s.deleteSession);
 
@@ -202,7 +205,23 @@ const SidebarComponent = (): ReactElement => {
             onDeleteClick={(sid) => setDeleteTarget(sid)}
           />
         ))}
+        {renderLoadMore()}
       </>
+    );
+  };
+
+  const renderLoadMore = (): ReactElement | null => {
+    if (!hasMoreSessions) return null;
+    return (
+      <button
+        className={styles.loadMore}
+        type="button"
+        onClick={() => { loadMoreSessions(); }}
+        disabled={loadingMoreSessions}
+        aria-busy={loadingMoreSessions}
+      >
+        {loadingMoreSessions ? 'Loading…' : 'Load more'}
+      </button>
     );
   };
 

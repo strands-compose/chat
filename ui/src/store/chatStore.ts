@@ -34,6 +34,10 @@ import type { StreamingSideEffects } from './streaming';
 /** Token totals of a turn that has not reported usage yet. Shared, never mutated. */
 const NO_TOKENS: TurnTokens = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
 
+/** Sidebar history page size. Each request asks for one extra row to learn
+ *  whether another page exists without a separate count query. */
+const SESSIONS_PAGE_SIZE = 50;
+
 // ====== SHARED LOADERS ======
 
 /** Build a fresh thread (messages map + order) from backend message rows. */
@@ -95,6 +99,10 @@ export interface ChatStore {
   sessions: Session[];
   agents: Agent[];
   sessionsLoading: boolean;
+  /** True when the backend holds older sessions than the ones loaded. */
+  hasMoreSessions: boolean;
+  /** True while an older page of sessions is being fetched. */
+  loadingMoreSessions: boolean;
   /** True while a session's thread is being fetched on switch. Drives the
    *  blur-out / fade-in reveal so switching feels smooth instead of a hard
    *  swap once the fetch (which can take ~1s) resolves. */
@@ -158,7 +166,10 @@ export interface ChatStore {
   stopGeneration: () => void;
   resendMessage: (messageId: string) => void;
   copyMessage: (messageId: string) => void;
+  /** Refresh the newest page, keeping any older pages already loaded. */
   loadSessions: () => Promise<void>;
+  /** Append the next page of older sessions below the loaded ones. */
+  loadMoreSessions: () => Promise<void>;
   renameSession: (sessionId: string, title: string) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
   /** Run *action* now if idle, else open the interrupt-confirm dialog and defer it. */
@@ -269,6 +280,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
     sessions: [],
     agents: [],
     sessionsLoading: false,
+    hasMoreSessions: false,
+    loadingMoreSessions: false,
     restoringSession: false,
     agentsLoading: false,
     agentsLoaded: false,
@@ -287,13 +300,49 @@ export const useChatStore = create<ChatStore>((set, get) => {
     loadSessions: async (): Promise<void> => {
       set({ sessionsLoading: true });
       try {
-        const sessions = await fetchSessions();
-        set({ sessions });
+        const rows = await fetchSessions(SESSIONS_PAGE_SIZE + 1, 0);
+        const firstPage = rows.slice(0, SESSIONS_PAGE_SIZE);
+        const firstPageIds = new Set(firstPage.map((s) => s.session_id));
+        set((state) => {
+          // Older pages loaded via "Load more" stay below the refreshed first
+          // page, so a refresh (new chat, sidebar remount) never shrinks the list.
+          const olderLoaded = state.sessions.filter((s) => !firstPageIds.has(s.session_id));
+          return {
+            sessions: [...firstPage, ...olderLoaded],
+            hasMoreSessions:
+              olderLoaded.length > 0 ? state.hasMoreSessions : rows.length > SESSIONS_PAGE_SIZE,
+          };
+        });
       } catch (err) {
         console.error('[chatStore] loadSessions failed:', err);
         // Keep existing list rather than wiping it on a transient error.
       } finally {
         set({ sessionsLoading: false });
+      }
+    },
+
+    loadMoreSessions: async (): Promise<void> => {
+      const { hasMoreSessions, loadingMoreSessions, sessions } = get();
+      if (!hasMoreSessions || loadingMoreSessions) return;
+      set({ loadingMoreSessions: true });
+      try {
+        // The local list mirrors the server order (deletes and new chats are
+        // applied locally too), so its length is the offset of the next page.
+        const rows = await fetchSessions(SESSIONS_PAGE_SIZE + 1, sessions.length);
+        set((state) => {
+          const loadedIds = new Set(state.sessions.map((s) => s.session_id));
+          const nextPage = rows
+            .slice(0, SESSIONS_PAGE_SIZE)
+            .filter((s) => !loadedIds.has(s.session_id));
+          return {
+            sessions: [...state.sessions, ...nextPage],
+            hasMoreSessions: rows.length > SESSIONS_PAGE_SIZE,
+          };
+        });
+      } catch (err) {
+        console.error('[chatStore] loadMoreSessions failed:', err);
+      } finally {
+        set({ loadingMoreSessions: false });
       }
     },
 
