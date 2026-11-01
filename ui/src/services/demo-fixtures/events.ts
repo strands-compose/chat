@@ -11818,7 +11818,7 @@ export const events: BackendStreamEvent[] = [
     "agent_name": "main",
     "timestamp": "2026-07-12T00:48:09.727501+00:00",
     "data": {
-      "text": " system.\n\nThe"
+      "text": " system.\n\n![strands-compose chat demo](https://raw.githubusercontent.com/strands-compose/.github/refs/heads/main/img/chat-demo.png)\n\nThe"
     }
   },
   {

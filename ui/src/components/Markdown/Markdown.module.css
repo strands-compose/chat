@@ -234,6 +234,22 @@
   border-bottom: 0;
 }
 
+/* ====== IMAGES & VIDEOS ======
+   Capped at the parent width; height follows the media's own aspect ratio. */
+.mediaWrap {
+  display: block;
+  max-width: 100%;
+  margin: 6px 0;
+}
+
+.mediaWrap img,
+.mediaWrap video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--sc-radius-md);
+}
+
 /* ====== INLINE ====== */
 .markdownBody code {
   font-family: var(--sc-font-mono);

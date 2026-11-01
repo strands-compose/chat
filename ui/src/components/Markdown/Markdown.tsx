@@ -125,6 +125,30 @@ const TableWrapper = ({ children, node, ...props }: ComponentProps<'table'> & Ex
   );
 };
 
+/** File extensions that `![alt](url)` renders as a video player instead of an image. */
+const VIDEO_EXTENSION = /\.(mp4|webm|ogv|mov|m4v)$/i;
+
+// Checks the path only, so `clip.mp4?token=…` and `clip.mp4#t=10` still match.
+const isVideoUrl = (src: string): boolean => VIDEO_EXTENSION.test(src.split(/[?#]/)[0]);
+
+// Wraps images (and videos written with image syntax) so they never exceed the
+// message width and keep their aspect ratio. A <span> because markdown images
+// sit inside a <p>, where a <div> is invalid HTML.
+const MediaWrapper = ({ node, alt, src, ...props }: ComponentProps<'img'> & ExtraProps): ReactElement => {
+  void node; // react-markdown's AST node must not reach the DOM.
+  const renderMedia = (): ReactElement => {
+    if (typeof src === 'string' && isVideoUrl(src)) {
+      return (
+        <video src={src} title={alt} controls preload="metadata">
+          <a href={src} target="_blank" rel="noopener noreferrer">{alt || src}</a>
+        </video>
+      );
+    }
+    return <img src={src} alt={alt ?? ''} loading="lazy" {...props} />;
+  };
+  return <span className={styles.mediaWrap}>{renderMedia()}</span>;
+};
+
 // Opens every markdown link in a new tab so the user doesn't lose their session.
 const ExternalLink = ({ href, children, ...props }: ComponentProps<'a'>): ReactElement => (
   <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
@@ -139,6 +163,7 @@ const COMPONENTS: Components = {
   pre: ({ children }) => <>{children}</>,
   a: ExternalLink,
   table: TableWrapper,
+  img: MediaWrapper,
 };
 
 interface MarkdownProps {
