@@ -1,4 +1,5 @@
-import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { loadEnv, type Plugin } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import { readdirSync, rmSync } from 'node:fs';
@@ -67,6 +68,9 @@ export default defineConfig(({ mode }) => {
   const rootDir = fileURLToPath(new URL('..', import.meta.url));
   const env = loadEnv(mode, rootDir, '');
   const p = env.URL_PREFIX ?? '';
+  // Backend the dev server proxies to. Playwright points it at a closed port so
+  // a request the fake backend misses can never reach a live server.
+  const apiTarget = env.API_PROXY_TARGET || 'http://127.0.0.1:8000';
 
   // Demo mode ships a fully static site (GitHub Pages): no backend, fixtures
   // swapped in, HTML kept, and a relative base so it works under any subpath.
@@ -84,7 +88,15 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), ...(isDemo ? [demoApiSwap()] : [noHtmlEmit()])],
     base: isDemo ? './' : '',
+    // Unit tests only: they sit next to the code. Playwright specs live in e2e/.
+    test: {
+      include: ['src/**/*.test.ts'],
+      environment: 'node',
+    },
     optimizeDeps: {
+      // Scan every HTML entry up front. Otherwise the dev server finds the
+      // login/admin dependencies only on first visit and re-optimizes mid-load.
+      entries: ['index.html', 'login.html', 'admin/dashboard.html'],
       include: ['echarts', 'echarts/core', 'echarts-for-react/lib/core'],
     },
     resolve: {
@@ -129,12 +141,12 @@ export default defineConfig(({ mode }) => {
         // Regex keys (starting with ^) let us use negative lookaheads.
         // /auth/ covers all backend auth endpoints: /auth/login, /auth/logout, etc.
         [`^${p}/auth/`]: {
-          target: 'http://127.0.0.1:8000',
+          target: apiTarget,
           changeOrigin: true,
           cookieDomainRewrite: 'localhost',
         },
         [`^${p}/api/`]: {
-          target: 'http://127.0.0.1:8000',
+          target: apiTarget,
           changeOrigin: true,
           cookieDomainRewrite: 'localhost',
         },
@@ -142,7 +154,7 @@ export default defineConfig(({ mode }) => {
         // leaves /admin/dashboard for Vite — served from admin/dashboard.html
         // with full HMR so the React admin panel can be developed without builds.
         [`^${p}/admin(?!/dashboard)`]: {
-          target: 'http://127.0.0.1:8000',
+          target: apiTarget,
           changeOrigin: true,
           cookieDomainRewrite: 'localhost',
         },
