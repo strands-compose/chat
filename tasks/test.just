@@ -23,6 +23,11 @@ test-postgres db_host="localhost":
         --cov={{SOURCES}} \
         {{TESTS}}
 
+# regenerate the OpenAPI snapshot after an intended API change
+[group('test')]
+update-snapshot $UPDATE_SNAPSHOT="1":
+    uv run pytest tests/contract/test_openapi_snapshot.py
+
 # (legacy) run all tests with coverage — kept for local ad-hoc use
 [group('test')]
 test-coverage cov_fail_under="90":

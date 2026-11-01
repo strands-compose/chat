@@ -29,6 +29,8 @@ jobs:
         working-directory: ui
     steps:
       - uses: actions/checkout@v7
+        with:
+          lfs: true
 
       - uses: actions/setup-node@v7
         with:
@@ -39,8 +41,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build static demo
-        run: npm run build:demo
+      - name: Install Chromium for Playwright
+        run: npx playwright install chromium --with-deps
+
+      # Builds the static demo into ui/dist, then smoke-tests those exact files
+      # with `vite preview`. A broken demo stops here and is never deployed.
+      - name: Build and test static demo
+        run: npm run test:demo
+        env:
+          CI: "true"
+
+      - name: Upload Playwright report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: demo-playwright-report
+          path: ui/playwright-report/
+          retention-days: 14
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

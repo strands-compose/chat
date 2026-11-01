@@ -22,8 +22,7 @@ release: check test
 
 # Build distribution artifacts (local check)
 [group('release')]
-release-build:
-    rm -rf dist/
+release-build: clean-build
     uv build --out-dir dist/
     @echo ""
     @ls dist/
@@ -36,4 +35,4 @@ release-test-publish:
 # Show the next version that commitizen would pick
 [group('release')]
 release-next:
-    uv run cz bump --dry-run 2>&1 | grep -E "tag to create|bump" || echo "(no releasable commits since last tag)"
+    uv run cz bump --get-next
