@@ -3,6 +3,7 @@
  *
  * Left column: toolbar (date-range, interval, mode) + bar chart.
  * Right column: tabular breakdown of the server-provided points.
+ * A draggable splitter between them sets the column widths.
  *
  * All state and fetch logic live in ProfileContext so selections and data
  * survive tab switches without re-fetching.
@@ -12,6 +13,7 @@ import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
 import { DateRangePicker, Segmented, Spinner, UsagePill } from '@/components';
 import { formatBucketLabel } from '@/components/charts';
+import { useSplitter } from '@/hooks';
 import { UsageChart } from './UsageChart';
 import { useProfileContext } from './hooks/useProfileContext';
 import { pointTotalTokens } from './usage-points';
@@ -32,6 +34,9 @@ const CHART_MODES: { value: ChartMode; label: string }[] = [
   { value: 'cost', label: 'Cost' },
   { value: 'tokens', label: 'Tokens' },
 ];
+
+/** Starting width of the chart column; the splitter moves it from there. */
+const INITIAL_CHART_PERCENT = 70;
 
 // ======================
 // USAGE TABLE
@@ -135,6 +140,8 @@ const UsageDashboardComponent = (): ReactElement => {
     isUsageLoading: isLoading,
   } = useProfileContext();
 
+  const { leftPercent, containerRef, onSplitterMouseDown } = useSplitter(INITIAL_CHART_PERCENT);
+
   const totals = useMemo(
     () =>
       points.reduce(
@@ -192,8 +199,8 @@ const UsageDashboardComponent = (): ReactElement => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.body}>
-        <div className={styles.chartColumn}>
+      <div className={styles.body} ref={containerRef}>
+        <div className={styles.chartColumn} style={{ width: `${leftPercent}%` }}>
           {renderToolbar()}
           <div className={styles.chartArea}>
             <UsageChart
@@ -205,7 +212,9 @@ const UsageDashboardComponent = (): ReactElement => {
           </div>
         </div>
 
-        <aside className={styles.tableColumn}>
+        <div className={styles.splitter} onMouseDown={onSplitterMouseDown} />
+
+        <aside className={styles.tableColumn} style={{ width: `${100 - leftPercent}%` }}>
           <div className={styles.tableSummary}>{renderSummary()}</div>
           <UsageTable
             data={points}

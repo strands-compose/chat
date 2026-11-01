@@ -80,8 +80,9 @@
 }
 
 /* ====== LEFT COLUMN: toolbar + chart ====== */
+/* Column widths are set inline from the splitter position. */
 .chartColumn {
-  flex: 1 1 0;
+  flex: none;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -97,14 +98,40 @@
   flex-direction: column;
 }
 
+/* ====== SPLITTER ======
+   1px divider between the columns with a wider invisible hit area; the line
+   darkens while hovered or dragged. */
+.splitter {
+  position: relative;
+  width: 1px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: var(--sc-border-tertiary);
+  transition: background 0.15s;
+  z-index: 2;
+}
+
+.splitter::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  right: -4px;
+}
+
+.splitter:hover,
+.splitter:active {
+  background: var(--sc-border-primary);
+}
+
 /* ====== RIGHT COLUMN: data table ====== */
 .tableColumn {
-  width: 20rem;
-  flex-shrink: 0;
+  flex: none;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--sc-border-tertiary);
   padding-left: 1rem;
   overflow: hidden;
   gap: 1rem;
@@ -121,8 +148,7 @@
 .tableWrap {
   flex: 1 1 0;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto;
 }
 
 .tableEmpty {
