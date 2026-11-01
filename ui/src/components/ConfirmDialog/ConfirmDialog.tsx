@@ -53,6 +53,7 @@ const ConfirmDialogComponent = ({
 
   return (
     <Dialog
+      kind="alert"
       open={open}
       onClose={onCancel}
       title={title}

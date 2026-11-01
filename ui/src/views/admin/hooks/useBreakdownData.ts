@@ -1,5 +1,6 @@
 import { useAsyncData } from '@/hooks';
 import { postBreakdown } from '@/services/adminApi';
+import { toDateParam } from '@/services/utils';
 import type { BreakdownOut } from '@/types/analytics';
 import { useAdminFilters } from './useAdminFilters';
 
@@ -42,8 +43,8 @@ export const useBreakdownData = (
       if (groupIds.length > 0) filters.group_ids = groupIds;
 
       return postBreakdown({
-        from: dateRange.from.toISOString().slice(0, 10),
-        to: dateRange.to.toISOString().slice(0, 10),
+        from: toDateParam(dateRange.from),
+        to: toDateParam(dateRange.to),
         category,
         metric,
         stack_by: stackBy,

@@ -30,7 +30,7 @@ export interface UsagePillProps {
   cacheWriteTokens?: number;
   /** `'sm'` 30px, `'md'` 32px (default). */
   size?: 'sm' | 'md';
-  /** Tooltip, e.g. "Session usage". */
+  /** Accessible name and tooltip, e.g. "Session usage". */
   title?: string;
 }
 
@@ -111,7 +111,7 @@ const UsagePillComponent = ({
   };
 
   return (
-    <span className={cn(styles.pill, styles[size])} title={title}>
+    <span className={cn(styles.pill, styles[size])} role="group" aria-label={title} title={title}>
       {renderCost()}
       {renderTokens()}
     </span>

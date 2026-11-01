@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { memo, useState, useCallback, useMemo } from 'react';
+import { memo, useState, useCallback, useId, useMemo } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import { useTheme } from '@/contexts';
 import {
@@ -83,6 +83,7 @@ const BreakdownChartComponent = (): ReactElement => {
 
   const { data, isLoading, error } = useBreakdownData(category, metric, stackBy, maxItems, maxSeries);
   const { isDark } = useTheme();
+  const titleId = useId();
 
   // ======================
   // HANDLERS
@@ -144,7 +145,7 @@ const BreakdownChartComponent = (): ReactElement => {
 
   const renderControls = (): ReactElement => (
     <div className={styles.controls}>
-      <span className={styles.chartTitle}>Top Breakdown</span>
+      <span id={titleId} className={styles.chartTitle}>Top Breakdown</span>
       <div className={styles.spacer} />
       <span className={styles.chartControl}>Select</span>
        <DropdownMenu>
@@ -224,14 +225,14 @@ const BreakdownChartComponent = (): ReactElement => {
   };
 
   return (
-    <div className={styles.root}>
+    <section className={styles.root} aria-labelledby={titleId}>
       {renderControls()}
       {renderNote()}
       <div className={styles.chartWrapper}>
         {isLoading && <div className={styles.overlay}><Spinner /></div>}
         {renderChart()}
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,6 +1,5 @@
 import type { ReactElement, ChangeEvent, KeyboardEvent } from 'react';
 import { memo, useState } from 'react';
-import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import { FiEdit } from 'react-icons/fi';
 import { Button } from '../Button';
 import { TextField } from '../TextField';
@@ -60,9 +59,7 @@ const RenameSessionDialogComponent = ({
   // ======================
   const renderActions = (): ReactElement => (
     <>
-      <AlertDialog.Cancel asChild>
-        <Button variant="ghost">Cancel</Button>
-      </AlertDialog.Cancel>
+      <Button variant="ghost" onClick={onCancel}>Cancel</Button>
       <Button variant="primary" onClick={handleConfirm} disabled={!title.trim()}>
         Rename
       </Button>
@@ -71,6 +68,7 @@ const RenameSessionDialogComponent = ({
 
   return (
     <Dialog
+      kind="dialog"
       open={open}
       onClose={onCancel}
       title="Rename Session"

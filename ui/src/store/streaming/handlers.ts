@@ -36,12 +36,12 @@ function finalizeMessage(
   cancelFlush();
 
   if (streamingState.errorMessage) {
-    const errorMessage = streamingState.errorMessage;
-    resetStreamingState();
-    // Survive the reset so a trailing session_end is a no-op.
-    streamingState.isFinalized = true;
+    // Keep the trace and token totals: the trailing session_end hands them to
+    // the store, so the failed turn keeps the steps that ran before the error.
+    // isFinalized stops that session_end from committing anything more; the
+    // next turn resets the state when it starts.
     effects.commitFinal({
-      content: `${errorMessage}`,
+      content: `${streamingState.errorMessage}`,
       isStreaming: false,
       isSuccess: false,
     });

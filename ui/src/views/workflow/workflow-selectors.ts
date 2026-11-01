@@ -5,7 +5,7 @@
  * they're tightly coupled to the view's rendering rules.
  */
 
-import type { WorkflowItem, ChatStore, TurnTokens } from '@/types';
+import type { WorkflowItem, ChatStore, Message, TurnTokens } from '@/types';
 import type { AgentRun, AgentSummary } from './workflow-types';
 
 /** Number of colours in the per-agent palette (`--sc-agent-1` … `--sc-agent-5`). */
@@ -170,10 +170,34 @@ export interface WorkflowTraceSelection {
   isStreaming: boolean;
 }
 
+/** The turn the panel reports on, and how it ended. */
+export interface WorkflowStatus {
+  /** Id of that turn's assistant message; `null` while a turn runs or when there is none. */
+  messageId: string | null;
+  isSuccess: boolean;
+}
+
+/**
+ * The turn the panel shows when nothing is live: the selected seq, else the
+ * newest assistant message. That message may have no seq yet — a send that
+ * failed before the backend saved it — and then it still wins over older turns.
+ */
+function resolvePanelTurn(state: ChatStore): { seq: number | null; message: Message | null } {
+  const selected = state.selectedWorkflowSeq;
+  if (selected !== null) {
+    const id = state.messageOrder.find((messageId) => state.messages[messageId]?.seq === selected);
+    return { seq: selected, message: id ? state.messages[id] : null };
+  }
+  for (let i = state.messageOrder.length - 1; i >= 0; i--) {
+    const msg = state.messages[state.messageOrder[i]];
+    if (msg?.role === 'assistant') return { seq: msg.seq ?? null, message: msg };
+  }
+  return { seq: null, message: null };
+}
+
 /**
  * Resolve which trace the panel shows: the live buffer while a turn runs or has
- * just finished, otherwise the stored trace for the selected (or latest)
- * assistant seq.
+ * just finished, otherwise the stored trace of the turn from `resolvePanelTurn`.
  */
 export function selectWorkflowTrace(
   state: ChatStore | null | undefined,
@@ -186,27 +210,14 @@ export function selectWorkflowTrace(
   }
 
   // Just finished: the buffer holds this turn's trace until the refetch assigns
-  // its seq, so prefer it over the still-stale selectedWorkflowSeq.
+  // its seq, so prefer it over any selection.
   if (state.activeWorkflowItems.length > 0) {
     return { items: state.activeWorkflowItems, isStreaming: false };
   }
 
-  // Fall back to the latest assistant seq when none is selected.
-  let targetSeq: number | null = state.selectedWorkflowSeq;
-  if (targetSeq === null) {
-    for (let i = state.messageOrder.length - 1; i >= 0; i--) {
-      const msg = state.messages[state.messageOrder[i]];
-      if (msg?.role === 'assistant' && msg.seq != null) {
-        targetSeq = msg.seq;
-        break;
-      }
-    }
-  }
-
-  if (targetSeq === null) {
-    return { items: [], isStreaming: false };
-  }
-  return { items: state.workflowTraces[targetSeq] ?? [], isStreaming: false };
+  const { seq } = resolvePanelTurn(state);
+  if (seq === null) return { items: [], isStreaming: false };
+  return { items: state.workflowTraces[seq] ?? [], isStreaming: false };
 }
 
 /**
@@ -222,17 +233,15 @@ export function selectWorkflowTokens(state: ChatStore | null | undefined): TurnT
     return state.activeWorkflowTokens;
   }
 
-  let targetSeq: number | null = state.selectedWorkflowSeq;
-  if (targetSeq === null) {
-    for (let i = state.messageOrder.length - 1; i >= 0; i--) {
-      const msg = state.messages[state.messageOrder[i]];
-      if (msg?.role === 'assistant' && msg.seq != null) {
-        targetSeq = msg.seq;
-        break;
-      }
-    }
-  }
+  const { seq } = resolvePanelTurn(state);
+  if (seq === null) return state.activeWorkflowTokens;
+  return state.workflowTokens[seq];
+}
 
-  if (targetSeq === null) return state.activeWorkflowTokens;
-  return state.workflowTokens[targetSeq];
+/** Resolve the turn whose outcome the panel's status badge shows. */
+export function selectWorkflowStatus(state: ChatStore | null | undefined): WorkflowStatus {
+  if (!state || state.isLoading) return { messageId: null, isSuccess: true };
+  const { message } = resolvePanelTurn(state);
+  if (!message) return { messageId: null, isSuccess: true };
+  return { messageId: message.id, isSuccess: message.isSuccess !== false };
 }

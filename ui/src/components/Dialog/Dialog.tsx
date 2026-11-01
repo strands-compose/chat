@@ -1,11 +1,43 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from 'react';
 import { memo, useCallback, useRef, useState } from 'react';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
+import * as RadixDialog from '@radix-ui/react-dialog';
 import { FiMaximize2, FiMinimize2, FiX } from 'react-icons/fi';
 import { cn } from '@/services/utils';
 import styles from './Dialog.module.css';
 
+/**
+ * `dialog`: an ordinary window (a form, a preview, a panel); closes on Escape
+ * or a click outside. `alert`: a question or error the user must answer
+ * (Radix AlertDialog); a click outside does not close it.
+ */
+export type DialogKind = 'dialog' | 'alert';
+
+/** Same building blocks from either Radix package, so one render serves both kinds. */
+const PRIMITIVES = {
+  dialog: {
+    Root: RadixDialog.Root,
+    Portal: RadixDialog.Portal,
+    Overlay: RadixDialog.Overlay,
+    Content: RadixDialog.Content,
+    Title: RadixDialog.Title,
+    Description: RadixDialog.Description,
+    Close: RadixDialog.Close,
+  },
+  alert: {
+    Root: AlertDialog.Root,
+    Portal: AlertDialog.Portal,
+    Overlay: AlertDialog.Overlay,
+    Content: AlertDialog.Content,
+    Title: AlertDialog.Title,
+    Description: AlertDialog.Description,
+    Close: AlertDialog.Cancel,
+  },
+} as const;
+
 export interface DialogProps {
+  /** Which kind of window this is; see `DialogKind`. */
+  kind: DialogKind;
   open: boolean;
   onClose: () => void;
   title: string;
@@ -14,8 +46,8 @@ export interface DialogProps {
   /**
    * Accessible description for dialogs whose body has no descriptive text
    * (e.g. an image/PDF preview). Rendered visually hidden and linked via
-   * `aria-describedby`. Omit when the body already renders an
-   * `AlertDialog.Description`.
+   * `aria-describedby`. Omit when the body already renders its own
+   * description (e.g. `AlertDialog.Description` in an `alert`).
    */
   description?: string;
   /** Footer content (buttons). Omit for a dialog without a footer. */
@@ -67,6 +99,7 @@ const buildMaximizedRect = (): Rect => ({
 });
 
 const DialogComponent = ({
+  kind,
   open,
   onClose,
   title,
@@ -82,6 +115,7 @@ const DialogComponent = ({
   initialHeight = 820,
 }: DialogProps): ReactElement => {
   const floating = draggable || resizable || maximizable;
+  const Radix = PRIMITIVES[kind];
 
   // ======================
   // STATE, HOOKS & REFS
@@ -186,10 +220,10 @@ const DialogComponent = ({
       onPointerMove={floating && draggable ? handleMoveMove : undefined}
       onPointerUp={floating && draggable ? handlePointerRelease : undefined}
     >
-      <AlertDialog.Title className={styles.title} title={title}>
+      <Radix.Title className={styles.title} title={title}>
         {titleIcon && <span className={styles.titleIcon}>{titleIcon}</span>}
         <span className={styles.titleText}>{title}</span>
-      </AlertDialog.Title>
+      </Radix.Title>
       <div className={styles.headerActions}>
         {maximizable && (
           <button
@@ -202,7 +236,7 @@ const DialogComponent = ({
             {maximized ? <FiMinimize2 size={16} /> : <FiMaximize2 size={16} />}
           </button>
         )}
-        <AlertDialog.Cancel asChild>
+        <Radix.Close asChild>
           <button
             type="button"
             className={styles.iconBtn}
@@ -211,7 +245,7 @@ const DialogComponent = ({
           >
             <FiX size={18} />
           </button>
-        </AlertDialog.Cancel>
+        </Radix.Close>
       </div>
     </div>
   );
@@ -221,19 +255,19 @@ const DialogComponent = ({
     : undefined;
 
   return (
-    <AlertDialog.Root open={open} onOpenChange={handleOpenChange}>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className={styles.backdrop} />
-        <AlertDialog.Content
+    <Radix.Root open={open} onOpenChange={handleOpenChange}>
+      <Radix.Portal>
+        <Radix.Overlay className={styles.backdrop} />
+        <Radix.Content
           className={cn(styles.dialog, floating && styles.floating, className)}
           style={floatingStyle}
         >
           {renderHeader()}
 
           {description && (
-            <AlertDialog.Description className={styles.srOnly}>
+            <Radix.Description className={styles.srOnly}>
               {description}
-            </AlertDialog.Description>
+            </Radix.Description>
           )}
 
           <div className={cn(styles.body, floating && styles.bodyFill)}>{children}</div>
@@ -250,9 +284,9 @@ const DialogComponent = ({
               aria-hidden="true"
             />
           )}
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
+        </Radix.Content>
+      </Radix.Portal>
+    </Radix.Root>
   );
 };
 

@@ -187,6 +187,9 @@ let abortController: AbortController | null = null;
 let messageIdCounter = 0;
 // Deferred navigation/stop action awaiting interrupt confirmation.
 let pendingInterruptAction: (() => void) | null = null;
+// The agent fetch in flight, so every caller (e.g. a session restore started
+// while the welcome screen's fetch runs) waits for the same result.
+let agentsRequest: Promise<void> | null = null;
 
 // ====== STORE ======
 
@@ -494,8 +497,11 @@ export const useChatStore = create<ChatStore>((set, get) => {
         },
         messageOrder: [...state.messageOrder, userMsgId, assistantMsgId],
         isLoading: true,
-        // A new turn opens the workflow panel unless the user closes it again.
+        // A new turn opens the workflow panel unless the user closes it again,
+        // and takes it over: a turn that then fails must not leave the previous
+        // turn selected. The session_end refetch selects the new turn's seq.
         workflowPanelClosed: false,
+        selectedWorkflowSeq: null,
       }));
 
       const effects = buildEffects(assistantMsgId, isNewSession);
@@ -597,29 +603,33 @@ export const useChatStore = create<ChatStore>((set, get) => {
       set(agentSelection(agent));
     },
 
-    loadAgents: async (): Promise<void> => {
-      // Fetch once: skip if already loaded or a fetch is in flight. Both the
-      // welcome screen and the agent selector call this on mount; only the
-      // first call hits the network.
-      if (get().agents.length > 0 || get().agentsLoading) return;
+    loadAgents: (): Promise<void> => {
+      // Fetch once: the welcome screen, the agent selector and a session
+      // restore may all call this; they share the same in-flight request.
+      if (get().agents.length > 0) return Promise.resolve();
+      if (agentsRequest) return agentsRequest;
       set({ agentsLoading: true, agentsError: false });
-      try {
-        const list = await fetchAgents();
-        set({ agents: list });
-        // Auto-select a default only when nothing is selected yet (don't
-        // clobber an agent already adopted by a restored session).
-        if (list.length > 0 && !get().selectedAgent) {
-          const savedId = sessionStorage.getItem('lastSelectedAgentId');
-          const preferred = savedId ? list.find((a) => a.id === savedId) : undefined;
-          const agent = preferred ?? list[0];
-          set(agentSelection(agent));
+      agentsRequest = (async (): Promise<void> => {
+        try {
+          const list = await fetchAgents();
+          set({ agents: list });
+          // Auto-select a default only when nothing is selected yet (don't
+          // clobber an agent already adopted by a restored session).
+          if (list.length > 0 && !get().selectedAgent) {
+            const savedId = sessionStorage.getItem('lastSelectedAgentId');
+            const preferred = savedId ? list.find((a) => a.id === savedId) : undefined;
+            const agent = preferred ?? list[0];
+            set(agentSelection(agent));
+          }
+        } catch (err) {
+          console.error('[chatStore] loadAgents failed:', err);
+          set({ agentsError: true });
+        } finally {
+          set({ agentsLoading: false, agentsLoaded: true });
+          agentsRequest = null;
         }
-      } catch (err) {
-        console.error('[chatStore] loadAgents failed:', err);
-        set({ agentsError: true });
-      } finally {
-        set({ agentsLoading: false, agentsLoaded: true });
-      }
+      })();
+      return agentsRequest;
     },
 
     // Abort without clearing history — the stream catch surfaces a stop message.

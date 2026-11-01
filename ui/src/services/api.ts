@@ -222,7 +222,7 @@ export async function renameSession(sessionId: string, title: string): Promise<S
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title }),
   });
-  if (!res.ok) throw new Error(`Failed to rename session: ${res.status}`);
+  if (!res.ok) throw new Error(await extractError(res, `Failed to rename session (${res.status}).`));
   return (await res.json()) as Session;
 }
 
@@ -231,7 +231,9 @@ export async function deleteSession(sessionId: string): Promise<void> {
   const res = await fetchWithTimeout(`${SESSIONS_URL}/${encodeURIComponent(sessionId)}`, {
     method: 'DELETE',
   });
-  if (!res.ok && res.status !== 204) throw new Error(`Failed to delete session: ${res.status}`);
+  if (!res.ok && res.status !== 204) {
+    throw new Error(await extractError(res, `Failed to delete session (${res.status}).`));
+  }
 }
 
 /** Matches MessageOut from the backend. */

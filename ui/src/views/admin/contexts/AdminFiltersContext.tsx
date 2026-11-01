@@ -8,10 +8,11 @@ import type { AdminFiltersContextValue } from '../hooks/useAdminFilters';
 // HELPERS
 // ======================
 
+/** Month to date in the user's local calendar, like the picker's presets. */
 const getDefaultDateRange = (): DateRange => {
   const now = new Date();
-  const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  const to = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const from = new Date(now.getFullYear(), now.getMonth(), 1);
+  const to = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return { from, to };
 };
 

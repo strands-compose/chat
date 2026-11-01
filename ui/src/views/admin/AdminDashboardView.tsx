@@ -25,6 +25,7 @@ const AdminDashboardViewComponent = (): ReactElement => {
         <IconButton
           onClick={toggle}
           title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {isDark ? <FiSun size={16} /> : <FiMoon size={16} />}
         </IconButton>

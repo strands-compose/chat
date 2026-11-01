@@ -123,7 +123,7 @@ const ChatMessageComponent = ({
   // RENDER FUNCTIONS
   // ======================
   const renderCopyButton = (): ReactElement => (
-    <IconButton onClick={handleCopy} title="Copy message">
+    <IconButton onClick={handleCopy} title="Copy message" aria-label="Copy message">
       {copiedMsg ? <LuCheck size={15} /> : <LuCopy size={15} />}
     </IconButton>
   );
@@ -236,13 +236,13 @@ const ChatMessageComponent = ({
   );
 
   const renderUserMessage = (): ReactElement => (
-    <div className={styles.userMessage}>
+    <div className={styles.userMessage} role="article" aria-label="You said">
       <div className={styles.userStack}>
         <div className={styles.userBlock}>
         <div className={styles.userHead}>
           <div className={styles.userActions}>
             {renderCopyButton()}
-            <IconButton onClick={handleResend} title="Resend message">
+            <IconButton onClick={handleResend} title="Resend message" aria-label="Resend message">
               <LuRefreshCw size={15} />
             </IconButton>
           </div>
@@ -273,7 +273,7 @@ const ChatMessageComponent = ({
   const renderAssistantMessage = (): ReactElement => {
     const showCopy = !message.isStreaming && !isRevealing && !!message.content;
     return (
-      <div className={styles.assistantMessage}>
+      <div className={styles.assistantMessage} role="article" aria-label="Assistant said">
         <Avatar
           icon={<LuBot size={17} />}
           tone="accent"

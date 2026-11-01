@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { memo, useState, useCallback, useMemo } from 'react';
+import { memo, useState, useCallback, useId, useMemo } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 import { useTheme } from '@/contexts';
 import {
@@ -79,6 +79,7 @@ const TimelineChartComponent = (): ReactElement => {
 
   const { data, isLoading, error } = useTimelineData(interval, metric, stackBy, maxSeries);
   const { isDark } = useTheme();
+  const titleId = useId();
 
   // ======================
   // HANDLERS
@@ -139,7 +140,7 @@ const TimelineChartComponent = (): ReactElement => {
 
   const renderControls = (): ReactElement => (
     <div className={styles.controls}>
-      <span className={styles.chartTitle}>Usage Over Time</span>
+      <span id={titleId} className={styles.chartTitle}>Usage Over Time</span>
       <div className={styles.spacer} />
       <Segmented options={INTERVAL_OPTIONS} active={interval} onSelect={handleIntervalChange} label="Interval" />
       <Segmented options={METRIC_OPTIONS} active={metric} onSelect={handleMetricChange} label="Metric" />
@@ -198,13 +199,13 @@ const TimelineChartComponent = (): ReactElement => {
   };
 
   return (
-    <div className={styles.root}>
+    <section className={styles.root} aria-labelledby={titleId}>
       {renderControls()}
       <div className={styles.chartWrapper}>
         {isLoading && <div className={styles.overlay}><Spinner /></div>}
         {renderChart()}
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -11,6 +11,12 @@
   transition: none;
 }
 
+/* ====== AVATAR INITIAL ======
+   Decorative glyph; kept out of the DOM text on purpose. */
+.initial::before {
+  content: attr(data-initial);
+}
+
 /* ====== EXPANDED CARD ======
    Raised on the primary surface with a hairline border so it stands out
    from the secondary sidebar surface behind the session list. */

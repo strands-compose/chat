@@ -69,6 +69,9 @@ const SidebarUserCardComponent = ({ collapsed }: SidebarUserCardProps): ReactEle
 
   const pct = user.budget > 0 ? Math.round((user.usage / user.budget) * 100) : 0;
   const initial = user.username.charAt(0).toUpperCase();
+  // Drawn by CSS so the decorative initial is not part of the trigger's visible
+  // text, which must be contained in its accessible name (WCAG 2.5.3).
+  const avatarInitial = <span className={styles.initial} data-initial={initial} />;
   const budgetLabel = `${formatCost(user.usage)} / ${formatCost(user.budget)}`;
 
   // ======================
@@ -115,7 +118,7 @@ const SidebarUserCardComponent = ({ collapsed }: SidebarUserCardProps): ReactEle
           title={`Monthly budget: ${budgetLabel} (${pct}%)`}
         >
           <ProgressRing value={user.usage} max={user.budget} ariaLabel="Budget usage">
-            <Avatar icon={initial} tone="inverse" size="md" />
+            <Avatar icon={avatarInitial} tone="inverse" size="md" />
           </ProgressRing>
         </button>
       </DropdownMenuTrigger>
@@ -127,8 +130,12 @@ const SidebarUserCardComponent = ({ collapsed }: SidebarUserCardProps): ReactEle
     <div className={styles.card}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button type="button" className={styles.userRow} aria-label="User menu">
-            <Avatar icon={initial} tone="inverse" size="lg" />
+          <button
+            type="button"
+            className={styles.userRow}
+            aria-label={`User menu, ${user.username} ${user.email}`}
+          >
+            <Avatar icon={avatarInitial} tone="inverse" size="lg" />
             <span className={styles.meta}>
               <span className={styles.name}>{user.username}</span>
               <span className={styles.email}>{user.email}</span>

@@ -10,7 +10,7 @@ import { useChatStore } from '@/store';
 import { useAppConfig } from '@/contexts';
 import { cn, isMobileViewport } from '@/services/utils';
 import type { Session } from '@/services/api';
-import { IconButton, ConfirmDialog, RenameSessionDialog } from '@/components';
+import { IconButton, ConfirmDialog, ErrorDialog, RenameSessionDialog } from '@/components';
 import { SidebarUserCard } from './SidebarUserCard';
 import styles from './Sidebar.module.css';
 
@@ -56,45 +56,48 @@ const HistoryGroup = ({
 }: HistoryGroupProps): ReactElement => (
   <div className={styles.historyGroup}>
     <div className={styles.historyGroupLabel}>{label}</div>
-    {items.map((s) => (
-      <div
-        key={s.session_id}
-        className={cn(styles.historyRow, s.session_id === activeSessionId && styles.historyRowActive)}
-      >
-        <button
-          className={styles.historyItem}
-          type="button"
-          title={s.title ?? s.session_id}
-          onClick={() => onSelect(s.session_id)}
+    <div role="list" aria-label={label}>
+      {items.map((s) => (
+        <div
+          key={s.session_id}
+          role="listitem"
+          className={cn(styles.historyRow, s.session_id === activeSessionId && styles.historyRowActive)}
         >
-          {s.title ?? s.session_id}
-        </button>
-        <div className={styles.historyActions}>
-          <IconButton
-            size="sm"
-            title="Rename session"
-            aria-label="Rename session"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRenameClick(s.session_id, s.title ?? s.session_id);
-            }}
+          <button
+            className={styles.historyItem}
+            type="button"
+            title={s.title ?? s.session_id}
+            onClick={() => onSelect(s.session_id)}
           >
-            <LuPencil size={15} />
-          </IconButton>
-          <IconButton
-            size="sm"
-            title="Delete session"
-            aria-label="Delete session"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteClick(s.session_id);
-            }}
-          >
-            <LuTrash2 size={15} />
-          </IconButton>
+            {s.title ?? s.session_id}
+          </button>
+          <div className={styles.historyActions}>
+            <IconButton
+              size="sm"
+              title="Rename session"
+              aria-label="Rename session"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRenameClick(s.session_id, s.title ?? s.session_id);
+              }}
+            >
+              <LuPencil size={15} />
+            </IconButton>
+            <IconButton
+              size="sm"
+              title="Delete session"
+              aria-label="Delete session"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteClick(s.session_id);
+              }}
+            >
+              <LuTrash2 size={15} />
+            </IconButton>
+          </div>
         </div>
-      </div>
-    ))}
+      ))}
+    </div>
   </div>
 );
 
@@ -108,6 +111,7 @@ const SidebarComponent = (): ReactElement => {
   const [expanded, setExpanded] = useState(() => !isMobileViewport());
   const [renameTarget, setRenameTarget] = useState<{ sessionId: string; title: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<{ title: string; message: string } | null>(null);
 
   const { title } = useAppConfig();
   const clearChat = useChatStore((s) => s.clearChat);
@@ -139,19 +143,19 @@ const SidebarComponent = (): ReactElement => {
     if (isMobileViewport()) setExpanded(false);
   });
 
+  const showActionError = (errorTitle: string, err: unknown): void => {
+    setActionError({ title: errorTitle, message: err instanceof Error ? err.message : 'Unexpected error.' });
+  };
+
   const handleRenameSession = (newTitle: string): void => {
     if (!renameTarget) return;
-    renameSession(renameTarget.sessionId, newTitle).catch((err) => {
-      console.error('[Sidebar] Failed to rename session:', err);
-    });
+    renameSession(renameTarget.sessionId, newTitle).catch((err: unknown) => showActionError('Rename failed', err));
     setRenameTarget(null);
   };
 
   const handleDeleteSession = (): void => {
     if (!deleteTarget) return;
-    deleteSession(deleteTarget).catch((err) => {
-      console.error('[Sidebar] Failed to delete session:', err);
-    });
+    deleteSession(deleteTarget).catch((err: unknown) => showActionError('Delete failed', err));
     setDeleteTarget(null);
   };
 
@@ -245,6 +249,12 @@ const SidebarComponent = (): ReactElement => {
           onCancel={() => setDeleteTarget(null)}
         />
       )}
+      <ErrorDialog
+        open={actionError !== null}
+        title={actionError?.title}
+        message={actionError?.message ?? ''}
+        onClose={() => setActionError(null)}
+      />
     </>
   );
 
@@ -254,9 +264,9 @@ const SidebarComponent = (): ReactElement => {
         {renderHead()}
         {renderNewChat()}
       </nav>
-      <div className={styles.history} aria-label="Chat history">
+      <section className={styles.history} aria-label="Chat history">
         {expanded && renderHistory()}
-      </div>
+      </section>
       <div className={styles.footer}>
         <SidebarUserCard collapsed={!expanded} />
       </div>

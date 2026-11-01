@@ -43,6 +43,7 @@ const ProfilePanelDialogComponent = ({ open, onClose }: ProfilePanelDialogProps)
 
   return (
     <Dialog
+      kind="dialog"
       open={open}
       onClose={onClose}
       title="Profile"

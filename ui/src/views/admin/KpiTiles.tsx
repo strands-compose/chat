@@ -5,19 +5,9 @@ import { postSummary } from '@/services/adminApi';
 import { Skeleton } from '@/components';
 import { useAsyncData } from '@/hooks';
 import { formatInt } from '@/components/charts';
+import { toDateParam } from '@/services/utils';
 import { useAdminFilters } from './hooks/useAdminFilters';
 import styles from './KpiTiles.module.css';
-
-// ======================
-// HELPERS
-// ======================
-
-const formatDate = (d: Date): string => {
-  const year = d.getUTCFullYear();
-  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
 
 // ======================
 // COMPONENT
@@ -33,8 +23,8 @@ const KpiTilesComponent = (): ReactElement => {
   const { data, isLoading, error } = useAsyncData<SummaryOut>(
     () =>
       postSummary({
-        from: formatDate(dateRange.from),
-        to: formatDate(dateRange.to),
+        from: toDateParam(dateRange.from),
+        to: toDateParam(dateRange.to),
         filters: {
           user_ids: userIds.length > 0 ? userIds : null,
           agent_ids: agentIds.length > 0 ? agentIds : null,
@@ -59,7 +49,7 @@ const KpiTilesComponent = (): ReactElement => {
   );
 
   const renderTile = (label: string, value: string): ReactElement => (
-    <div className={styles.tile}>
+    <div className={styles.tile} role="group" aria-label={label}>
       <p className={styles.tileLabel}>{label}</p>
       {renderValue(value)}
     </div>

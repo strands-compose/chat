@@ -23,6 +23,7 @@ const ErrorDialogComponent = ({
   onClose,
 }: ErrorDialogProps): ReactElement => (
   <Dialog
+    kind="alert"
     open={open}
     onClose={onClose}
     title={title}

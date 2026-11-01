@@ -128,6 +128,7 @@ const AttachmentViewerDialogComponent = ({
 
   return (
     <Dialog
+      kind="dialog"
       open={attachment !== null}
       onClose={onClose}
       title={attachment?.name ?? ''}

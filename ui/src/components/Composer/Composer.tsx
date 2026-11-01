@@ -360,6 +360,7 @@ const ComposerComponent = ({
           onClick={handleStop}
           className={styles.stopButton}
           title="Stop generation"
+          aria-label="Stop generation"
         >
           <LuSquare size={14} fill="currentColor" />
         </button>
@@ -371,6 +372,7 @@ const ComposerComponent = ({
         disabled={!input.trim() || disabled}
         className={styles.sendButton}
         title="Send message"
+        aria-label="Send message"
       >
         <LuArrowUp size={18} />
       </button>
@@ -386,6 +388,7 @@ const ComposerComponent = ({
           type="button"
           className={cn(styles.plusButton, styles.plusButtonBlocked)}
           title="File upload not supported"
+          aria-label="File upload not supported"
           onClick={notifyUploadUnsupported}
         >
           <LuPlus size={20} />
@@ -399,6 +402,7 @@ const ComposerComponent = ({
           type="button"
           className={styles.plusButton}
           title="Add attachment"
+          aria-label="Add attachment"
           disabled
         >
           <LuPlus size={20} />
@@ -409,7 +413,7 @@ const ComposerComponent = ({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button type="button" className={styles.plusButton} title="Add attachment">
+          <button type="button" className={styles.plusButton} title="Add attachment" aria-label="Add attachment">
             <LuPlus size={20} />
           </button>
         </DropdownMenuTrigger>
@@ -440,6 +444,7 @@ const ComposerComponent = ({
             onKeyDown={handleKeyDown}
             onBlur={() => window.scrollTo(0, 0)}
             placeholder={placeholder}
+            aria-label="Message"
             disabled={isLoading || disabled}
             className={styles.textarea}
             rows={1}

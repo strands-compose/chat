@@ -33,8 +33,8 @@ html, body, #root {
 
   --sc-text-primary: #0d0d0d;
   --sc-text-secondary: #5d5d5d;
-  --sc-text-tertiary: #8f8f8f;
-  --sc-text-attachment: rgba(0, 0, 0, 0.45);
+  --sc-text-tertiary: #6e6e6e;
+  --sc-text-attachment: rgba(0, 0, 0, 0.6);
 
   --sc-border-primary: #d9d9d9;
   --sc-border-secondary: #ececec;
@@ -42,14 +42,14 @@ html, body, #root {
 
   /* Accent (brand orange) */
   --sc-accent: #e8710a;
-  --sc-accent-text: #b35500;
+  --sc-accent-text: #e8710a;
   --sc-accent-soft: #fff1e3;
   --sc-accent-soft-2: #ffe2c2;
   --sc-on-accent: #ffffff;
   --sc-link: #0b57d0;
 
   /* Status / semantic feedback */
-  --sc-status-ok: #188038;
+  --sc-status-ok: #137333;
   --sc-status-ok-soft: #e6f4ea;
   --sc-status-warn: #f9ab00;
   --sc-status-danger: #d93025;
@@ -88,7 +88,7 @@ html, body, #root {
   --sc-text-primary: #ececec;
   --sc-text-secondary: #b4b4b4;
   --sc-text-tertiary: #8a8a8a;
-  --sc-text-attachment: rgba(255, 255, 255, 0.45);
+  --sc-text-attachment: rgba(255, 255, 255, 0.55);
 
   --sc-border-primary: #4a4a4a;
   --sc-border-secondary: #333333;
@@ -104,9 +104,9 @@ html, body, #root {
   --sc-status-ok: #6dd58c;
   --sc-status-ok-soft: rgba(109, 213, 140, 0.13);
   --sc-status-warn: #fdd663;
-  --sc-status-danger: #f2b8b5;
+  --sc-status-danger: #f6847e;
   --sc-status-danger-soft: rgba(242, 139, 130, 0.14);
-  --sc-text-error: #f2b8b5;
+  --sc-text-error: #f87871;
 
   --sc-agent-1: #ffb366;
   --sc-agent-2: #8ab4f8;

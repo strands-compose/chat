@@ -1,5 +1,6 @@
 import { useAsyncData } from '@/hooks';
 import { postTimeline } from '@/services/adminApi';
+import { toDateParam } from '@/services/utils';
 import type { Interval, TimelineOut } from '@/types/analytics';
 import { useAdminFilters } from './useAdminFilters';
 
@@ -41,8 +42,8 @@ export const useTimelineData = (
       if (groupIds.length > 0) filters.group_ids = groupIds;
 
       return postTimeline({
-        from: dateRange.from.toISOString().slice(0, 10),
-        to: dateRange.to.toISOString().slice(0, 10),
+        from: toDateParam(dateRange.from),
+        to: toDateParam(dateRange.to),
         interval,
         metric,
         stack_by: stackBy,

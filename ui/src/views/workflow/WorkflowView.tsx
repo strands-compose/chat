@@ -29,6 +29,7 @@ import { cn, formatAgentLabel, formatTokenCount } from '@/services/utils';
 import {
   agentNameSet,
   buildAgentRuns,
+  selectWorkflowStatus,
   selectWorkflowTrace,
   selectWorkflowTokens,
   summarizeAgents,
@@ -116,34 +117,12 @@ const WorkflowViewComponent = (): ReactElement => {
   } = useChatStore(
     useShallow((s) => {
       const trace = selectWorkflowTrace(s);
-
-      // Resolve the message id for the active seq (for token display).
-      let resolvedMessageId: string | null = null;
-      let isSuccess = true;
-      const targetSeq = s.isLoading ? null : s.selectedWorkflowSeq;
-      if (targetSeq != null) {
-        const found = s.messageOrder.find((id) => s.messages[id]?.seq === targetSeq);
-        resolvedMessageId = found ?? null;
-        if (resolvedMessageId) {
-          isSuccess = s.messages[resolvedMessageId]?.isSuccess !== false;
-        }
-      } else if (!s.isLoading) {
-        // Auto: find latest assistant with a seq.
-        for (let i = s.messageOrder.length - 1; i >= 0; i--) {
-          const msg = s.messages[s.messageOrder[i]];
-          if (msg?.role === 'assistant' && msg.seq != null) {
-            resolvedMessageId = msg.id;
-            isSuccess = msg.isSuccess !== false;
-            break;
-          }
-        }
-      }
-
+      const status = selectWorkflowStatus(s);
       return {
         workflowItems: trace.items.length > 0 ? trace.items : EMPTY_ITEMS,
         isStreaming: trace.isStreaming,
-        resolvedMessageId,
-        isSuccess,
+        resolvedMessageId: status.messageId,
+        isSuccess: status.isSuccess,
         tokens: selectWorkflowTokens(s),
       };
     }),
@@ -267,7 +246,7 @@ const WorkflowViewComponent = (): ReactElement => {
             title="Tokens for this turn"
           />
         </span>
-        <IconButton size="lg" onClick={handleClose} title="Close workflow panel">
+        <IconButton size="lg" onClick={handleClose} title="Close workflow panel" aria-label="Close workflow panel">
           <LuX size={18} />
         </IconButton>
       </>
@@ -395,6 +374,7 @@ const WorkflowViewComponent = (): ReactElement => {
             onClick={() => toggleRun(run.key)}
             aria-expanded={!isCollapsed}
             title={isCollapsed ? `Expand ${label}` : `Collapse ${label}`}
+            aria-label={isCollapsed ? `Expand ${label}` : `Collapse ${label}`}
           >
             <RunIcon size={14} />
           </button>
@@ -441,11 +421,11 @@ const WorkflowViewComponent = (): ReactElement => {
   );
 
   return (
-    <div className={styles.workflowPanel}>
+    <section className={styles.workflowPanel} aria-label="Workflow">
       {renderTitleBar()}
       {hasAssistantMessages && renderAgentChips()}
       {!hasAssistantMessages ? renderEmpty() : renderContent()}
-    </div>
+    </section>
   );
 };
 
