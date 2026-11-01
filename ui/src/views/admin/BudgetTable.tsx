@@ -1,10 +1,14 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import {
+  columnFilteringFeature,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  filterFn_includesString,
   flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  tableFeatures,
+  useTable,
 } from '@tanstack/react-table';
 import type { ReactElement } from 'react';
 import { memo, useState } from 'react';
@@ -25,6 +29,16 @@ const DEFAULT_PAGE_SIZE = 15;
 // Stable empty reference so the table input identity is steady before load.
 const EMPTY_ROWS: BudgetItemOut[] = [];
 
+// Only the features this table uses are registered; the row models and the
+// 'includesString' filter function are slots of the same feature set.
+const FEATURES = tableFeatures({
+  columnFilteringFeature,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  filteredRowModel: createFilteredRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+  filterFns: { includesString: filterFn_includesString },
+});
 // ======================
 // HELPERS
 // ======================
@@ -48,7 +62,7 @@ const STATUS_LABELS: Record<BudgetItemOut['status'], string> = {
 
 // Column model — only the username column participates in the text filter;
 // the usage/status columns render custom cells and opt out of global filtering.
-const COLUMNS: ColumnDef<BudgetItemOut>[] = [
+const COLUMNS: ColumnDef<typeof FEATURES, BudgetItemOut>[] = [
   {
     accessorKey: 'username',
     header: 'Username',
@@ -93,7 +107,8 @@ const BudgetTableComponent = (): ReactElement => {
   const { data, isLoading, error } = useAsyncData<BudgetItemOut[]>(getBudgets, []);
   const [globalFilter, setGlobalFilter] = useState('');
 
-  const table = useReactTable<BudgetItemOut>({
+  const table = useTable({
+    features: FEATURES,
     data: data ?? EMPTY_ROWS,
     columns: COLUMNS,
     state: { globalFilter },
@@ -101,12 +116,9 @@ const BudgetTableComponent = (): ReactElement => {
     globalFilterFn: 'includesString',
     getRowId: (row) => row.user_id,
     initialState: { pagination: { pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE } },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const { pageIndex, pageSize } = table.getState().pagination;
+  const { pageIndex, pageSize } = table.state.pagination;
   const filteredCount = table.getFilteredRowModel().rows.length;
 
   // ======================
@@ -175,7 +187,7 @@ const BudgetTableComponent = (): ReactElement => {
             <tbody>
               {table.getRowModel().rows.map((row) => (
                 <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getAllCells().map((cell) => (
                     <td key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
