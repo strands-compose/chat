@@ -1,14 +1,14 @@
 import type { ReactElement } from 'react';
 import { lazy, Suspense, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Sidebar } from '@/views';
 import { ConfirmDialog, ErrorDialog, SplitLayout } from '@/components';
 import { CollapseProvider, useAuth } from '@/contexts';
-import { useChatStore } from '@/store';
 import { LOGIN_URL } from '@/services/api';
 import { isMobileViewport } from '@/services/utils';
-import { useUrlState } from './useUrlState';
+import { useChatStore } from '@/store';
+import { Sidebar } from '@/views';
 import styles from './ChatApp.module.css';
+import { useUrlState } from './useUrlState';
 
 const ChatView = lazy(() => import('@/views/chat'));
 const WorkflowView = lazy(() => import('@/views/workflow'));
@@ -78,11 +78,7 @@ const AppShell = (): ReactElement => {
           }
         />
       </div>
-      <ErrorDialog
-        open={errorDialogOpen}
-        message={authError ?? ''}
-        onClose={() => {}}
-      />
+      <ErrorDialog open={errorDialogOpen} message={authError ?? ''} onClose={() => {}} />
       <ConfirmDialog
         open={interruptConfirmOpen}
         title="Agent is running"

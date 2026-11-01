@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { ChatStore, Message, TurnTokens, WorkflowItem } from '@/types';
-import type { AgentRun } from './workflow-types';
 import {
   agentNameSet,
   buildAgentRuns,
@@ -9,6 +8,7 @@ import {
   selectWorkflowTrace,
   summarizeAgents,
 } from './workflow-selectors';
+import type { AgentRun } from './workflow-types';
 
 // ---------- builders (agent names are display-normalized: upper case, spaces) ----------
 
@@ -55,7 +55,12 @@ describe('buildAgentRuns', () => {
     const runs = buildAgentRuns([start('MAIN'), a, b, t, c, stop('MAIN', 120)]);
 
     expect(runs).toHaveLength(1);
-    expect(runs[0]).toMatchObject({ agentName: 'MAIN', hasEnded: true, totalTokens: 120, isOrchestrator: false });
+    expect(runs[0]).toMatchObject({
+      agentName: 'MAIN',
+      hasEnded: true,
+      totalTokens: 120,
+      isOrchestrator: false,
+    });
     expect(runs[0].groups.map((g) => [g.type, g.items])).toEqual([
       ['text', [a, b]],
       ['tool', [t]],
@@ -78,7 +83,13 @@ describe('buildAgentRuns', () => {
   });
 
   it('opens a new run when an agent starts again after stopping', () => {
-    const runs = buildAgentRuns([start('MAIN'), text('MAIN', 'a'), stop('MAIN'), start('MAIN'), text('MAIN', 'b')]);
+    const runs = buildAgentRuns([
+      start('MAIN'),
+      text('MAIN', 'a'),
+      stop('MAIN'),
+      start('MAIN'),
+      text('MAIN', 'b'),
+    ]);
     expect(runs).toHaveLength(2);
     expect(runs.map((r) => r.hasEnded)).toEqual([true, false]);
   });
@@ -137,15 +148,24 @@ describe('buildAgentRuns', () => {
       expect(main.groups.map((g) => g.type)).toEqual(['text', 'tool', 'text']);
       expect(main.groups[2].items).toEqual([after]);
 
-      const children = main.children.get(delegate);
+      const children = main.children.get(delegate) ?? [];
       expect(children).toHaveLength(1);
-      expect(children![0]).toMatchObject({ agentName: 'DOC EXPERT', hasEnded: true, totalTokens: 50 });
-      expect(children![0].groups[0].items).toEqual([answer]);
+      expect(children[0]).toMatchObject({
+        agentName: 'DOC EXPERT',
+        hasEnded: true,
+        totalTokens: 50,
+      });
+      expect(children[0].groups[0].items).toEqual([answer]);
     });
 
     it('matches the tool name to the agent name case-insensitively', () => {
       const delegate = tool('MAIN', 'Doc Expert');
-      const runs = buildAgentRuns([start('MAIN'), delegate, start('DOC EXPERT'), stop('DOC EXPERT')]);
+      const runs = buildAgentRuns([
+        start('MAIN'),
+        delegate,
+        start('DOC EXPERT'),
+        stop('DOC EXPERT'),
+      ]);
       expect(runs).toHaveLength(1);
       expect(runs[0].children.get(delegate)).toHaveLength(1);
     });
@@ -170,7 +190,13 @@ describe('buildAgentRuns', () => {
     it('skips calls that already failed when matching a sub-agent run', () => {
       const rejected = tool('MAIN', 'worker', 'error');
       const accepted = tool('MAIN', 'worker');
-      const runs = buildAgentRuns([start('MAIN'), rejected, accepted, start('WORKER'), stop('WORKER')]);
+      const runs = buildAgentRuns([
+        start('MAIN'),
+        rejected,
+        accepted,
+        start('WORKER'),
+        stop('WORKER'),
+      ]);
       expect(runs[0].children.has(rejected)).toBe(false);
       expect(runs[0].children.get(accepted)).toHaveLength(1);
     });
@@ -201,10 +227,19 @@ describe('buildAgentRuns', () => {
     it('nests multiple levels deep', () => {
       const toB = tool('A', 'b');
       const toC = tool('B', 'c');
-      const runs = buildAgentRuns([start('A'), toB, start('B'), toC, start('C'), stop('C'), stop('B'), stop('A')]);
-      const b = runs[0].children.get(toB)![0];
-      const c = b.children.get(toC)![0];
-      expect([runs.length, b.agentName, c.agentName]).toEqual([1, 'B', 'C']);
+      const runs = buildAgentRuns([
+        start('A'),
+        toB,
+        start('B'),
+        toC,
+        start('C'),
+        stop('C'),
+        stop('B'),
+        stop('A'),
+      ]);
+      const b = runs[0].children.get(toB)?.[0];
+      const c = b?.children.get(toC)?.[0];
+      expect([runs.length, b?.agentName, c?.agentName]).toEqual([1, 'B', 'C']);
     });
   });
 
@@ -250,11 +285,23 @@ describe('summarizeAgents', () => {
   });
 
   it('ignores items that are not starts and starts without a name', () => {
-    expect(summarizeAgents([text('MAIN', 'x'), tool('MAIN', 'search'), stop('MAIN'), { type: 'agent_start', content: '' }])).toEqual([]);
+    expect(
+      summarizeAgents([
+        text('MAIN', 'x'),
+        tool('MAIN', 'search'),
+        stop('MAIN'),
+        { type: 'agent_start', content: '' },
+      ]),
+    ).toEqual([]);
   });
 
   it('flags an agent as orchestrator if any of its starts says so', () => {
-    const summaries = summarizeAgents([start('ORCH'), start('ORCH', true), start('PLAIN'), start('PLAIN', false)]);
+    const summaries = summarizeAgents([
+      start('ORCH'),
+      start('ORCH', true),
+      start('PLAIN'),
+      start('PLAIN', false),
+    ]);
     expect(summaries.map((s) => [s.agentName, s.isOrchestrator])).toEqual([
       ['ORCH', true],
       ['PLAIN', false],
@@ -308,7 +355,12 @@ const LIVE_ITEMS = [text('MAIN', 'live')];
 const LIVE_TOKENS = tokens(1);
 const TRACE_2 = [text('MAIN', 'turn two')];
 const TRACE_4 = [text('MAIN', 'turn four')];
-const message = (id: string, role: Message['role'], seq?: number): Message => ({ id, role, content: id, seq });
+const message = (id: string, role: Message['role'], seq?: number): Message => ({
+  id,
+  role,
+  content: id,
+  seq,
+});
 
 /** The same chat without the unsaved last turn. */
 const SAVED_ONLY: Partial<SelectorState> = {
@@ -349,14 +401,21 @@ describe('selectWorkflowTrace', () => {
   });
 
   it('shows the live buffer while a turn is running, even when a past turn is selected', () => {
-    const state = makeState({ isLoading: true, activeWorkflowItems: LIVE_ITEMS, selectedWorkflowSeq: 2 });
+    const state = makeState({
+      isLoading: true,
+      activeWorkflowItems: LIVE_ITEMS,
+      selectedWorkflowSeq: 2,
+    });
     const selection = selectWorkflowTrace(state);
     expect(selection.isStreaming).toBe(true);
     expect(selection.items).toBe(LIVE_ITEMS);
   });
 
   it('reports streaming with an empty trace before the first item arrives', () => {
-    expect(selectWorkflowTrace(makeState({ isLoading: true }))).toEqual({ items: [], isStreaming: true });
+    expect(selectWorkflowTrace(makeState({ isLoading: true }))).toEqual({
+      items: [],
+      isStreaming: true,
+    });
   });
 
   it('keeps showing the live buffer after the turn ends, ahead of a stale selection', () => {
@@ -398,7 +457,9 @@ describe('selectWorkflowTokens', () => {
   });
 
   it('returns the live totals while a turn is running, even when a past turn is selected', () => {
-    expect(selectWorkflowTokens(makeState({ isLoading: true, selectedWorkflowSeq: 2 }))).toBe(LIVE_TOKENS);
+    expect(selectWorkflowTokens(makeState({ isLoading: true, selectedWorkflowSeq: 2 }))).toBe(
+      LIVE_TOKENS,
+    );
   });
 
   it('returns the live totals after the turn ends while the live trace is still held', () => {
@@ -431,7 +492,10 @@ describe('selectWorkflowTokens', () => {
 });
 
 describe('selectWorkflowStatus', () => {
-  const failed = (id: string, seq?: number): Message => ({ ...message(id, 'assistant', seq), isSuccess: false });
+  const failed = (id: string, seq?: number): Message => ({
+    ...message(id, 'assistant', seq),
+    isSuccess: false,
+  });
 
   it.each([[null], [undefined]])('has no message and reports success for %s state', (state) => {
     expect(selectWorkflowStatus(state)).toEqual({ messageId: null, isSuccess: true });
@@ -445,12 +509,18 @@ describe('selectWorkflowStatus', () => {
   });
 
   it('follows the selected turn and its outcome', () => {
-    const state = makeState({ selectedWorkflowSeq: 2, messages: { ...makeState().messages, a2: failed('a2', 2) } });
+    const state = makeState({
+      selectedWorkflowSeq: 2,
+      messages: { ...makeState().messages, a2: failed('a2', 2) },
+    });
     expect(selectWorkflowStatus(state)).toEqual({ messageId: 'a2', isSuccess: false });
   });
 
   it('falls back to the newest saved turn when none is selected', () => {
-    expect(selectWorkflowStatus(makeState(SAVED_ONLY))).toEqual({ messageId: 'a4', isSuccess: true });
+    expect(selectWorkflowStatus(makeState(SAVED_ONLY))).toEqual({
+      messageId: 'a4',
+      isSuccess: true,
+    });
   });
 
   it('reports a failed send as an error even though it was never saved', () => {

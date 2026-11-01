@@ -14,11 +14,11 @@ import { memo, useMemo } from 'react';
 import { DateRangePicker, Segmented, Spinner, UsagePill } from '@/components';
 import { formatBucketLabel } from '@/components/charts';
 import { useSplitter } from '@/hooks';
-import { UsageChart } from './UsageChart';
-import { useProfileContext } from './hooks/useProfileContext';
-import { pointTotalTokens } from './usage-points';
 import type { ChartMode, Interval, MeUsagePoint } from '@/types/analytics';
+import { useProfileContext } from './hooks/useProfileContext';
+import { UsageChart } from './UsageChart';
 import styles from './UsageDashboard.module.css';
+import { pointTotalTokens } from './usage-points';
 
 // ======================
 // CONSTANTS
@@ -49,9 +49,18 @@ interface UsageTableProps {
   isLoading: boolean;
 }
 
-const UsageTableComponent = ({ data, chartMode, interval, isLoading }: UsageTableProps): ReactElement => {
+const UsageTableComponent = ({
+  data,
+  chartMode,
+  interval,
+  isLoading,
+}: UsageTableProps): ReactElement => {
   if (isLoading) {
-    return <div className={styles.tableWrap}><Spinner /></div>;
+    return (
+      <div className={styles.tableWrap}>
+        <Spinner />
+      </div>
+    );
   }
 
   if (data.length === 0) {
@@ -133,9 +142,12 @@ const UsageDashboardComponent = (): ReactElement => {
   // ======================
 
   const {
-    interval, setInterval,
-    chartMode, setChartMode,
-    dateRange, setDateRange,
+    interval,
+    setInterval,
+    chartMode,
+    setChartMode,
+    dateRange,
+    setDateRange,
     usagePoints: points,
     isUsageLoading: isLoading,
   } = useProfileContext();
@@ -193,7 +205,12 @@ const UsageDashboardComponent = (): ReactElement => {
       <DateRangePicker from={dateRange.from} to={dateRange.to} onChange={handleRangeChange} />
       <div style={{ flexGrow: 1 }} />
       <Segmented options={INTERVALS} active={interval} onSelect={setInterval} label="Interval" />
-      <Segmented options={CHART_MODES} active={chartMode} onSelect={setChartMode} label="Chart mode" />
+      <Segmented
+        options={CHART_MODES}
+        active={chartMode}
+        onSelect={setChartMode}
+        label="Chart mode"
+      />
     </div>
   );
 
@@ -212,6 +229,7 @@ const UsageDashboardComponent = (): ReactElement => {
           </div>
         </div>
 
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: a pointer-only drag handle; the columns work at their default width. */}
         <div className={styles.splitter} onMouseDown={onSplitterMouseDown} />
 
         <aside className={styles.tableColumn} style={{ width: `${100 - leftPercent}%` }}>

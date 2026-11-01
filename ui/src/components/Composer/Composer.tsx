@@ -1,15 +1,14 @@
-import type { ReactElement, KeyboardEvent, ChangeEvent, SyntheticEvent, MouseEvent } from 'react';
-import { useState, useRef, useEffect, useCallback, memo } from 'react';
+import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactElement, SyntheticEvent } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { LuArrowUp, LuCloudUpload, LuPlus, LuSquare } from 'react-icons/lu';
-import type { Attachment, MediaCapabilities, MediaCategory } from '@/types/api';
-import { validateAttachments } from '@/services/utils';
-import { cn } from '@/services/utils';
 import { useWindowFileDrop } from '@/hooks';
+import { cn, validateAttachments } from '@/services/utils';
+import type { Attachment, MediaCapabilities, MediaCategory } from '@/types/api';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '../DropdownMenu';
 import { DropOverlay } from '../DropOverlay';
 import { ErrorDialog } from '../ErrorDialog';
@@ -127,7 +126,7 @@ const ComposerComponent = ({
         if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
       });
     },
-    []
+    [],
   );
 
   // ======================
@@ -299,7 +298,7 @@ const ComposerComponent = ({
       const result = validateAttachments(
         attachments,
         capabilities.max_file_bytes,
-        capabilities.max_total_bytes
+        capabilities.max_total_bytes,
       );
       if (!result.ok) {
         setAttachmentError({ title: 'Attachment too large', message: result.message });
@@ -316,9 +315,9 @@ const ComposerComponent = ({
     (e: SyntheticEvent): void => {
       e.preventDefault();
       submit();
-      window.scrollTo(0, 0)
+      window.scrollTo(0, 0);
     },
-    [submit]
+    [submit],
   );
 
   const handleStop = useCallback(
@@ -326,7 +325,7 @@ const ComposerComponent = ({
       e.preventDefault();
       onStop();
     },
-    [onStop]
+    [onStop],
   );
 
   const handleKeyDown = useCallback(
@@ -334,10 +333,10 @@ const ComposerComponent = ({
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         submit();
-        window.scrollTo(0, 0)
+        window.scrollTo(0, 0);
       }
     },
-    [submit]
+    [submit],
   );
 
   // Clicking anywhere on the composer chrome (padding, actions row) focuses the
@@ -413,7 +412,12 @@ const ComposerComponent = ({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button type="button" className={styles.plusButton} title="Add attachment" aria-label="Add attachment">
+          <button
+            type="button"
+            className={styles.plusButton}
+            title="Add attachment"
+            aria-label="Add attachment"
+          >
             <LuPlus size={20} />
           </button>
         </DropdownMenuTrigger>

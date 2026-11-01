@@ -1,15 +1,15 @@
 import type { ReactElement } from 'react';
 import { memo } from 'react';
-import { FiSun, FiMoon } from 'react-icons/fi';
+import { FiMoon, FiSun } from 'react-icons/fi';
 import { IconButton } from '@/components';
 import { useTheme } from '@/contexts';
+import styles from './AdminDashboardView.module.css';
+import { BreakdownChart } from './BreakdownChart';
+import { BudgetTable } from './BudgetTable';
 import { AdminFiltersProvider } from './contexts/AdminFiltersContext';
 import { FilterPanel } from './FilterPanel';
 import { KpiTiles } from './KpiTiles';
 import { TimelineChart } from './TimelineChart';
-import { BreakdownChart } from './BreakdownChart';
-import { BudgetTable } from './BudgetTable';
-import styles from './AdminDashboardView.module.css';
 
 // ======================
 // COMPONENT
@@ -31,8 +31,8 @@ const AdminDashboardViewComponent = (): ReactElement => {
         </IconButton>
       </div>
       <div className={styles.subtitle}>
-        Monitor costs, token usage, and agent activity across your organization.
-        Filter by date, user, agent, or group to drill down.
+        Monitor costs, token usage, and agent activity across your organization. Filter by date,
+        user, agent, or group to drill down.
       </div>
       <FilterPanel />
     </div>
@@ -60,7 +60,7 @@ const AdminDashboardViewComponent = (): ReactElement => {
         {content}
       </div>
     </AdminFiltersProvider>
-  )
+  );
 };
 
 export const AdminDashboardView = memo(AdminDashboardViewComponent);

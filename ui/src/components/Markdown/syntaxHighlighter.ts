@@ -5,34 +5,52 @@
  * carrying Prism token classes (`token`, `comment`, ...), so colors come from
  * CSS rather than a per-token React tree — much cheaper to render.
  */
-import { refractor } from 'refractor/core';
-import { toHtml } from 'hast-util-to-html';
 
-import markup from 'refractor/markup';
-import css from 'refractor/css';
-import javascript from 'refractor/javascript';
-import jsx from 'refractor/jsx';
-import typescript from 'refractor/typescript';
-import tsx from 'refractor/tsx';
-import c from 'refractor/c';
-import cpp from 'refractor/cpp';
+import { toHtml } from 'hast-util-to-html';
 import bash from 'refractor/bash';
-import python from 'refractor/python';
-import json from 'refractor/json';
-import yaml from 'refractor/yaml';
-import sql from 'refractor/sql';
-import markdown from 'refractor/markdown';
-import java from 'refractor/java';
+import c from 'refractor/c';
+import { refractor } from 'refractor/core';
+import cpp from 'refractor/cpp';
 import csharp from 'refractor/csharp';
-import go from 'refractor/go';
-import rust from 'refractor/rust';
-import docker from 'refractor/docker';
+import css from 'refractor/css';
 import diff from 'refractor/diff';
+import docker from 'refractor/docker';
+import go from 'refractor/go';
+import java from 'refractor/java';
+import javascript from 'refractor/javascript';
+import json from 'refractor/json';
+import jsx from 'refractor/jsx';
+import markdown from 'refractor/markdown';
+import markup from 'refractor/markup';
+import python from 'refractor/python';
+import rust from 'refractor/rust';
+import sql from 'refractor/sql';
+import tsx from 'refractor/tsx';
+import typescript from 'refractor/typescript';
+import yaml from 'refractor/yaml';
 
 // Dependency order: base grammars before the ones that extend them.
 const LANGUAGES = [
-  markup, css, javascript, jsx, typescript, tsx, c, cpp,
-  bash, python, json, yaml, sql, markdown, java, csharp, go, rust, docker, diff,
+  markup,
+  css,
+  javascript,
+  jsx,
+  typescript,
+  tsx,
+  c,
+  cpp,
+  bash,
+  python,
+  json,
+  yaml,
+  sql,
+  markdown,
+  java,
+  csharp,
+  go,
+  rust,
+  docker,
+  diff,
 ];
 
 for (const language of LANGUAGES) {

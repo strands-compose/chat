@@ -8,9 +8,9 @@
  * Field state, validation, and submission flow are owned by TanStack Form.
  */
 
+import { useForm } from '@tanstack/react-form';
 import type { ReactElement } from 'react';
 import { memo, useCallback, useEffect, useState } from 'react';
-import { useForm } from '@tanstack/react-form';
 import type { IconType } from 'react-icons';
 import { FaAws, FaMicrosoft } from 'react-icons/fa6';
 import { FiKey } from 'react-icons/fi';
@@ -26,9 +26,9 @@ import {
 } from 'react-icons/si';
 import { Button, Skeleton, TextField } from '@/components';
 import { useAppConfig } from '@/contexts';
-import { cn } from "@/services/utils"
-import { fetchAuthProviders, login, register, startProviderLogin } from '@/services/api';
 import type { AuthProviderInfo } from '@/services/api';
+import { fetchAuthProviders, login, register, startProviderLogin } from '@/services/api';
+import { cn } from '@/services/utils';
 import styles from './AuthView.module.css';
 
 type Mode = 'signin' | 'signup';
@@ -84,7 +84,11 @@ const AuthViewComponent = (): ReactElement => {
 
       try {
         if (isSignUp) {
-          await register({ username: value.username, email: value.email, password: value.password });
+          await register({
+            username: value.username,
+            email: value.email,
+            password: value.password,
+          });
         }
         const { next } = await login({ username: value.username, password: value.password });
         window.location.assign(next);
@@ -244,7 +248,12 @@ const AuthViewComponent = (): ReactElement => {
 
   /** Fixed-height stand-in for the form while the allowed auth methods are unknown. */
   const renderSkeleton = (): ReactElement => (
-    <div className={styles.skeleton} aria-busy="true" aria-label="Loading sign-in options">
+    <div
+      className={styles.skeleton}
+      role="status"
+      aria-busy="true"
+      aria-label="Loading sign-in options"
+    >
       <Skeleton height="62px" radius="8px" />
       <Skeleton height="62px" radius="8px" />
       <Skeleton height="40px" radius="8px" />
@@ -287,8 +296,8 @@ const AuthViewComponent = (): ReactElement => {
   };
 
   /** The "or continue with" wording only reads correctly when a local form precedes it. */
-  const renderProvidersDivider = (): ReactElement => {
-    if (!localSigninEnabled) return <></>;
+  const renderProvidersDivider = (): ReactElement | null => {
+    if (!localSigninEnabled) return null;
     return (
       <p className={styles.providersDivider}>
         <span>or continue with</span>

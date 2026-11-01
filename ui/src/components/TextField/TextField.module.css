@@ -23,7 +23,9 @@
   color: var(--sc-text-primary);
   font-family: inherit;
   font-size: 0.9rem;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .input::placeholder {

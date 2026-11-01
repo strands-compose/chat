@@ -1,5 +1,3 @@
-import type { ReactElement } from 'react';
-import { memo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   flexRender,
@@ -8,11 +6,13 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import type { ReactElement } from 'react';
+import { memo, useState } from 'react';
 import { FiSearch, FiX } from 'react-icons/fi';
-import type { BudgetItemOut } from '@/types/analytics';
-import { getBudgets } from '@/services/adminApi';
-import { Spinner, ProgressBar, Pagination } from '@/components';
+import { Pagination, ProgressBar, Spinner } from '@/components';
 import { useAsyncData } from '@/hooks';
+import { getBudgets } from '@/services/adminApi';
+import type { BudgetItemOut } from '@/types/analytics';
 import styles from './BudgetTable.module.css';
 
 // ======================
@@ -146,9 +146,7 @@ const BudgetTableComponent = (): ReactElement => {
     </div>
   );
 
-  const renderError = (): ReactElement => (
-    <div className={styles.error}>{error?.message}</div>
-  );
+  const renderError = (): ReactElement => <div className={styles.error}>{error?.message}</div>;
 
   const renderEmpty = (): ReactElement => (
     <div className={styles.empty}>No budget data available.</div>

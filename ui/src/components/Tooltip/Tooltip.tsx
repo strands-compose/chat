@@ -1,6 +1,6 @@
+import * as RadixTooltip from '@radix-ui/react-tooltip';
 import type { ReactElement, ReactNode } from 'react';
 import { memo } from 'react';
-import * as RadixTooltip from '@radix-ui/react-tooltip';
 import styles from './Tooltip.module.css';
 
 interface TooltipProps {

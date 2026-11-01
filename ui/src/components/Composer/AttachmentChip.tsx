@@ -24,7 +24,9 @@ const AttachmentChipComponent = ({
     }
     return (
       <span className={styles.document}>
-        <span className={styles.documentIcon} aria-hidden="true"><LuFileText size={16} /></span>
+        <span className={styles.documentIcon} aria-hidden="true">
+          <LuFileText size={16} />
+        </span>
         <span className={styles.name} title={attachment.name}>
           {attachment.name}
         </span>

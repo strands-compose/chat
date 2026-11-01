@@ -14,6 +14,7 @@ function SegmentedComponent<T extends string>(props: SegmentedProps<T>): ReactEl
   const { options, active, onSelect, label } = props;
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: a <fieldset> adds browser border and padding to this toolbar.
     <div className={styles.root} role="group" aria-label={label}>
       {options.map((opt) => (
         <button

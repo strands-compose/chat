@@ -34,25 +34,22 @@ export const useTimelineData = (
 ): UseTimelineDataResult => {
   const { dateRange, userIds, agentIds, groupIds } = useAdminFilters();
 
-  const { data, isLoading, error } = useAsyncData<TimelineOut>(
-    () => {
-      const filters: { user_ids?: string[]; agent_ids?: string[]; group_ids?: string[] } = {};
-      if (userIds.length > 0) filters.user_ids = userIds;
-      if (agentIds.length > 0) filters.agent_ids = agentIds;
-      if (groupIds.length > 0) filters.group_ids = groupIds;
+  const { data, isLoading, error } = useAsyncData<TimelineOut>(() => {
+    const filters: { user_ids?: string[]; agent_ids?: string[]; group_ids?: string[] } = {};
+    if (userIds.length > 0) filters.user_ids = userIds;
+    if (agentIds.length > 0) filters.agent_ids = agentIds;
+    if (groupIds.length > 0) filters.group_ids = groupIds;
 
-      return postTimeline({
-        from: toDateParam(dateRange.from),
-        to: toDateParam(dateRange.to),
-        interval,
-        metric,
-        stack_by: stackBy,
-        filters: Object.keys(filters).length > 0 ? filters : undefined,
-        max_series: maxSeries,
-      });
-    },
-    [dateRange, userIds, agentIds, groupIds, interval, metric, stackBy, maxSeries],
-  );
+    return postTimeline({
+      from: toDateParam(dateRange.from),
+      to: toDateParam(dateRange.to),
+      interval,
+      metric,
+      stack_by: stackBy,
+      filters: Object.keys(filters).length > 0 ? filters : undefined,
+      max_series: maxSeries,
+    });
+  }, [dateRange, userIds, agentIds, groupIds, interval, metric, stackBy, maxSeries]);
 
   return { data, isLoading, error: error?.message ?? null };
 };

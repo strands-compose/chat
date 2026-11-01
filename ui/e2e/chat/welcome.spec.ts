@@ -1,7 +1,10 @@
-import { test, expect } from '../support/test';
 import { makeAgent } from '../support/data';
+import { expect, test } from '../support/test';
 
-test('clicking a suggested question sends exactly that prompt to the shown agent', async ({ page, backend }) => {
+test('clicking a suggested question sends exactly that prompt to the shown agent', async ({
+  page,
+  backend,
+}) => {
   const agent = backend.agents[0];
   const suggestions = agent.suggested_questions ?? [];
   expect(suggestions.length).toBeGreaterThan(1);
@@ -18,8 +21,12 @@ test('clicking a suggested question sends exactly that prompt to the shown agent
   await test.step('clicking one sends that prompt', async () => {
     await page.getByRole('button', { name: suggestions[1] }).click();
 
-    await expect(page.getByRole('article', { name: 'You said' }).getByText(suggestions[1])).toBeVisible();
-    await expect(page.getByRole('article', { name: 'Assistant said' }).getByText('Done.')).toBeVisible();
+    await expect(
+      page.getByRole('article', { name: 'You said' }).getByText(suggestions[1]),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('article', { name: 'Assistant said' }).getByText('Done.'),
+    ).toBeVisible();
     const sent = backend.requestsTo('POST', '/api/v1/invocations');
     expect(sent).toHaveLength(1);
     expect(sent[0].body).toEqual({ prompt: suggestions[1], agent_id: agent.id });
@@ -59,8 +66,16 @@ test('the agent description panel opens and closes', async ({ page, backend }) =
 });
 
 test('?agent_id= preselects that agent for the first message', async ({ page, backend }) => {
-  const alpha = makeAgent({ id: 'agent-alpha', name: 'Alpha', suggested_questions: ['Ask Alpha something'] });
-  const beta = makeAgent({ id: 'agent-beta', name: 'Beta', suggested_questions: ['Ask Beta something'] });
+  const alpha = makeAgent({
+    id: 'agent-alpha',
+    name: 'Alpha',
+    suggested_questions: ['Ask Alpha something'],
+  });
+  const beta = makeAgent({
+    id: 'agent-beta',
+    name: 'Beta',
+    suggested_questions: ['Ask Beta something'],
+  });
   backend.agents = [alpha, beta];
 
   await page.goto(`/?agent_id=${beta.id}`);
@@ -75,14 +90,19 @@ test('?agent_id= preselects that agent for the first message', async ({ page, ba
   await test.step('the turn is sent to Beta', async () => {
     await page.getByRole('button', { name: 'Ask Beta something' }).click();
 
-    await expect(page.getByRole('article', { name: 'Assistant said' }).getByText('Done.')).toBeVisible();
+    await expect(
+      page.getByRole('article', { name: 'Assistant said' }).getByText('Done.'),
+    ).toBeVisible();
     const sent = backend.requestsTo('POST', '/api/v1/invocations');
     expect(sent).toHaveLength(1);
     expect(sent[0].body).toEqual({ prompt: 'Ask Beta something', agent_id: beta.id });
   });
 });
 
-test('without any agents the welcome screen explains it and offers no composer', async ({ page, backend }) => {
+test('without any agents the welcome screen explains it and offers no composer', async ({
+  page,
+  backend,
+}) => {
   backend.agents = [];
 
   await page.goto('/');

@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
-import { test, expect } from '../support/test';
 import { makeExchange, makeSession } from '../support/data';
+import { expect, test } from '../support/test';
 
 const NOW = new Date('2026-07-15T12:00:00Z');
 
@@ -12,7 +12,10 @@ function sessionRow(page: Page, title: string) {
     .filter({ has: page.getByRole('button', { name: title, exact: true }) });
 }
 
-test('renaming a session sends one PATCH with the new title and shows it', async ({ page, backend }) => {
+test('renaming a session sends one PATCH with the new title and shows it', async ({
+  page,
+  backend,
+}) => {
   await page.clock.setFixedTime(NOW);
   backend.now = () => NOW;
   const trip = makeSession({ title: 'Travel plan', last_used_at: '2026-07-15T08:00:00' });
@@ -20,7 +23,8 @@ test('renaming a session sends one PATCH with the new title and shows it', async
   backend.sessions = [trip, report];
 
   await page.goto('/');
-  const patches = (): number => backend.requestsTo('PATCH', `/api/v1/sessions/${trip.session_id}`).length;
+  const patches = (): number =>
+    backend.requestsTo('PATCH', `/api/v1/sessions/${trip.session_id}`).length;
   const before = patches();
 
   await sessionRow(page, 'Travel plan').hover();
@@ -51,13 +55,20 @@ test('deleting a session asks for confirmation, sends one DELETE and clears the 
   const open = makeSession({ title: 'Open chat', last_used_at: '2026-07-15T08:00:00' });
   const other = makeSession({ title: 'Other chat', last_used_at: '2026-07-15T07:00:00' });
   backend.sessions = [open, other];
-  backend.messages[open.session_id] = makeExchange('Tell me a fact', 'Octopuses have three hearts.');
+  backend.messages[open.session_id] = makeExchange(
+    'Tell me a fact',
+    'Octopuses have three hearts.',
+  );
 
   await page.goto('/');
-  const deletes = (id: string): number => backend.requestsTo('DELETE', `/api/v1/sessions/${id}`).length;
+  const deletes = (id: string): number =>
+    backend.requestsTo('DELETE', `/api/v1/sessions/${id}`).length;
   const dialog = page.getByRole('alertdialog', { name: 'Delete Session' });
 
-  await page.getByRole('region', { name: 'Chat history' }).getByRole('button', { name: 'Open chat' }).click();
+  await page
+    .getByRole('region', { name: 'Chat history' })
+    .getByRole('button', { name: 'Open chat' })
+    .click();
   await expect(page.getByText('Octopuses have three hearts.')).toBeVisible();
 
   await test.step('cancelling the confirmation keeps the session', async () => {
@@ -98,7 +109,10 @@ test('deleting a session asks for confirmation, sends one DELETE and clears the 
   });
 });
 
-test('Load more requests the next page at the right offset and appends it', async ({ page, backend }) => {
+test('Load more requests the next page at the right offset and appends it', async ({
+  page,
+  backend,
+}) => {
   await page.clock.setFixedTime(NOW);
   backend.now = () => NOW;
   // The sidebar shows 50 sessions per page (SESSIONS_PAGE_SIZE) and asks for one extra row to learn if more exist.
@@ -115,7 +129,8 @@ test('Load more requests the next page at the right offset and appends it', asyn
   await page.goto('/');
   const history = page.getByRole('region', { name: 'Chat history' });
   const nextPageRequests = (): number =>
-    backend.requestsTo('GET', '/api/v1/sessions').filter((r) => r.query.offset === String(pageSize)).length;
+    backend.requestsTo('GET', '/api/v1/sessions').filter((r) => r.query.offset === String(pageSize))
+      .length;
 
   await expect(history.getByRole('button', { name: 'Topic 50', exact: true })).toBeVisible();
   await expect(history.getByRole('button', { name: 'Topic 51', exact: true })).toHaveCount(0);
@@ -139,7 +154,10 @@ test.describe('failed rename', () => {
   // The store logs the failure; the error dialog and the unchanged sidebar are asserted below.
   test.use({ consoleErrors: { allow: [/^\[chatStore\] renameSession failed:/] } });
 
-  test('a failed rename shows the reason and leaves the existing title', async ({ page, backend }) => {
+  test('a failed rename shows the reason and leaves the existing title', async ({
+    page,
+    backend,
+  }) => {
     await page.clock.setFixedTime(NOW);
     const trip = makeSession({ title: 'Travel plan', last_used_at: '2026-07-15T08:00:00' });
     backend.sessions = [trip];
@@ -172,18 +190,23 @@ test.describe('failed rename', () => {
     await expect(sessionRow(page, 'Trip to Oslo')).toHaveCount(0);
     expect(backend.requestsTo('PATCH', `/api/v1/sessions/${trip.session_id}`)).toHaveLength(0);
   });
-
 });
 
 test.describe('failed delete', () => {
   // The store logs the failure; the error dialog and the unchanged sidebar are asserted below.
   test.use({ consoleErrors: { allow: [/^\[chatStore\] deleteSession failed:/] } });
 
-  test('a failed delete shows the reason and keeps the row and the open chat', async ({ page, backend }) => {
+  test('a failed delete shows the reason and keeps the row and the open chat', async ({
+    page,
+    backend,
+  }) => {
     await page.clock.setFixedTime(NOW);
     const open = makeSession({ title: 'Open chat', last_used_at: '2026-07-15T08:00:00' });
     backend.sessions = [open];
-    backend.messages[open.session_id] = makeExchange('Tell me a fact', 'Octopuses have three hearts.');
+    backend.messages[open.session_id] = makeExchange(
+      'Tell me a fact',
+      'Octopuses have three hearts.',
+    );
 
     const attempts: string[] = [];
     await page.route(
@@ -197,12 +220,18 @@ test.describe('failed delete', () => {
     );
 
     await page.goto('/');
-    await page.getByRole('region', { name: 'Chat history' }).getByRole('button', { name: 'Open chat' }).click();
+    await page
+      .getByRole('region', { name: 'Chat history' })
+      .getByRole('button', { name: 'Open chat' })
+      .click();
     await expect(page.getByText('Octopuses have three hearts.')).toBeVisible();
 
     await sessionRow(page, 'Open chat').hover();
     await sessionRow(page, 'Open chat').getByRole('button', { name: 'Delete session' }).click();
-    await page.getByRole('alertdialog', { name: 'Delete Session' }).getByRole('button', { name: 'Delete', exact: true }).click();
+    await page
+      .getByRole('alertdialog', { name: 'Delete Session' })
+      .getByRole('button', { name: 'Delete', exact: true })
+      .click();
 
     const error = page.getByRole('alertdialog', { name: 'Delete failed' });
     await expect(error).toContainText('Boom');

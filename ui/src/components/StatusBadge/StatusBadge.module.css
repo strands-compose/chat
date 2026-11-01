@@ -29,8 +29,13 @@
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 0.45; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ====== VARIANTS ====== */

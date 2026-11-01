@@ -1,15 +1,15 @@
 import type {
-  FiltersOut,
-  SummaryRequest,
-  SummaryOut,
-  TimelineRequest,
-  TimelineOut,
-  BreakdownRequest,
   BreakdownOut,
+  BreakdownRequest,
   BudgetItemOut,
+  FiltersOut,
+  SummaryOut,
+  SummaryRequest,
+  TimelineOut,
+  TimelineRequest,
 } from '@/types/analytics';
+import { extractError, fetchWithTimeout } from './http';
 import { readAppBase } from './utils';
-import { fetchWithTimeout, extractError } from './http';
 
 const BASE_URL = readAppBase();
 const ANALYTICS = `${BASE_URL}/api/v1/analytics`;

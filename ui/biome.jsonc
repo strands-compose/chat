@@ -1,0 +1,58 @@
+{
+  // Biome: formatter + linter + import sorting for ui/. Defaults on purpose;
+  // every deviation below says why. Run `npm run format` to fix, `npm run lint` to check.
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "formatter": {
+    "indentStyle": "space",
+    // Matches ruff's line length on the Python side.
+    "lineWidth": 100,
+    // Recorded stream data, generated as JSON; never hand-formatted.
+    "includes": ["**", "!src/services/demo-fixtures/**"]
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single"
+    }
+  },
+  // Docs are hand-written; compact tables stay readable and diffs stay small.
+  "markdown": {
+    "formatter": { "enabled": false },
+    "linter": { "enabled": false }
+  },
+  "linter": {
+    "domains": { "react": "recommended" },
+    "rules": {
+      "complexity": {
+        // !important here overrides inline styles set by third-party widgets (ECharts, Radix).
+        "noImportantStyles": "off"
+      },
+      "correctness": {
+        // Like React's own rule: an effect may list extra values that should re-run it.
+        "useExhaustiveDependencies": {
+          "level": "error",
+          "options": { "reportUnnecessaryDependencies": false }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      // Playwright tests: a missing `await` makes a test pass while it checks nothing.
+      "includes": ["e2e/**", "playwright*.config.ts"],
+      "linter": {
+        "domains": { "playwright": "recommended" },
+        "rules": {
+          "nursery": {
+            "noFloatingPromises": "error",
+            "noMisusedPromises": "error"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,2 +1,2 @@
-export { UsagePill } from './UsagePill';
 export type { UsagePillProps } from './UsagePill';
+export { UsagePill } from './UsagePill';

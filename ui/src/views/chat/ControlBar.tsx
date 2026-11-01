@@ -63,10 +63,20 @@ const ChatControlBarComponent = ({
   const left = (
     <div className={styles.leftGroup}>
       {renderAgentLabel()}
-      <IconButton size="lg" onClick={onCollapseAll} title="Collapse all messages" aria-label="Collapse all messages">
+      <IconButton
+        size="lg"
+        onClick={onCollapseAll}
+        title="Collapse all messages"
+        aria-label="Collapse all messages"
+      >
         <LuChevronsUp size={18} />
       </IconButton>
-      <IconButton size="lg" onClick={onExpandAll} title="Expand all messages" aria-label="Expand all messages">
+      <IconButton
+        size="lg"
+        onClick={onExpandAll}
+        title="Expand all messages"
+        aria-label="Expand all messages"
+      >
         <LuChevronsDown size={18} />
       </IconButton>
       {onToggleWidth && (

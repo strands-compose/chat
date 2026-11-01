@@ -49,10 +49,7 @@ const ProgressBarComponent = ({
         aria-valuemax={100}
         aria-label={ariaLabel}
       >
-        <div
-          className={styles.fill}
-          style={{ width: `${pct}%`, backgroundColor: fillColor }}
-        />
+        <div className={styles.fill} style={{ width: `${pct}%`, backgroundColor: fillColor }} />
       </div>
     </div>
   );

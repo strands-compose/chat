@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface AutoScrollApi {
   /** Attach to the scrollable container. */
@@ -16,10 +16,7 @@ interface AutoScrollApi {
  *
  * Scrolls the container directly via scrollTop for reliability.
  */
-export function useAutoScroll(
-  messageOrder: string[],
-  isStreamingTail: boolean,
-): AutoScrollApi {
+export function useAutoScroll(messageOrder: string[], isStreamingTail: boolean): AutoScrollApi {
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 

@@ -16,22 +16,23 @@
 
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { useTheme } from '@/contexts';
 import { Spinner } from '@/components';
-import { echarts, ReactECharts } from '@/components/charts';
 import type { ECOption } from '@/components/charts';
 import {
-  cssVar,
-  readChartColors,
   axisDefaults,
   buildGrid,
   buildLegend,
-  buildTooltipBase,
   buildTimeTooltipFormatter,
+  buildTooltipBase,
   costAxisLabel,
-  intAxisLabel,
+  cssVar,
+  echarts,
   formatBucketLabel,
+  intAxisLabel,
+  ReactECharts,
+  readChartColors,
 } from '@/components/charts';
+import { useTheme } from '@/contexts';
 import type { ChartMode, Interval, MeUsagePoint } from '@/types/analytics';
 import styles from './UsageChart.module.css';
 
@@ -50,7 +51,12 @@ interface UsageChartProps {
 // COMPONENT
 // ======================
 
-const UsageChartComponent = ({ data, chartMode, interval, isLoading }: UsageChartProps): ReactElement => {
+const UsageChartComponent = ({
+  data,
+  chartMode,
+  interval,
+  isLoading,
+}: UsageChartProps): ReactElement => {
   // Consume theme so the memoised option rebuilds on every theme toggle.
   const { isDark } = useTheme();
 
@@ -103,10 +109,18 @@ const UsageChartComponent = ({ data, chartMode, interval, isLoading }: UsageChar
     const cacheRead = data.map((b) => b.cache_read_input_tokens);
     const cacheWrite = data.map((b) => b.cache_write_input_tokens);
     if (cacheRead.some((v) => v > 0)) {
-      tokenSeries.push({ name: 'Cache read tokens', values: cacheRead, color: cssVar('--sc-agent-3') });
+      tokenSeries.push({
+        name: 'Cache read tokens',
+        values: cacheRead,
+        color: cssVar('--sc-agent-3'),
+      });
     }
     if (cacheWrite.some((v) => v > 0)) {
-      tokenSeries.push({ name: 'Cache write tokens', values: cacheWrite, color: cssVar('--sc-agent-4') });
+      tokenSeries.push({
+        name: 'Cache write tokens',
+        values: cacheWrite,
+        color: cssVar('--sc-agent-4'),
+      });
     }
 
     return {

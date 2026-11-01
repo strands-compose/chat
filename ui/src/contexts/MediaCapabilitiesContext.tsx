@@ -7,8 +7,8 @@
  * surfaced as a user error, keeping chat fully usable.
  */
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactElement, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { fetchMediaCapabilities } from '@/services';
 import type { MediaCapabilities } from '@/types';
 
@@ -63,8 +63,6 @@ export const MediaCapabilitiesProvider = ({
   );
 
   return (
-    <MediaCapabilitiesContext.Provider value={value}>
-      {children}
-    </MediaCapabilitiesContext.Provider>
+    <MediaCapabilitiesContext.Provider value={value}>{children}</MediaCapabilitiesContext.Provider>
   );
 };

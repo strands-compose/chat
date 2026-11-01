@@ -1,7 +1,10 @@
-import { test, expect } from '../support/test';
 import { DEMO_TURN, streamTurn } from '../support/sse';
+import { expect, test } from '../support/test';
 
-test('a new chat streams the answer and becomes a saved session', { tag: '@smoke' }, async ({ page, backend }) => {
+test('a new chat streams the answer and becomes a saved session', { tag: '@smoke' }, async ({
+  page,
+  backend,
+}) => {
   backend.reply = streamTurn({
     text: 'The weather in Oslo is sunny.',
     tools: [{ name: 'get_weather', input: { city: 'Oslo' }, result: 'sunny' }],
@@ -17,7 +20,9 @@ test('a new chat streams the answer and becomes a saved session', { tag: '@smoke
 
   await test.step('the answer and the workflow panel appear', async () => {
     await expect(
-      page.getByRole('article', { name: 'Assistant said' }).getByText('The weather in Oslo is sunny.'),
+      page
+        .getByRole('article', { name: 'Assistant said' })
+        .getByText('The weather in Oslo is sunny.'),
     ).toBeVisible();
     const workflow = page.getByRole('region', { name: 'Workflow' });
     await expect(workflow.getByText('Completed')).toBeVisible();
@@ -27,7 +32,10 @@ test('a new chat streams the answer and becomes a saved session', { tag: '@smoke
   await test.step('the turn was sent as a new session and the URL follows', async () => {
     const sent = backend.requestsTo('POST', '/api/v1/invocations');
     expect(sent).toHaveLength(1);
-    expect(sent[0].body).toEqual({ prompt: 'What is the weather in Oslo?', agent_id: backend.agents[0].id });
+    expect(sent[0].body).toEqual({
+      prompt: 'What is the weather in Oslo?',
+      agent_id: backend.agents[0].id,
+    });
     await expect(page).toHaveURL(/[?&]session_id=new-session-\d+/);
     await expect(
       page.getByRole('region', { name: 'Chat history' }).getByText('What is the weather in Oslo?'),
@@ -35,7 +43,10 @@ test('a new chat streams the answer and becomes a saved session', { tag: '@smoke
   });
 });
 
-test('a follow-up turn sends the minted session_id and keeps both answers visible', async ({ page, backend }) => {
+test('a follow-up turn sends the minted session_id and keeps both answers visible', async ({
+  page,
+  backend,
+}) => {
   backend.reply = (request) => streamTurn({ text: `Answer to: ${request.prompt}` });
 
   await page.goto('/');

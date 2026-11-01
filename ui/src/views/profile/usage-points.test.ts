@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
+import { describe, expect, it } from 'vitest';
 import type { MeUsagePoint } from '@/types';
 import { pointTotalTokens } from './usage-points';
 
@@ -21,7 +21,12 @@ describe('pointTotalTokens', () => {
   it('sums input, output, cache reads and cache writes', () => {
     expect(
       pointTotalTokens(
-        point({ input_tokens: 1, output_tokens: 20, cache_read_input_tokens: 300, cache_write_input_tokens: 4000 }),
+        point({
+          input_tokens: 1,
+          output_tokens: 20,
+          cache_read_input_tokens: 300,
+          cache_write_input_tokens: 4000,
+        }),
       ),
     ).toBe(4321);
   });

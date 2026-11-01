@@ -27,7 +27,12 @@ interface DropOverlayProps {
 // RENDER
 // ======================
 
-const DropOverlayComponent = ({ visible, title, subtitle, icon }: DropOverlayProps): ReactElement | null => {
+const DropOverlayComponent = ({
+  visible,
+  title,
+  subtitle,
+  icon,
+}: DropOverlayProps): ReactElement | null => {
   if (!visible) return null;
 
   return createPortal(

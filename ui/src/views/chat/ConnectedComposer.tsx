@@ -9,20 +9,21 @@
 import type { ReactElement } from 'react';
 import { memo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useChatStore } from '@/store';
-import { useMediaCapabilities } from '@/contexts';
 import { Composer } from '@/components';
+import { useMediaCapabilities } from '@/contexts';
+import { useChatStore } from '@/store';
 
 const ConnectedComposerComponent = (): ReactElement => {
-  const { isLoading, sendMessage, guardInterrupt, selectedAgentMultimodal, agentLabel } = useChatStore(
-    useShallow((s) => ({
-      isLoading: s.isLoading,
-      sendMessage: s.sendMessage,
-      guardInterrupt: s.guardInterrupt,
-      selectedAgentMultimodal: s.selectedAgentMultimodal,
-      agentLabel: s.selectedAgentLabel,
-    })),
-  );
+  const { isLoading, sendMessage, guardInterrupt, selectedAgentMultimodal, agentLabel } =
+    useChatStore(
+      useShallow((s) => ({
+        isLoading: s.isLoading,
+        sendMessage: s.sendMessage,
+        guardInterrupt: s.guardInterrupt,
+        selectedAgentMultimodal: s.selectedAgentMultimodal,
+        agentLabel: s.selectedAgentLabel,
+      })),
+    );
   const { capabilities } = useMediaCapabilities();
 
   // The stop button is only shown while loading, so the guard always opens

@@ -217,14 +217,16 @@
   gap: 10px;
   margin-left: 12px;
   padding: 6px 0 6px 22px;
-  border-left: 2px solid color-mix(in srgb, var(--agent, var(--sc-border-secondary)) 28%, transparent);
+  border-left: 2px solid
+    color-mix(in srgb, var(--agent, var(--sc-border-secondary)) 28%, transparent);
 }
 
 /* A folded run keeps a short stretch of its rail between head and foot. */
 .runBodyCollapsed {
   height: 10px;
   margin-left: 12px;
-  border-left: 2px dashed color-mix(in srgb, var(--agent, var(--sc-border-secondary)) 40%, transparent);
+  border-left: 2px dashed
+    color-mix(in srgb, var(--agent, var(--sc-border-secondary)) 40%, transparent);
 }
 
 .runFoot {
@@ -283,7 +285,9 @@
 }
 
 @keyframes caretBlink {
-  to { visibility: hidden; }
+  to {
+    visibility: hidden;
+  }
 }
 
 /* ====== REASONING ====== */
@@ -319,7 +323,7 @@
   border-radius: 4px;
 }
 
-.reasoningLabel[data-state='closed'] {
+.reasoningLabel[data-state="closed"] {
   margin-bottom: 0;
 }
 
@@ -328,7 +332,7 @@
   transition: transform 0.15s;
 }
 
-.reasoningLabel[data-state='closed'] .reasoningChevron {
+.reasoningLabel[data-state="closed"] .reasoningChevron {
   transform: rotate(-90deg);
 }
 

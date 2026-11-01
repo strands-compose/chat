@@ -51,7 +51,9 @@
   border-left: 1px solid var(--sc-border-primary);
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .segment:first-child {

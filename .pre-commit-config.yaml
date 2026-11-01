@@ -33,6 +33,19 @@ repos:
       - id: ruff          # lint  — commit + push
       - id: ruff-format   # format — commit + push
 
+  # UI: Biome formats, sorts imports and lints ui/ with ui/biome.jsonc.
+  # Runs inside ui/ (its config and node_modules live there) on the whole UI,
+  # which takes under a second; needs `npm ci` in ui/ once.
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: biome check (ui)
+        entry: npm --prefix ui run format
+        language: system
+        files: ^ui/
+        types_or: [javascript, jsx, ts, tsx, json, css]
+        pass_filenames: false
+
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:

@@ -10,20 +10,26 @@
  * `echarts` prop; import `ECOption` for option typing.
  */
 
-import * as echarts from 'echarts/core';
-import { BarChart, LineChart } from 'echarts/charts';
-import { GridComponent, LegendComponent, TooltipComponent, DataZoomComponent, DataZoomInsideComponent } from 'echarts/components';
-import { LegacyGridContainLabel } from 'echarts/features';
-import { CanvasRenderer } from 'echarts/renderers';
-import ReactEChartsCoreImport from 'echarts-for-react/lib/core';
 import type { BarSeriesOption, LineSeriesOption } from 'echarts/charts';
+import { BarChart, LineChart } from 'echarts/charts';
 import type {
+  DataZoomComponentOption,
   GridComponentOption,
   LegendComponentOption,
   TooltipComponentOption,
-  DataZoomComponentOption,
+} from 'echarts/components';
+import {
+  DataZoomComponent,
+  DataZoomInsideComponent,
+  GridComponent,
+  LegendComponent,
+  TooltipComponent,
 } from 'echarts/components';
 import type { ComposeOption } from 'echarts/core';
+import * as echarts from 'echarts/core';
+import { LegacyGridContainLabel } from 'echarts/features';
+import { CanvasRenderer } from 'echarts/renderers';
+import ReactEChartsCoreImport from 'echarts-for-react/lib/core';
 
 echarts.use([
   BarChart,

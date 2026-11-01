@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 // api.ts reads the app-base meta tag when imported, so it needs a DOM.
-import { afterEach, describe, expect, it, vi } from 'vitest';
+
 import fc from 'fast-check';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Attachment, BackendStreamEvent, ChatStreamEvent } from '@/types';
 import { mapBackendEvent, streamChat } from './api';
 
@@ -39,7 +40,9 @@ function chunkedResponse(bytes: Uint8Array, cuts: number[]): Response {
 }
 
 function stubFetch(response: () => Response): ReturnType<typeof vi.fn> {
-  const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () => response());
+  const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () =>
+    response(),
+  );
   vi.stubGlobal('fetch', fetchMock);
   return fetchMock;
 }
@@ -130,7 +133,11 @@ describe('streamChat framing', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     stubFetch(() =>
       textResponse(
-        [frame('token', { text: 'before' }), 'data: {not json\n\n', frame('token', { text: 'after' })].join(''),
+        [
+          frame('token', { text: 'before' }),
+          'data: {not json\n\n',
+          frame('token', { text: 'after' }),
+        ].join(''),
       ),
     );
 
@@ -162,7 +169,9 @@ describe('streamChat framing', () => {
 
   it('drops events with an unknown type and continues', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    stubFetch(() => textResponse([frame('brand_new', {}), frame('token', { text: 'ok' })].join('')));
+    stubFetch(() =>
+      textResponse([frame('brand_new', {}), frame('token', { text: 'ok' })].join('')),
+    );
 
     const events = await collect(streamChat(REQUEST, ''));
 
@@ -231,14 +240,20 @@ describe('streamChat request', () => {
 
   it('posts multipart with a payload part and one file:<i> part per attachment', async () => {
     const fetchMock = stubFetch(() => textResponse(''));
-    const attachments = [makeAttachment('a', 'notes.txt', 'first'), makeAttachment('b', 'todo.txt', 'second')];
+    const attachments = [
+      makeAttachment('a', 'notes.txt', 'first'),
+      makeAttachment('b', 'todo.txt', 'second'),
+    ];
 
     await collect(streamChat(REQUEST, 'session-1', attachments));
 
     const body = lastInit(fetchMock).body;
     expect(body).toBeInstanceOf(FormData);
     const form = body as FormData;
-    expect(JSON.parse(form.get('payload') as string)).toEqual({ ...REQUEST, session_id: 'session-1' });
+    expect(JSON.parse(form.get('payload') as string)).toEqual({
+      ...REQUEST,
+      session_id: 'session-1',
+    });
     const first = form.get('file:0') as File;
     const second = form.get('file:1') as File;
     expect(first.name).toBe('notes.txt');
@@ -279,7 +294,11 @@ describe('streamChat request', () => {
 // ====== mapBackendEvent ======
 
 describe('mapBackendEvent', () => {
-  const raw = (type: string, data: Record<string, unknown> = {}, agent_name = 'main'): BackendStreamEvent => ({
+  const raw = (
+    type: string,
+    data: Record<string, unknown> = {},
+    agent_name = 'main',
+  ): BackendStreamEvent => ({
     type,
     agent_name,
     timestamp: 't',
@@ -301,14 +320,27 @@ describe('mapBackendEvent', () => {
 
   it('maps tool_start with name, id and input', () => {
     expect(
-      mapBackendEvent(raw('tool_start', { tool_name: 'search', tool_use_id: 'u1', tool_input: { q: 'x' } })),
-    ).toEqual({ type: 'tool_start', name: 'search', tool_use_id: 'u1', input: { q: 'x' }, agent_name: 'main' });
+      mapBackendEvent(
+        raw('tool_start', { tool_name: 'search', tool_use_id: 'u1', tool_input: { q: 'x' } }),
+      ),
+    ).toEqual({
+      type: 'tool_start',
+      name: 'search',
+      tool_use_id: 'u1',
+      input: { q: 'x' },
+      agent_name: 'main',
+    });
   });
 
   it('maps tool_end with name, id, output and status', () => {
     expect(
       mapBackendEvent(
-        raw('tool_end', { tool_name: 'search', tool_use_id: 'u1', tool_result: 'found', status: 'error' }),
+        raw('tool_end', {
+          tool_name: 'search',
+          tool_use_id: 'u1',
+          tool_result: 'found',
+          status: 'error',
+        }),
       ),
     ).toEqual({
       type: 'tool_end',
@@ -406,7 +438,9 @@ describe('mapBackendEvent', () => {
 
   it('takes the session_start agent from data.entry.name and the session id from data', () => {
     expect(
-      mapBackendEvent(raw('session_start', { session_id: 's1', entry: { name: 'entry_agent' } }, 'other')),
+      mapBackendEvent(
+        raw('session_start', { session_id: 's1', entry: { name: 'entry_agent' } }, 'other'),
+      ),
     ).toEqual({ type: 'session_start', agent_name: 'entry_agent', session_id: 's1' });
   });
 

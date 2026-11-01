@@ -9,13 +9,13 @@
 
 import type { ComponentProps, ReactElement } from 'react';
 import { memo, useCallback, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import type { Components, ExtraProps } from 'react-markdown';
 import { LuCheck, LuCopy } from 'react-icons/lu';
+import type { Components, ExtraProps } from 'react-markdown';
+import ReactMarkdown from 'react-markdown';
 import { cn } from '@/services/utils';
-import { REMARK_PLUGINS, REHYPE_PLUGINS } from './plugins';
-import { highlightToHtml } from './syntaxHighlighter';
 import styles from './Markdown.module.css';
+import { REHYPE_PLUGINS, REMARK_PLUGINS } from './plugins';
+import { highlightToHtml } from './syntaxHighlighter';
 
 type CodeProps = ComponentProps<'code'> & ExtraProps;
 
@@ -49,11 +49,20 @@ const LANGUAGE_LABELS: Record<string, string> = {
  * don't change the code (e.g. toggling the copy button) skip re-highlighting.
  */
 const HighlightedCode = memo(
-  ({ code, language, fallback }: { code: string; language: string; fallback: ReactElement }): ReactElement => {
+  ({
+    code,
+    language,
+    fallback,
+  }: {
+    code: string;
+    language: string;
+    fallback: ReactElement;
+  }): ReactElement => {
     const html = highlightToHtml(code, language);
     if (html === null) return fallback;
     return (
       <pre className={styles.codeBlockFallback}>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: highlighter output, escaped by hast-util-to-html; never raw agent HTML. */}
         <code className={styles.codeTokens} dangerouslySetInnerHTML={{ __html: html }} />
       </pre>
     );
@@ -66,8 +75,7 @@ const CodeBlockComponent = ({ className, children, ...props }: CodeProps): React
   // ======================
   const [copied, setCopied] = useState(false);
   const match = /language-(\w+)/.exec(className || '');
-  const inline =
-    !props.node || props.node.position?.start.line === props.node.position?.end.line;
+  const inline = !props.node || props.node.position?.start.line === props.node.position?.end.line;
 
   // ======================
   // HANDLERS
@@ -99,7 +107,9 @@ const CodeBlockComponent = ({ className, children, ...props }: CodeProps): React
   return (
     <div className={styles.codeBlockWrapper}>
       <div className={styles.codeBlockHeader}>
-        <span className={styles.codeBlockLang}>{LANGUAGE_LABELS[match[1].toLowerCase()] ?? match[1]}</span>
+        <span className={styles.codeBlockLang}>
+          {LANGUAGE_LABELS[match[1].toLowerCase()] ?? match[1]}
+        </span>
         <button
           className={styles.codeBlockCopy}
           onClick={handleCopy}
@@ -116,7 +126,11 @@ const CodeBlockComponent = ({ className, children, ...props }: CodeProps): React
 };
 
 // Wraps tables so the rounded border can clip them and wide tables can scroll.
-const TableWrapper = ({ children, node, ...props }: ComponentProps<'table'> & ExtraProps): ReactElement => {
+const TableWrapper = ({
+  children,
+  node,
+  ...props
+}: ComponentProps<'table'> & ExtraProps): ReactElement => {
   void node; // react-markdown's AST node must not reach the DOM.
   return (
     <div className={styles.tableWrap}>
@@ -134,13 +148,21 @@ const isVideoUrl = (src: string): boolean => VIDEO_EXTENSION.test(src.split(/[?#
 // Wraps images (and videos written with image syntax) so they never exceed the
 // message width and keep their aspect ratio. A <span> because markdown images
 // sit inside a <p>, where a <div> is invalid HTML.
-const MediaWrapper = ({ node, alt, src, ...props }: ComponentProps<'img'> & ExtraProps): ReactElement => {
+const MediaWrapper = ({
+  node,
+  alt,
+  src,
+  ...props
+}: ComponentProps<'img'> & ExtraProps): ReactElement => {
   void node; // react-markdown's AST node must not reach the DOM.
   const renderMedia = (): ReactElement => {
     if (typeof src === 'string' && isVideoUrl(src)) {
       return (
+        // biome-ignore lint/a11y/useMediaCaption: the video comes from agent output, which never ships captions.
         <video src={src} title={alt} controls preload="metadata">
-          <a href={src} target="_blank" rel="noopener noreferrer">{alt || src}</a>
+          <a href={src} target="_blank" rel="noopener noreferrer">
+            {alt || src}
+          </a>
         </video>
       );
     }

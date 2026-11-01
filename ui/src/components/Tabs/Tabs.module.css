@@ -33,7 +33,9 @@
   cursor: pointer;
   position: relative;
   outline: none;
-  transition: color 0.12s ease, background-color 0.12s ease;
+  transition:
+    color 0.12s ease,
+    background-color 0.12s ease;
   /* Bottom border sits on top of the list border to act as the active marker. */
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
@@ -49,7 +51,7 @@
   border-radius: 4px 4px 0 0;
 }
 
-.trigger[data-state='active'] {
+.trigger[data-state="active"] {
   color: var(--sc-text-primary);
   border-bottom-color: var(--sc-accent);
 }
@@ -66,6 +68,6 @@
   outline: none;
 }
 
-.content[data-state='inactive'] {
+.content[data-state="inactive"] {
   display: none;
 }

@@ -1,7 +1,12 @@
-import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from 'react';
-import { memo, useCallback, useRef, useState } from 'react';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import * as RadixDialog from '@radix-ui/react-dialog';
+import type {
+  CSSProperties,
+  ReactElement,
+  ReactNode,
+  PointerEvent as ReactPointerEvent,
+} from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { FiMaximize2, FiMinimize2, FiX } from 'react-icons/fi';
 import { cn } from '@/services/utils';
 import styles from './Dialog.module.css';
@@ -265,9 +270,7 @@ const DialogComponent = ({
           {renderHeader()}
 
           {description && (
-            <Radix.Description className={styles.srOnly}>
-              {description}
-            </Radix.Description>
+            <Radix.Description className={styles.srOnly}>{description}</Radix.Description>
           )}
 
           <div className={cn(styles.body, floating && styles.bodyFill)}>{children}</div>

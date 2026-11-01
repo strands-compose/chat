@@ -16,7 +16,9 @@
   background: var(--sc-bg-primary);
   box-shadow: var(--sc-shadow-2);
   overflow: hidden;
-  transition: border-color 0.15s, box-shadow 0.2s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.2s;
 }
 
 .form:focus-within {
@@ -94,7 +96,9 @@
   border-radius: 50%;
   color: var(--sc-on-accent);
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
   flex-shrink: 0;
 }
 
@@ -129,7 +133,9 @@
   border-radius: 50%;
   color: var(--sc-bg-primary);
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
   flex-shrink: 0;
 }
 
@@ -159,11 +165,13 @@
   color: var(--sc-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .plusButton:hover:not(:disabled),
-.plusButton[data-state='open'] {
+.plusButton[data-state="open"] {
   background: var(--sc-bg-hover);
   color: var(--sc-text-primary);
 }

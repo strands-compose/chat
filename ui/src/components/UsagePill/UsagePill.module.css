@@ -57,8 +57,13 @@
   cursor: pointer;
 }
 
+.chevron {
+  color: var(--sc-text-tertiary);
+  transition: transform 0.15s;
+}
+
 .tokenButton:hover .chevron,
-.tokenButton[data-state='open'] .chevron {
+.tokenButton[data-state="open"] .chevron {
   color: var(--sc-text-primary);
 }
 
@@ -68,12 +73,7 @@
   border-radius: var(--sc-radius-pill);
 }
 
-.chevron {
-  color: var(--sc-text-tertiary);
-  transition: transform 0.15s;
-}
-
-.tokenButton[data-state='open'] .chevron {
+.tokenButton[data-state="open"] .chevron {
   transform: rotate(180deg);
 }
 

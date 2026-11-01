@@ -22,7 +22,9 @@
   height: 32px;
 }
 
-.trigger:hover { border-color: var(--sc-text-tertiary); }
+.trigger:hover {
+  border-color: var(--sc-text-tertiary);
+}
 
 .trigger:focus-visible {
   outline: none;
@@ -31,7 +33,10 @@
 }
 
 .triggerIcon,
-.triggerChevron { color: var(--sc-text-tertiary); flex-shrink: 0; }
+.triggerChevron {
+  color: var(--sc-text-tertiary);
+  flex-shrink: 0;
+}
 
 /* ── Popover card ── */
 .popover {
@@ -44,10 +49,15 @@
   animation: popIn 0.12s ease-out;
 }
 
-
 @keyframes popIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Panel layout (sidebar | calendar area) ── */
@@ -82,7 +92,9 @@
   transition: background-color 0.1s ease;
 }
 
-.presetBtn:hover { background: var(--sc-bg-secondary); }
+.presetBtn:hover {
+  background: var(--sc-bg-secondary);
+}
 
 .presetBtn:focus-visible {
   outline: none;
@@ -118,7 +130,9 @@
   transition: background-color 0.1s ease;
 }
 
-.navBtn:hover { background: var(--sc-bg-secondary); }
+.navBtn:hover {
+  background: var(--sc-bg-secondary);
+}
 
 /* ── Two months side by side ── */
 .months {
@@ -170,7 +184,7 @@
 
 /* Mid-range fill spans the full cell width */
 .dayCellInRange::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 4px 0;
   background: color-mix(in srgb, transparent 80%, var(--sc-accent) 20%);
@@ -179,7 +193,7 @@
 
 /* Start cap: fill only right half */
 .dayCellStart::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 4px 0 4px 50%;
   background: color-mix(in srgb, transparent 80%, var(--sc-accent) 20%);
@@ -188,7 +202,7 @@
 
 /* End cap: fill only left half */
 .dayCellEnd::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 4px 50% 4px 0;
   background: color-mix(in srgb, transparent 80%, var(--sc-accent) 20%);
@@ -231,7 +245,9 @@
 }
 
 /* Empty cells (leading/trailing) */
-.dayEmpty { height: 32px; }
+.dayEmpty {
+  height: 32px;
+}
 
 /* ── Hint text while picking ── */
 .hint {

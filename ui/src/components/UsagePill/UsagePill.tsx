@@ -8,9 +8,9 @@
  * The only tooltip is the caller's `title`, so nested tooltips never compete.
  */
 
+import * as RadixPopover from '@radix-ui/react-popover';
 import type { ReactElement } from 'react';
 import { memo } from 'react';
-import * as RadixPopover from '@radix-ui/react-popover';
 import { LuChevronDown, LuCircleDollarSign } from 'react-icons/lu';
 import { cn, formatCost, formatTokenCount } from '@/services/utils';
 import styles from './UsagePill.module.css';
@@ -111,6 +111,7 @@ const UsagePillComponent = ({
   };
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: an inline pill; a <fieldset> is a block form container.
     <span className={cn(styles.pill, styles[size])} role="group" aria-label={title} title={title}>
       {renderCost()}
       {renderTokens()}

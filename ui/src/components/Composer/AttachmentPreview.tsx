@@ -2,8 +2,8 @@ import type { ReactElement } from 'react';
 import { memo, useState } from 'react';
 import type { Attachment } from '@/types/api';
 import { AttachmentChip } from './AttachmentChip';
-import { AttachmentViewerDialog } from './AttachmentViewerDialog';
 import styles from './AttachmentPreview.module.css';
+import { AttachmentViewerDialog } from './AttachmentViewerDialog';
 
 interface AttachmentPreviewProps {
   attachments: Attachment[];
@@ -35,10 +35,7 @@ const AttachmentPreviewComponent = ({
           onOpen={setPreviewId}
         />
       ))}
-      <AttachmentViewerDialog
-        attachment={previewAttachment}
-        onClose={() => setPreviewId(null)}
-      />
+      <AttachmentViewerDialog attachment={previewAttachment} onClose={() => setPreviewId(null)} />
     </div>
   );
 };

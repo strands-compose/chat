@@ -1,30 +1,30 @@
 import type { ReactElement } from 'react';
-import { memo, useState, useCallback, useId, useMemo } from 'react';
+import { memo, useCallback, useId, useMemo, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
-import { useTheme } from '@/contexts';
 import {
-  Spinner,
-  Segmented,
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
+  Segmented,
+  Spinner,
 } from '@/components';
+import type { ECOption } from '@/components/charts';
 import {
-  echarts,
-  ReactECharts,
-  readChartColors,
   axisDefaults,
   buildGrid,
   buildLegend,
-  buildTooltipBase,
   buildTimeTooltipFormatter,
+  buildTooltipBase,
   costAxisLabel,
-  intAxisLabel,
-  SERIES_COLORS,
+  echarts,
   formatBucketLabel,
+  intAxisLabel,
+  ReactECharts,
+  readChartColors,
+  SERIES_COLORS,
 } from '@/components/charts';
-import type { ECOption } from '@/components/charts';
+import { useTheme } from '@/contexts';
 import type { Interval, TimelineOut } from '@/types/analytics';
 import { useTimelineData } from './hooks/useTimelineData';
 import styles from './TimelineChart.module.css';
@@ -86,8 +86,14 @@ const TimelineChartComponent = (): ReactElement => {
   // ======================
 
   const handleIntervalChange = useCallback((value: Interval) => setInterval(value), []);
-  const handleMetricChange = useCallback((value: 'cost' | 'tokens' | 'hits') => setMetric(value), []);
-  const handleStackByChange = useCallback((value: 'none' | 'user' | 'agent' | 'group') => setStackBy(value), []);
+  const handleMetricChange = useCallback(
+    (value: 'cost' | 'tokens' | 'hits') => setMetric(value),
+    [],
+  );
+  const handleStackByChange = useCallback(
+    (value: 'none' | 'user' | 'agent' | 'group') => setStackBy(value),
+    [],
+  );
 
   // ======================
   // CHART OPTIONS
@@ -128,7 +134,9 @@ const TimelineChartComponent = (): ReactElement => {
         name: s.name,
         type: 'bar' as const,
         data: s.data,
-        itemStyle: { color: s.name === 'Other' ? colors.axisLabel : SERIES_COLORS[i % SERIES_COLORS.length] },
+        itemStyle: {
+          color: s.name === 'Other' ? colors.axisLabel : SERIES_COLORS[i % SERIES_COLORS.length],
+        },
         ...(stackBy !== 'none' ? { stack: 'total' } : {}),
       })),
     } as ECOption;
@@ -140,20 +148,38 @@ const TimelineChartComponent = (): ReactElement => {
 
   const renderControls = (): ReactElement => (
     <div className={styles.controls}>
-      <span id={titleId} className={styles.chartTitle}>Usage Over Time</span>
+      <span id={titleId} className={styles.chartTitle}>
+        Usage Over Time
+      </span>
       <div className={styles.spacer} />
-      <Segmented options={INTERVAL_OPTIONS} active={interval} onSelect={handleIntervalChange} label="Interval" />
-      <Segmented options={METRIC_OPTIONS} active={metric} onSelect={handleMetricChange} label="Metric" />
+      <Segmented
+        options={INTERVAL_OPTIONS}
+        active={interval}
+        onSelect={handleIntervalChange}
+        label="Interval"
+      />
+      <Segmented
+        options={METRIC_OPTIONS}
+        active={metric}
+        onSelect={handleMetricChange}
+        label="Metric"
+      />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button type="button" className={styles.stackTrigger}>
-            <span>Stack by: {STACK_BY_OPTIONS.find((o) => o.value === stackBy)?.label ?? 'None'}</span>
+            <span>
+              Stack by: {STACK_BY_OPTIONS.find((o) => o.value === stackBy)?.label ?? 'None'}
+            </span>
             <FiChevronDown size={14} className={styles.stackChevron} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           {STACK_BY_OPTIONS.map((opt) => (
-            <DropdownMenuItem key={opt.value} isChecked={opt.value === stackBy} onSelect={() => handleStackByChange(opt.value)}>
+            <DropdownMenuItem
+              key={opt.value}
+              isChecked={opt.value === stackBy}
+              onSelect={() => handleStackByChange(opt.value)}
+            >
               {opt.label}
             </DropdownMenuItem>
           ))}
@@ -169,7 +195,11 @@ const TimelineChartComponent = (): ReactElement => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             {MAX_SERIES_OPTIONS.map((n) => (
-              <DropdownMenuItem key={n} isChecked={n === maxSeries} onSelect={() => setMaxSeries(n)}>
+              <DropdownMenuItem
+                key={n}
+                isChecked={n === maxSeries}
+                onSelect={() => setMaxSeries(n)}
+              >
                 {n}
               </DropdownMenuItem>
             ))}
@@ -202,7 +232,11 @@ const TimelineChartComponent = (): ReactElement => {
     <section className={styles.root} aria-labelledby={titleId}>
       {renderControls()}
       <div className={styles.chartWrapper}>
-        {isLoading && <div className={styles.overlay}><Spinner /></div>}
+        {isLoading && (
+          <div className={styles.overlay}>
+            <Spinner />
+          </div>
+        )}
         {renderChart()}
       </div>
     </section>

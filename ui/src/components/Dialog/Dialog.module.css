@@ -9,7 +9,6 @@
   background: var(--sc-scrim);
 }
 
-
 .dialog {
   position: fixed;
   top: 50%;
@@ -28,7 +27,6 @@
   gap: 1rem;
   user-select: none;
 }
-
 
 /* Floating mode: top-left anchored (position/size come from inline styles),
    no transform recentering so drag/resize track the cursor. */
@@ -95,7 +93,9 @@
   padding: 4px;
   color: var(--sc-text-tertiary);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .iconBtn:hover {
@@ -151,7 +151,7 @@
 }
 
 .resizeHandle::after {
-  content: '';
+  content: "";
   position: absolute;
   right: 7px;
   bottom: 7px;

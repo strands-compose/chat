@@ -8,30 +8,29 @@
  * neither ends up in the shipped bundle.
  */
 
-import type { ChatRequest, ChatStreamEvent, MediaCapabilities, Attachment } from '../types';
 import type { MeUsageOut, MeUsagePoint } from '@/types/analytics';
+import type { Attachment, ChatRequest, ChatStreamEvent, MediaCapabilities } from '../types';
 import type {
   Agent,
-  Session,
+  AuthProvidersResponse,
   CurrentUser,
   LoginCredentials,
   LoginResult,
+  ProfilePatchPayload,
   RegisterPayload,
+  Session,
   SessionMessage,
   SessionUsageSummary,
-  AuthProvidersResponse,
-  ProfilePatchPayload,
 } from './api';
 import { mapBackendEvent } from './api';
-import { readAppBase } from './utils';
-
-import { me as meFixture } from './demo-fixtures/me';
 import { agents as agentsFixture } from './demo-fixtures/agents';
+import { capabilities as capabilitiesFixture } from './demo-fixtures/capabilities';
+import { events as DEMO_EVENTS } from './demo-fixtures/events';
+import { me as meFixture } from './demo-fixtures/me';
+import { messages as messagesFixture } from './demo-fixtures/messages';
 import { sessions as sessionsFixture } from './demo-fixtures/sessions';
 import { usage as usageFixture } from './demo-fixtures/usage';
-import { capabilities as capabilitiesFixture } from './demo-fixtures/capabilities';
-import { messages as messagesFixture } from './demo-fixtures/messages';
-import { events as DEMO_EVENTS } from './demo-fixtures/events';
+import { readAppBase } from './utils';
 
 // ====== RE-EXPORTS ======
 
@@ -142,7 +141,13 @@ function dailyUsage(date: Date): UsageDay {
 
   const t = date.getTime();
   if (t < windowStart.getTime() || t > today.getTime()) {
-    return { cost: 0, input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, cache_write_input_tokens: 0 };
+    return {
+      cost: 0,
+      input_tokens: 0,
+      output_tokens: 0,
+      cache_read_input_tokens: 0,
+      cache_write_input_tokens: 0,
+    };
   }
 
   const rnd = mulberry32(hashStr(toYMD(date)));

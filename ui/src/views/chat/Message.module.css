@@ -185,7 +185,10 @@
   font-weight: 500;
   color: var(--sc-text-secondary);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .workflowButton:hover:not(:disabled) {
@@ -216,8 +219,13 @@
 }
 
 @keyframes livePulse {
-  0%, 100% { opacity: 0.45; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ====== COLLAPSED ====== */
@@ -272,15 +280,19 @@
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
-          background-clip: text;
+  background-clip: text;
   color: transparent;
   animation: shimmer 2s linear infinite;
   width: fit-content;
 }
 
 @keyframes shimmer {
-  from { background-position: 100% 0; }
-  to { background-position: -100% 0; }
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
 }
 
 .activity {

@@ -15,10 +15,10 @@
 import type { ReactElement } from 'react';
 import { memo, useCallback, useEffect } from 'react';
 import { LuCircleAlert, LuCircleHelp } from 'react-icons/lu';
-import { useChatStore } from '@/store';
 import { Button, IconButton } from '@/components';
 import { useAppConfig } from '@/contexts';
 import { isMobileViewport } from '@/services/utils';
+import { useChatStore } from '@/store';
 import { AgentSelector } from './AgentSelector';
 import { ConnectedComposer } from './ConnectedComposer';
 import styles from './WelcomeView.module.css';
@@ -58,11 +58,7 @@ const WelcomeViewComponent = (): ReactElement => {
     else closeDescriptionPanel();
   }, [descriptionPanelClosed, openDescriptionPanel, closeDescriptionPanel]);
 
-  const handleChip = useCallback(
-    (text: string) => () => sendMessage(text),
-    [sendMessage],
-  );
-
+  const handleChip = useCallback((text: string) => () => sendMessage(text), [sendMessage]);
 
   // ======================
   // RENDER FUNCTIONS

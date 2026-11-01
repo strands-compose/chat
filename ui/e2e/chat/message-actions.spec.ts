@@ -1,11 +1,12 @@
 import type { Page } from '@playwright/test';
-import { test, expect } from '../support/test';
-import type { FakeBackend } from '../support/fake-backend';
 import { makeExchange, makeSession } from '../support/data';
+import type { FakeBackend } from '../support/fake-backend';
+import { expect, test } from '../support/test';
 
 const QUESTION = 'Summarise Q3';
 const ANSWER = 'Revenue grew 12%.\n\nMargins improved on cost cuts.';
-const CODE_ANSWER = 'Run this command:\n\n```bash\necho "hello world"\n```\n\nThen check the output.';
+const CODE_ANSWER =
+  'Run this command:\n\n```bash\necho "hello world"\n```\n\nThen check the output.';
 
 /** Open a stored session whose single exchange is `question` → `answer`. */
 async function openExchange(
@@ -24,7 +25,8 @@ test.describe('copying', () => {
 
   test('Copy message puts the message text on the clipboard', async ({ page, backend }) => {
     await openExchange({ page, backend }, QUESTION, ANSWER);
-    const readClipboard = (): Promise<string> => page.evaluate(() => navigator.clipboard.readText());
+    const readClipboard = (): Promise<string> =>
+      page.evaluate(() => navigator.clipboard.readText());
     const yours = page.getByRole('article', { name: 'You said' });
     const assistant = page.getByRole('article', { name: 'Assistant said' });
     await expect(yours.getByText(QUESTION)).toBeVisible();
@@ -56,7 +58,10 @@ test.describe('copying', () => {
   });
 });
 
-test('Collapse all messages hides message bodies and Expand all messages shows them again', async ({ page, backend }) => {
+test('Collapse all messages hides message bodies and Expand all messages shows them again', async ({
+  page,
+  backend,
+}) => {
   await openExchange({ page, backend }, QUESTION, ANSWER);
   const assistant = page.getByRole('article', { name: 'Assistant said' });
   const detail = assistant.getByText('Margins improved on cost cuts.');
@@ -91,7 +96,9 @@ test('the full-width choice survives a reload', async ({ page, backend }) => {
 
     await page.reload();
 
-    await expect(page.getByRole('article', { name: 'Assistant said' }).getByText('Revenue grew 12%.')).toBeVisible();
+    await expect(
+      page.getByRole('article', { name: 'Assistant said' }).getByText('Revenue grew 12%.'),
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Use full width' })).toBeVisible();
   });
 

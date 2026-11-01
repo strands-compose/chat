@@ -8,12 +8,12 @@
 
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { DateRangePicker, MultiSelect, Skeleton } from '@/components';
 import type { MultiSelectOption } from '@/components';
-import { getFilters } from '@/services/adminApi';
+import { DateRangePicker, MultiSelect, Skeleton } from '@/components';
 import { useAsyncData } from '@/hooks';
-import { useAdminFilters } from './hooks/useAdminFilters';
+import { getFilters } from '@/services/adminApi';
 import styles from './FilterPanel.module.css';
+import { useAdminFilters } from './hooks/useAdminFilters';
 
 // ======================
 // COMPONENT
@@ -62,9 +62,15 @@ const FilterPanelComponent = (): ReactElement => {
       return (
         <>
           <DateRangePicker from={dateRange.from} to={dateRange.to} onChange={setDateRange} />
-          <div className={styles.selectWrap}><Skeleton height="2rem" /></div>
-          <div className={styles.selectWrap}><Skeleton height="2rem" /></div>
-          <div className={styles.selectWrap}><Skeleton height="2rem" /></div>
+          <div className={styles.selectWrap}>
+            <Skeleton height="2rem" />
+          </div>
+          <div className={styles.selectWrap}>
+            <Skeleton height="2rem" />
+          </div>
+          <div className={styles.selectWrap}>
+            <Skeleton height="2rem" />
+          </div>
         </>
       );
     }
@@ -72,13 +78,31 @@ const FilterPanelComponent = (): ReactElement => {
       <>
         <DateRangePicker from={dateRange.from} to={dateRange.to} onChange={setDateRange} />
         <div className={styles.selectWrap}>
-          <MultiSelect label="Users" options={userOptions} value={userIds} onChange={setUserIds} filterable />
+          <MultiSelect
+            label="Users"
+            options={userOptions}
+            value={userIds}
+            onChange={setUserIds}
+            filterable
+          />
         </div>
         <div className={styles.selectWrap}>
-          <MultiSelect label="Agents" options={agentOptions} value={agentIds} onChange={setAgentIds} filterable />
+          <MultiSelect
+            label="Agents"
+            options={agentOptions}
+            value={agentIds}
+            onChange={setAgentIds}
+            filterable
+          />
         </div>
         <div className={styles.selectWrap}>
-          <MultiSelect label="Groups" options={groupOptions} value={groupIds} onChange={setGroupIds} filterable />
+          <MultiSelect
+            label="Groups"
+            options={groupOptions}
+            value={groupIds}
+            onChange={setGroupIds}
+            filterable
+          />
         </div>
       </>
     );

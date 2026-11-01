@@ -1,6 +1,6 @@
+import * as Radix from '@radix-ui/react-dropdown-menu';
 import type { ReactElement, ReactNode } from 'react';
 import { memo } from 'react';
-import * as Radix from '@radix-ui/react-dropdown-menu';
 import { cn } from '@/services/utils';
 import styles from './DropdownMenu.module.css';
 
@@ -34,11 +34,7 @@ const DropdownMenuContentComponent = ({
   className,
 }: DropdownMenuContentProps): ReactElement => (
   <Radix.Portal>
-    <Radix.Content
-      className={cn(styles.content, className)}
-      align={align}
-      sideOffset={sideOffset}
-    >
+    <Radix.Content className={cn(styles.content, className)} align={align} sideOffset={sideOffset}>
       {children}
     </Radix.Content>
   </Radix.Portal>

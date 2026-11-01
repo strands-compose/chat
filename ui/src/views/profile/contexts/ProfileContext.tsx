@@ -14,12 +14,12 @@
 
 import type { ReactElement, ReactNode } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { fetchUserUsageSummary } from '@/services/api';
 import { useAsyncData } from '@/hooks';
+import { fetchUserUsageSummary } from '@/services/api';
 import { endOfCurrentMonth, startOfCurrentMonth, toDateParam } from '@/services/utils';
 import type { ChartMode, DateRange, Interval } from '@/types/analytics';
-import { ProfileContext } from '../hooks/useProfileContext';
 import type { ProfileContextValue } from '../hooks/useProfileContext';
+import { ProfileContext } from '../hooks/useProfileContext';
 
 // ======================
 // HELPERS
@@ -50,12 +50,7 @@ const ProfileProviderComponent = ({ children }: ProfileProviderProps): ReactElem
 
   // ── Usage dashboard data — refetches when dateRange or interval changes ──
   const { data: usageData, isLoading: isUsageLoading } = useAsyncData(
-    () =>
-      fetchUserUsageSummary(
-        toDateParam(dateRange.from),
-        toDateParam(dateRange.to),
-        interval,
-      ),
+    () => fetchUserUsageSummary(toDateParam(dateRange.from), toDateParam(dateRange.to), interval),
     [dateRange, interval],
   );
 
@@ -84,18 +79,20 @@ const ProfileProviderComponent = ({ children }: ProfileProviderProps): ReactElem
       isCurrentMonthLoading,
     }),
     [
-      interval, chartMode, dateRange,
-      setInterval, setChartMode, setDateRange,
-      usageData, isUsageLoading,
-      currentMonthData, isCurrentMonthLoading,
+      interval,
+      chartMode,
+      dateRange,
+      setInterval,
+      setChartMode,
+      setDateRange,
+      usageData,
+      isUsageLoading,
+      currentMonthData,
+      isCurrentMonthLoading,
     ],
   );
 
-  return (
-    <ProfileContext.Provider value={value}>
-      {children}
-    </ProfileContext.Provider>
-  );
+  return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 };
 
 export const ProfileProvider = memo(ProfileProviderComponent);

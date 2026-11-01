@@ -1,9 +1,9 @@
-import type { ReactElement, ChangeEvent, KeyboardEvent } from 'react';
+import type { ChangeEvent, KeyboardEvent, ReactElement } from 'react';
 import { memo, useState } from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { Button } from '../Button';
-import { TextField } from '../TextField';
 import { Dialog } from '../Dialog';
+import { TextField } from '../TextField';
 
 interface RenameSessionDialogProps {
   open: boolean;
@@ -59,7 +59,9 @@ const RenameSessionDialogComponent = ({
   // ======================
   const renderActions = (): ReactElement => (
     <>
-      <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+      <Button variant="ghost" onClick={onCancel}>
+        Cancel
+      </Button>
       <Button variant="primary" onClick={handleConfirm} disabled={!title.trim()}>
         Rename
       </Button>

@@ -1,8 +1,8 @@
 import type { ReactElement, ReactNode } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import type { DateRange } from '@/types/analytics';
-import { AdminFiltersContext } from '../hooks/useAdminFilters';
 import type { AdminFiltersContextValue } from '../hooks/useAdminFilters';
+import { AdminFiltersContext } from '../hooks/useAdminFilters';
 
 // ======================
 // HELPERS
@@ -36,15 +36,20 @@ const AdminFiltersProviderComponent = ({ children }: AdminFiltersProviderProps):
   const setGroupIds = useCallback((ids: string[]) => setGroupIdsState(ids), []);
 
   const value = useMemo<AdminFiltersContextValue>(
-    () => ({ dateRange, userIds, agentIds, groupIds, setDateRange, setUserIds, setAgentIds, setGroupIds }),
+    () => ({
+      dateRange,
+      userIds,
+      agentIds,
+      groupIds,
+      setDateRange,
+      setUserIds,
+      setAgentIds,
+      setGroupIds,
+    }),
     [dateRange, userIds, agentIds, groupIds, setDateRange, setUserIds, setAgentIds, setGroupIds],
   );
 
-  return (
-    <AdminFiltersContext.Provider value={value}>
-      {children}
-    </AdminFiltersContext.Provider>
-  );
+  return <AdminFiltersContext.Provider value={value}>{children}</AdminFiltersContext.Provider>;
 };
 
 export const AdminFiltersProvider = memo(AdminFiltersProviderComponent);

@@ -11,8 +11,8 @@ import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import { memo, useState } from 'react';
 import { LuChevronDown, LuChevronUp, LuCircleAlert, LuCircleCheck, LuWrench } from 'react-icons/lu';
 import { cn } from '@/services/utils';
-import { toolInputPreview } from './toolInputPreview';
 import styles from './ToolBadge.module.css';
+import { toolInputPreview } from './toolInputPreview';
 
 // ======================
 // TYPES & CONSTANTS
@@ -120,7 +120,10 @@ const ToolBadgeComponent = ({
   );
 
   const renderInputObject = (inputData: Record<string, unknown>): ReactElement => {
-    const entries = Object.entries(inputData).map(([key, value]): [string, string] => [key, formatInputValue(value)]);
+    const entries = Object.entries(inputData).map(([key, value]): [string, string] => [
+      key,
+      formatInputValue(value),
+    ]);
     const isLong = entries.some(([, text]) => text.length > PREVIEW_LEN);
     return (
       <div className={styles.detailSection}>
@@ -133,7 +136,8 @@ const ToolBadgeComponent = ({
             </div>
           ))}
         </div>
-        {isLong && renderMoreLink(showFullInput, () => setShowFullInput((v) => !v), 'Show full input')}
+        {isLong &&
+          renderMoreLink(showFullInput, () => setShowFullInput((v) => !v), 'Show full input')}
       </div>
     );
   };
@@ -146,7 +150,8 @@ const ToolBadgeComponent = ({
         <pre className={cn(styles.pre, isLong && !showFullInput && styles.preClipped)}>
           {clipText(value, showFullInput)}
         </pre>
-        {isLong && renderMoreLink(showFullInput, () => setShowFullInput((v) => !v), 'Show full input')}
+        {isLong &&
+          renderMoreLink(showFullInput, () => setShowFullInput((v) => !v), 'Show full input')}
       </div>
     );
   };
@@ -171,10 +176,17 @@ const ToolBadgeComponent = ({
     return (
       <div className={styles.detailSection}>
         <div className={styles.detailLabel}>{isError ? 'Error' : 'Output'}</div>
-        <pre className={cn(styles.pre, isError && styles.preError, isLong && !showFullOutput && styles.preClipped)}>
+        <pre
+          className={cn(
+            styles.pre,
+            isError && styles.preError,
+            isLong && !showFullOutput && styles.preClipped,
+          )}
+        >
           {clipText(toolOutput, showFullOutput)}
         </pre>
-        {isLong && renderMoreLink(showFullOutput, () => setShowFullOutput((v) => !v), 'Show full output')}
+        {isLong &&
+          renderMoreLink(showFullOutput, () => setShowFullOutput((v) => !v), 'Show full output')}
       </div>
     );
   };
@@ -183,7 +195,9 @@ const ToolBadgeComponent = ({
     <div className={cn(styles.container, isError && styles.containerError)}>
       <button
         className={cn(styles.header, hasDetails && styles.clickable)}
-        onClick={() => { if (hasDetails) setIsExpanded((v) => !v); }}
+        onClick={() => {
+          if (hasDetails) setIsExpanded((v) => !v);
+        }}
         type="button"
         disabled={!hasDetails}
         aria-expanded={hasDetails ? isExpanded : undefined}

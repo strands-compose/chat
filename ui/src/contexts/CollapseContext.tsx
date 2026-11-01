@@ -3,7 +3,7 @@
  */
 
 import type { ReactElement, ReactNode } from 'react';
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 export interface CollapseContextValue {
   /** IDs of messages that are currently collapsed. */

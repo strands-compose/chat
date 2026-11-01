@@ -32,7 +32,7 @@
   background: var(--sc-bg-hover);
 }
 
-.item[data-state='checked'] {
+.item[data-state="checked"] {
   background: var(--sc-bg-hover);
   font-weight: 500;
 }

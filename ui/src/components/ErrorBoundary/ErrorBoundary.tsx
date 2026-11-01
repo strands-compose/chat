@@ -1,5 +1,5 @@
-import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
+import { Component } from 'react';
 import { FiAlertTriangle } from 'react-icons/fi';
 import styles from './ErrorBoundary.module.css';
 

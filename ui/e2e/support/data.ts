@@ -15,6 +15,10 @@ import type {
   SessionMessage,
   SessionUsageSummary,
 } from '@/services/api';
+import { agents as demoAgents } from '@/services/demo-fixtures/agents';
+import { capabilities as demoCapabilities } from '@/services/demo-fixtures/capabilities';
+import { me as demoUser } from '@/services/demo-fixtures/me';
+import { usage as demoUsage } from '@/services/demo-fixtures/usage';
 import type { MediaCapabilities } from '@/types';
 import type {
   BreakdownOut,
@@ -25,10 +29,6 @@ import type {
   SummaryOut,
   TimelineOut,
 } from '@/types/analytics';
-import { agents as demoAgents } from '@/services/demo-fixtures/agents';
-import { capabilities as demoCapabilities } from '@/services/demo-fixtures/capabilities';
-import { me as demoUser } from '@/services/demo-fixtures/me';
-import { usage as demoUsage } from '@/services/demo-fixtures/usage';
 
 // ====== IDS ======
 
@@ -50,7 +50,9 @@ export function makeUser(overrides: Partial<CurrentUser> = {}): CurrentUser {
   return { ...structuredClone(demoUser as CurrentUser), ...overrides };
 }
 
-export function makeProviders(overrides: Partial<AuthProvidersResponse> = {}): AuthProvidersResponse {
+export function makeProviders(
+  overrides: Partial<AuthProvidersResponse> = {},
+): AuthProvidersResponse {
   return { registration_enabled: false, local_signin_enabled: true, providers: [], ...overrides };
 }
 
@@ -82,7 +84,9 @@ export function makeSession(overrides: Partial<Session> = {}): Session {
   };
 }
 
-export function makeMessage(overrides: Partial<SessionMessage> & Pick<SessionMessage, 'role' | 'content' | 'seq'>): SessionMessage {
+export function makeMessage(
+  overrides: Partial<SessionMessage> & Pick<SessionMessage, 'role' | 'content' | 'seq'>,
+): SessionMessage {
   return { is_success: true, attachments: [], ...overrides };
 }
 
@@ -94,7 +98,9 @@ export function makeExchange(question: string, answer: string, firstSeq = 1): Se
   ];
 }
 
-export function makeSessionUsage(overrides: Partial<SessionUsageSummary> = {}): SessionUsageSummary {
+export function makeSessionUsage(
+  overrides: Partial<SessionUsageSummary> = {},
+): SessionUsageSummary {
   return { ...structuredClone(demoUsage), ...overrides };
 }
 
@@ -159,8 +165,24 @@ export function makeAnalytics(overrides: Partial<AnalyticsData> = {}): Analytics
       series: [{ name: 'total', values: [8, 4.5] }],
     },
     budgets: [
-      { user_id: 'user-alice', username: 'alice', spend: 8, budget: 10, pct_used: 80, status: 'warn', is_over: false },
-      { user_id: 'user-bob', username: 'bob', spend: 4.5, budget: 100, pct_used: 4.5, status: 'ok', is_over: false },
+      {
+        user_id: 'user-alice',
+        username: 'alice',
+        spend: 8,
+        budget: 10,
+        pct_used: 80,
+        status: 'warn',
+        is_over: false,
+      },
+      {
+        user_id: 'user-bob',
+        username: 'bob',
+        spend: 4.5,
+        budget: 100,
+        pct_used: 4.5,
+        status: 'ok',
+        is_over: false,
+      },
     ],
     ...overrides,
   };

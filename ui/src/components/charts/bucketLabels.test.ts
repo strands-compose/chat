@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
+import { describe, expect, it } from 'vitest';
 import { formatBucketLabel } from './bucketLabels';
 
 describe('formatBucketLabel', () => {
@@ -32,7 +32,9 @@ describe('formatBucketLabel', () => {
           expect(formatBucketLabel(`${year}-${mm}-${dd}`, 'daily')).toMatch(
             new RegExp(`^${day} [A-Z][a-z]{2} ${year}$`),
           );
-          expect(formatBucketLabel(`${year}-${mm}`, 'monthly')).toMatch(new RegExp(`^[A-Z][a-z]{2} ${year}$`));
+          expect(formatBucketLabel(`${year}-${mm}`, 'monthly')).toMatch(
+            new RegExp(`^[A-Z][a-z]{2} ${year}$`),
+          );
         },
       ),
     );

@@ -24,13 +24,11 @@ const SplitLayoutComponent = ({ rightOpen, left, right }: SplitLayoutProps): Rea
 
   return (
     <div className={cn(styles.splitContainer, rightOpen && styles.splitOpen)} ref={containerRef}>
-      <div
-        className={styles.leftPanel}
-        style={{ width: `${rightOpen ? leftPercent : 100}%` }}
-      >
+      <div className={styles.leftPanel} style={{ width: `${rightOpen ? leftPercent : 100}%` }}>
         {left}
       </div>
 
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: a pointer-only drag handle; the panels work at their default width. */}
       <div
         className={cn(styles.splitter, rightOpen && styles.splitterOpen)}
         onMouseDown={rightOpen ? onSplitterMouseDown : undefined}

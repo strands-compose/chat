@@ -26,6 +26,7 @@ import type {
 import type { AttachmentMetadata, BackendStreamEvent, MediaCapabilities } from '@/types';
 import type { MeUsageOut } from '@/types/analytics';
 import {
+  type AnalyticsData,
   makeAgent,
   makeAnalytics,
   makeCapabilities,
@@ -36,7 +37,6 @@ import {
   makeUsagePoint,
   makeUser,
   makeUserUsage,
-  type AnalyticsData,
 } from './data';
 import { sseBody, streamTurn } from './sse';
 
@@ -69,7 +69,9 @@ export interface InvocationBody {
 }
 
 /** Events for the next turns, or a function deciding them from the request. */
-export type Reply = readonly BackendStreamEvent[] | ((request: InvocationBody) => readonly BackendStreamEvent[]);
+export type Reply =
+  | readonly BackendStreamEvent[]
+  | ((request: InvocationBody) => readonly BackendStreamEvent[]);
 
 /** Holds the next invocation's response until released. */
 export interface Gate {
@@ -103,7 +105,11 @@ function problem(status: number, detail: string): Fulfilment {
 }
 
 function html(title: string): Fulfilment {
-  return { status: 200, contentType: 'text/html', body: `<!doctype html><title>${title}</title><h1>${title}</h1>` };
+  return {
+    status: 200,
+    contentType: 'text/html',
+    body: `<!doctype html><title>${title}</title><h1>${title}</h1>`,
+  };
 }
 
 /** The answer text a real backend would persist for a finished turn. */
@@ -136,8 +142,15 @@ export class FakeBackend {
   messages: Record<string, SessionMessage[]> = {};
   sessionUsage: SessionUsageSummary = makeSessionUsage();
   /** `GET /api/v1/users/me/usage`; default: one point (cost 1) per requested day bucket. */
-  userUsage: (query: { from: string; to: string; interval: string }) => MeUsageOut = ({ from, to, interval }) =>
-    makeUserUsage(interval, dayLabels(from, to).map((label) => makeUsagePoint(label)));
+  userUsage: (query: { from: string; to: string; interval: string }) => MeUsageOut = ({
+    from,
+    to,
+    interval,
+  }) =>
+    makeUserUsage(
+      interval,
+      dayLabels(from, to).map((label) => makeUsagePoint(label)),
+    );
   analytics: AnalyticsData = makeAnalytics();
   /** Stream for every invocation. */
   reply: Reply = streamTurn({ text: 'Done.' });
@@ -172,7 +185,8 @@ export class FakeBackend {
   /** Requests matching a method and path (string or pattern). */
   requestsTo(method: string, path: string | RegExp): RecordedRequest[] {
     return this.requests.filter(
-      (r) => r.method === method && (typeof path === 'string' ? r.path === path : path.test(r.path)),
+      (r) =>
+        r.method === method && (typeof path === 'string' ? r.path === path : path.test(r.path)),
     );
   }
 
@@ -218,7 +232,8 @@ export class FakeBackend {
     const sessionMatch = /^\/api\/v1\/sessions\/([^/]+)(\/messages|\/usage)?$/.exec(path);
 
     // ---- auth ----
-    if (key === 'GET /auth/me') return this.user ? json(200, this.user) : problem(401, 'Not authenticated');
+    if (key === 'GET /auth/me')
+      return this.user ? json(200, this.user) : problem(401, 'Not authenticated');
     if (key === 'PATCH /auth/me') {
       if (!this.user) return problem(401, 'Not authenticated');
       this.user = { ...this.user, ...(body as Partial<CurrentUser>) };
@@ -227,7 +242,9 @@ export class FakeBackend {
     if (key === 'POST /auth/login') {
       const { username, password } = body as { username: string; password: string };
       const ok = username === this.credentials.username && password === this.credentials.password;
-      return ok ? json(200, { next: this.loginNext }) : problem(401, 'Invalid username or password.');
+      return ok
+        ? json(200, { next: this.loginNext })
+        : problem(401, 'Invalid username or password.');
     }
     if (key === 'POST /auth/register') {
       if (!this.providers.registration_enabled) return problem(403, 'Registration is disabled.');
@@ -236,14 +253,18 @@ export class FakeBackend {
     }
     if (key === 'GET /auth/providers') return json(200, this.providers);
     if (key === 'GET /auth/logout') return { status: 302, headers: { location: '/login' } };
-    if (method === 'GET' && path.startsWith('/auth/login/')) return html(`Sign in with ${path.slice('/auth/login/'.length)}`);
+    if (method === 'GET' && path.startsWith('/auth/login/'))
+      return html(`Sign in with ${path.slice('/auth/login/'.length)}`);
     if (key === 'GET /admin') return html('Admin');
 
     // ---- agents / media / usage ----
     if (key === 'GET /api/v1/agents') return json(200, this.agents);
     if (key === 'GET /api/v1/media/capabilities') return json(200, this.capabilities);
     if (key === 'GET /api/v1/users/me/usage') {
-      return json(200, this.userUsage({ from: query.from, to: query.to, interval: query.interval }));
+      return json(
+        200,
+        this.userUsage({ from: query.from, to: query.to, interval: query.interval }),
+      );
     }
 
     // ---- sessions ----
@@ -301,11 +322,18 @@ export class FakeBackend {
     if (!request.session_id) {
       const stamp = this.now().toISOString().replace('Z', '');
       this.sessions = [
-        makeSession({ session_id: sessionId, agent_id: request.agent_id, title: request.prompt, created_at: stamp, last_used_at: stamp }),
+        makeSession({
+          session_id: sessionId,
+          agent_id: request.agent_id,
+          title: request.prompt,
+          created_at: stamp,
+          last_used_at: stamp,
+        }),
         ...this.sessions,
       ];
     }
-    const stored = (this.messages[sessionId] ??= []);
+    this.messages[sessionId] ??= [];
+    const stored = this.messages[sessionId];
     const seq = stored.reduce((max, m) => Math.max(max, m.seq), 0) + 1;
     stored.push({
       role: 'user',
@@ -328,7 +356,11 @@ export class FakeBackend {
     const error = events.find((e) => e.type === 'error');
     stored.push({
       role: 'assistant',
-      content: error ? (typeof error.data.text === 'string' ? error.data.text : '') : assistantText(events),
+      content: error
+        ? typeof error.data.text === 'string'
+          ? error.data.text
+          : ''
+        : assistantText(events),
       seq: seq + 1,
       is_success: !error,
       attachments: [],
@@ -349,11 +381,13 @@ async function record(request: Request): Promise<RecordedRequest> {
   const url = new URL(request.url());
   const contentType = (await request.headerValue('content-type')) ?? '';
   const buffer = request.postDataBuffer();
-  let body: unknown = undefined;
+  let body: unknown;
   const files: RecordedFile[] = [];
 
   if (buffer && contentType.startsWith('multipart/form-data')) {
-    const form = await new Response(new Uint8Array(buffer), { headers: { 'content-type': contentType } }).formData();
+    const form = await new Response(new Uint8Array(buffer), {
+      headers: { 'content-type': contentType },
+    }).formData();
     for (const [field, value] of form.entries()) {
       if (typeof value === 'string') {
         if (field === 'payload') body = JSON.parse(value);
@@ -376,14 +410,22 @@ async function record(request: Request): Promise<RecordedRequest> {
 }
 
 function toAttachmentMetadata(file: RecordedFile): AttachmentMetadata {
-  return { filename: file.filename, size: file.size, type: file.type.startsWith('image/') ? 'image' : 'document' };
+  return {
+    filename: file.filename,
+    size: file.size,
+    type: file.type.startsWith('image/') ? 'image' : 'document',
+  };
 }
 
 /** `YYYY-MM-DD` for every day from `from` to `to`, inclusive. */
 function dayLabels(from: string, to: string): string[] {
   const labels: string[] = [];
   if (!from || !to) return labels;
-  for (let d = new Date(`${from}T00:00:00Z`); d <= new Date(`${to}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + 1)) {
+  for (
+    let d = new Date(`${from}T00:00:00Z`);
+    d <= new Date(`${to}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + 1)
+  ) {
     labels.push(d.toISOString().slice(0, 10));
   }
   return labels;

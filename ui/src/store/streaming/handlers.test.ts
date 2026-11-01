@@ -1,11 +1,17 @@
 // @vitest-environment jsdom
 // mapBackendEvent comes from api.ts, which reads the app-base meta tag on import.
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { BackendStreamEvent, ChatStreamEvent, Message, TurnTokens, WorkflowItem } from '@/types';
 import { mapBackendEvent } from '@/services/api';
 import { events as demoTurn } from '@/services/demo-fixtures/events';
-import { dispatchStreamEvent, resetStreamingState } from '.';
+import type {
+  BackendStreamEvent,
+  ChatStreamEvent,
+  Message,
+  TurnTokens,
+  WorkflowItem,
+} from '@/types';
 import type { StreamingSideEffects } from '.';
+import { dispatchStreamEvent, resetStreamingState } from '.';
 
 // ====== HELPERS ======
 
@@ -78,7 +84,9 @@ describe('recorded multi-agent turn', () => {
     // Sub-agent answers are separate items, never merged into the entry agent's text.
     expect(textOf(trace, 'DOC EXPERT').length).toBeGreaterThan(0);
     expect(textOf(trace, 'DEVELOPER').length).toBeGreaterThan(0);
-    expect(finalText).not.toContain('Key Technical Building Blocks\n\n### **Tools — Agent capabilities**');
+    expect(finalText).not.toContain(
+      'Key Technical Building Blocks\n\n### **Tools — Agent capabilities**',
+    );
   });
 
   it('closes every tool item and keeps the failed one as an error', () => {
@@ -203,8 +211,21 @@ describe('error events', () => {
     dispatchAll(
       [
         ev({ type: 'agent_start', agent_name: 'main' }),
-        ev({ type: 'tool_start', name: 'get_weather', tool_use_id: 'u1', input: {}, agent_name: 'main' }),
-        ev({ type: 'tool_end', name: 'get_weather', tool_use_id: 'u1', output: 'sunny', status: 'success', agent_name: 'main' }),
+        ev({
+          type: 'tool_start',
+          name: 'get_weather',
+          tool_use_id: 'u1',
+          input: {},
+          agent_name: 'main',
+        }),
+        ev({
+          type: 'tool_end',
+          name: 'get_weather',
+          tool_use_id: 'u1',
+          output: 'sunny',
+          status: 'success',
+          agent_name: 'main',
+        }),
         ev({ type: 'agent_complete', agent_name: 'main', input_tokens: 100, output_tokens: 20 }),
         ev({ type: 'error', content: 'Model throttled.', agent_name: 'main' }),
         ev({ type: 'session_end', agent_name: 'main' }),
@@ -217,7 +238,9 @@ describe('error events', () => {
       expect.objectContaining({ toolName: 'get weather', toolStatus: 'success' }),
     ]);
     expect(tokens).toMatchObject({ input: 100, output: 20 });
-    expect(effects.commits).toEqual([{ content: 'Model throttled.', isStreaming: false, isSuccess: false }]);
+    expect(effects.commits).toEqual([
+      { content: 'Model throttled.', isStreaming: false, isSuccess: false },
+    ]);
   });
 
   it('uses a generic message when the error has no text', () => {
@@ -235,7 +258,10 @@ describe('error events', () => {
     dispatchStreamEvent(ev({ type: 'error', content: 'turn one failed' }), effects);
 
     resetStreamingState();
-    dispatchAll([ev({ type: 'token', content: 'ok', agent_name: 'main' }), ev({ type: 'session_end' })], effects);
+    dispatchAll(
+      [ev({ type: 'token', content: 'ok', agent_name: 'main' }), ev({ type: 'session_end' })],
+      effects,
+    );
 
     expect(effects.commits).toEqual([
       { content: 'turn one failed', isStreaming: false, isSuccess: false },
@@ -289,8 +315,21 @@ describe('stream handlers', () => {
     dispatchAll(
       [
         ev({ type: 'token', content: 'before', agent_name: 'main' }),
-        ev({ type: 'tool_start', name: 'lookup_data', tool_use_id: 'u1', input: {}, agent_name: 'main' }),
-        ev({ type: 'tool_end', name: 'lookup_data', tool_use_id: 'u1', output: 'ok', status: 'success', agent_name: 'main' }),
+        ev({
+          type: 'tool_start',
+          name: 'lookup_data',
+          tool_use_id: 'u1',
+          input: {},
+          agent_name: 'main',
+        }),
+        ev({
+          type: 'tool_end',
+          name: 'lookup_data',
+          tool_use_id: 'u1',
+          output: 'ok',
+          status: 'success',
+          agent_name: 'main',
+        }),
         ev({ type: 'token', content: 'after', agent_name: 'main' }),
         ev({ type: 'session_end' }),
       ],
@@ -307,14 +346,24 @@ describe('stream handlers', () => {
       [
         ev({ type: 'tool_start', name: 'search', tool_use_id: 'u1', agent_name: 'alpha' }),
         ev({ type: 'tool_start', name: 'search', tool_use_id: 'u2', agent_name: 'beta' }),
-        ev({ type: 'tool_end', name: 'search', tool_use_id: 'u1', output: 'first', status: 'success', agent_name: 'alpha' }),
+        ev({
+          type: 'tool_end',
+          name: 'search',
+          tool_use_id: 'u1',
+          output: 'first',
+          status: 'success',
+          agent_name: 'alpha',
+        }),
         ev({ type: 'session_end' }),
       ],
       effects,
     );
 
     const tools = endOf(effects).trace.filter((item) => item.type === 'tool');
-    expect(tools.find((tool) => tool.toolUseId === 'u1')).toMatchObject({ toolStatus: 'success', toolOutput: 'first' });
+    expect(tools.find((tool) => tool.toolUseId === 'u1')).toMatchObject({
+      toolStatus: 'success',
+      toolOutput: 'first',
+    });
     expect(tools.find((tool) => tool.toolUseId === 'u2')).toMatchObject({ toolStatus: 'running' });
   });
 
@@ -324,13 +373,24 @@ describe('stream handlers', () => {
     dispatchAll(
       [
         ev({ type: 'tool_start', name: 'read_doc', agent_name: 'alpha' }),
-        ev({ type: 'tool_end', name: 'read_doc', output: 'text', status: 'success', agent_name: 'alpha' }),
+        ev({
+          type: 'tool_end',
+          name: 'read_doc',
+          output: 'text',
+          status: 'success',
+          agent_name: 'alpha',
+        }),
         ev({ type: 'session_end' }),
       ],
       effects,
     );
 
-    expect(endOf(effects).trace[0]).toMatchObject({ type: 'tool', toolName: 'read doc', toolStatus: 'success', toolOutput: 'text' });
+    expect(endOf(effects).trace[0]).toMatchObject({
+      type: 'tool',
+      toolName: 'read doc',
+      toolStatus: 'success',
+      toolOutput: 'text',
+    });
   });
 
   it('marks a failed tool as an error and keeps its message', () => {
@@ -339,9 +399,22 @@ describe('stream handlers', () => {
     dispatchAll(
       [
         ev({ type: 'tool_start', name: 'search', tool_use_id: 'u1', agent_name: 'main' }),
-        ev({ type: 'tool_end', name: 'search', tool_use_id: 'u1', output: 'timed out', status: 'error', agent_name: 'main' }),
+        ev({
+          type: 'tool_end',
+          name: 'search',
+          tool_use_id: 'u1',
+          output: 'timed out',
+          status: 'error',
+          agent_name: 'main',
+        }),
         ev({ type: 'tool_start', name: 'fetch', tool_use_id: 'u2', agent_name: 'main' }),
-        ev({ type: 'tool_end', name: 'fetch', tool_use_id: 'u2', status: 'error', agent_name: 'main' }),
+        ev({
+          type: 'tool_end',
+          name: 'fetch',
+          tool_use_id: 'u2',
+          status: 'error',
+          agent_name: 'main',
+        }),
         ev({ type: 'session_end' }),
       ],
       effects,

@@ -1,14 +1,14 @@
+import type { MeUsageOut } from '@/types/analytics';
 import type {
-  ChatRequest,
-  ChatStreamEvent,
-  BackendStreamEvent,
-  MediaCapabilities,
   Attachment,
   AttachmentMetadata,
+  BackendStreamEvent,
+  ChatRequest,
+  ChatStreamEvent,
+  MediaCapabilities,
 } from '../types';
-import type { MeUsageOut } from '@/types/analytics';
+import { extractError, fetchWithTimeout } from './http';
 import { readAppBase } from './utils';
-import { fetchWithTimeout, extractError } from './http';
 
 // ====== CONSTANTS ======
 // Read the URL prefix injected by the backend at runtime.
@@ -222,7 +222,8 @@ export async function renameSession(sessionId: string, title: string): Promise<S
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title }),
   });
-  if (!res.ok) throw new Error(await extractError(res, `Failed to rename session (${res.status}).`));
+  if (!res.ok)
+    throw new Error(await extractError(res, `Failed to rename session (${res.status}).`));
   return (await res.json()) as Session;
 }
 

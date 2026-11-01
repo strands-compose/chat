@@ -1,78 +1,52 @@
 // Reusable, dumb primitives. These MUST NOT import from features/ or store/.
-export { IconButton } from './IconButton';
-export type { IconButtonSize } from './IconButton';
 
-export { Button } from './Button';
+export type { AvatarProps, AvatarSize, AvatarTone } from './Avatar';
+export { Avatar } from './Avatar';
 export type { ButtonVariant } from './Button';
-
-export { Spinner } from './Spinner';
-
-export { TextField } from './TextField';
-
-export { Tooltip, TooltipProvider } from './Tooltip';
-
+export { Button } from './Button';
+export { Collapsible, CollapsibleContent, CollapsibleTrigger } from './Collapsible';
+export { Composer } from './Composer';
+export { ConfirmDialog } from './ConfirmDialog';
+export { DateRangePicker } from './DateRangePicker';
+export type { DialogKind, DialogProps } from './Dialog';
+export { Dialog } from './Dialog';
 export {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from './DropdownMenu';
-
-export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './Collapsible';
-
-export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
-
-export { DateRangePicker } from './DateRangePicker';
-
-export { ErrorBoundary } from './ErrorBoundary';
-
-export { Composer } from './Composer';
-
-export { StatusBadge } from './StatusBadge';
-export type { StatusBadgeProps, StatusBadgeVariant } from './StatusBadge';
-
-export { ToolBadge } from './ToolBadge';
-export type { ToolBadgeProps, ToolBadgeStatus } from './ToolBadge';
-
-export { Markdown, REMARK_PLUGINS, REHYPE_PLUGINS } from './Markdown';
-
-export { SplitLayout } from './SplitLayout';
-
 export { DropOverlay } from './DropOverlay';
-
-export { SubheaderBar } from './SubheaderBar';
-export type { SubheaderBarProps } from './SubheaderBar';
-
-export { ConfirmDialog } from './ConfirmDialog';
-
-export { ErrorDialog } from './ErrorDialog';
+export { ErrorBoundary } from './ErrorBoundary';
 export type { ErrorDialogProps } from './ErrorDialog';
+export { ErrorDialog } from './ErrorDialog';
+export type { IconButtonSize } from './IconButton';
+export { IconButton } from './IconButton';
 
-export { Dialog } from './Dialog';
-export type { DialogKind, DialogProps } from './Dialog';
-
-export { RenameSessionDialog } from './RenameSessionDialog';
-
-export { Segmented } from './Segmented';
-
-export { MultiSelect } from './MultiSelect';
+export { Markdown, REHYPE_PLUGINS, REMARK_PLUGINS } from './Markdown';
 export type { MultiSelectOption } from './MultiSelect';
-
-export { ProgressBar } from './ProgressBar';
-export type { ProgressBarProps } from './ProgressBar';
-
-export { ProgressRing } from './ProgressRing';
-export type { ProgressRingProps } from './ProgressRing';
-
-export { Avatar } from './Avatar';
-export type { AvatarProps, AvatarTone, AvatarSize } from './Avatar';
-
-export { UsagePill } from './UsagePill';
-export type { UsagePillProps } from './UsagePill';
-
-export { Skeleton } from './Skeleton';
-export type { SkeletonProps } from './Skeleton';
-
-export { Pagination } from './Pagination';
+export { MultiSelect } from './MultiSelect';
 export type { PaginationProps } from './Pagination';
+export { Pagination } from './Pagination';
+export type { ProgressBarProps } from './ProgressBar';
+export { ProgressBar } from './ProgressBar';
+export type { ProgressRingProps } from './ProgressRing';
+export { ProgressRing } from './ProgressRing';
+export { RenameSessionDialog } from './RenameSessionDialog';
+export { Segmented } from './Segmented';
+export type { SkeletonProps } from './Skeleton';
+export { Skeleton } from './Skeleton';
+export { Spinner } from './Spinner';
+export { SplitLayout } from './SplitLayout';
+export type { StatusBadgeProps, StatusBadgeVariant } from './StatusBadge';
+export { StatusBadge } from './StatusBadge';
+export type { SubheaderBarProps } from './SubheaderBar';
+export { SubheaderBar } from './SubheaderBar';
+export { Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs';
+export { TextField } from './TextField';
+export type { ToolBadgeProps, ToolBadgeStatus } from './ToolBadge';
+export { ToolBadge } from './ToolBadge';
+export { Tooltip, TooltipProvider } from './Tooltip';
+export type { UsagePillProps } from './UsagePill';
+export { UsagePill } from './UsagePill';

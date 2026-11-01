@@ -10,17 +10,17 @@
  * Form; the TextField / Button primitives are the render layer.
  */
 
+import { useForm } from '@tanstack/react-form';
 import type { ReactElement } from 'react';
 import { memo, useState } from 'react';
-import { useForm } from '@tanstack/react-form';
 import { FiUser } from 'react-icons/fi';
 import { Button, TextField } from '@/components';
+import { useAuth } from '@/contexts';
 import type { CurrentUser } from '@/services/api';
 import { patchCurrentUser } from '@/services/api';
-import { useAuth } from '@/contexts';
+import styles from './AccountForm.module.css';
 import { CurrentMonthPanel } from './CurrentMonthPanel';
 import { useProfileContext } from './hooks/useProfileContext';
-import styles from './AccountForm.module.css';
 
 // ======================
 // TYPES & CONSTANTS
@@ -55,7 +55,11 @@ const EDITABLE_FIELDS: EditableField[] = [
 
 // Fallback for the form's default values before the user loads (guards the hook rule).
 const EMPTY_FIELDS: Record<EditableField, string> = {
-  first_name: '', last_name: '', location: '', department: '', company: '',
+  first_name: '',
+  last_name: '',
+  location: '',
+  department: '',
+  company: '',
 };
 
 const toStr = (value: string | null | undefined): string => value ?? '';
@@ -168,7 +172,9 @@ const AccountFormComponent = (): ReactElement | null => {
             <h3 className={styles.sectionTitle}>Profile</h3>
             <div className={styles.titleActions}>
               {apiError && !isSubmitting && (
-                <span role="alert" className={styles.apiError}>{apiError}</span>
+                <span role="alert" className={styles.apiError}>
+                  {apiError}
+                </span>
               )}
               <Button
                 type="submit"

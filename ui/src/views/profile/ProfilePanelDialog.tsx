@@ -6,24 +6,17 @@
  * Usage data is fetched independently by UsageDashboard and AccountForm.
  */
 
-import { memo } from 'react';
 import type { ReactElement } from 'react';
-import {
-  Dialog,
-  ErrorBoundary,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components';
+import { memo } from 'react';
+import { Dialog, ErrorBoundary, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components';
 import { useAuth } from '@/contexts';
+import { useFetchOnce } from '@/hooks';
 import { fetchAgents } from '@/services/api';
 import { AccountForm } from './AccountForm';
 import { AgentsList } from './AgentsList';
-import { UsageDashboard } from './UsageDashboard';
-import { useFetchOnce } from '@/hooks';
 import { ProfileProvider } from './contexts/ProfileContext';
 import styles from './ProfilePanelDialog.module.css';
+import { UsageDashboard } from './UsageDashboard';
 
 // ======================
 // DIALOG
@@ -34,7 +27,10 @@ interface ProfilePanelDialogProps {
   onClose: () => void;
 }
 
-const ProfilePanelDialogComponent = ({ open, onClose }: ProfilePanelDialogProps): ReactElement | null => {
+const ProfilePanelDialogComponent = ({
+  open,
+  onClose,
+}: ProfilePanelDialogProps): ReactElement | null => {
   const { user } = useAuth();
 
   const { data: agents, isLoading: agentsLoading } = useFetchOnce(fetchAgents);
@@ -70,10 +66,11 @@ const ProfilePanelDialogComponent = ({ open, onClose }: ProfilePanelDialogProps)
 
           <TabsContent value="agents" className={styles.panel}>
             <ErrorBoundary message="Couldn't load the agents list.">
-              {agentsLoading
-                ? <div className={styles.loading}>Loading…</div>
-                : <AgentsList agents={agents ?? []} />
-              }
+              {agentsLoading ? (
+                <div className={styles.loading}>Loading…</div>
+              ) : (
+                <AgentsList agents={agents ?? []} />
+              )}
             </ErrorBoundary>
           </TabsContent>
 

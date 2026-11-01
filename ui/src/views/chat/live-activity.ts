@@ -7,8 +7,8 @@
  * chat thread uses it.
  */
 
-import type { WorkflowItem } from '@/types';
 import { formatAgentLabel } from '@/services/utils';
+import type { WorkflowItem } from '@/types';
 
 export interface LiveActivity {
   /** Display name of the agent doing the work. */
@@ -26,7 +26,9 @@ const clip = (text: string): string =>
 const firstInputText = (input: unknown): string | undefined => {
   if (typeof input === 'string') return input;
   if (input && typeof input === 'object') {
-    const first = Object.values(input as Record<string, unknown>).find((v) => typeof v === 'string');
+    const first = Object.values(input as Record<string, unknown>).find(
+      (v) => typeof v === 'string',
+    );
     return first as string | undefined;
   }
   return undefined;
@@ -39,7 +41,9 @@ const firstInputText = (input: unknown): string | undefined => {
  */
 export function selectLiveActivity(items: WorkflowItem[]): LiveActivity | null {
   const agentNames = new Set(
-    items.filter((i) => i.type === 'agent_start' && i.agentName).map((i) => i.agentName!.toUpperCase()),
+    items.flatMap((i) =>
+      i.type === 'agent_start' && i.agentName ? [i.agentName.toUpperCase()] : [],
+    ),
   );
 
   for (let i = items.length - 1; i >= 0; i--) {

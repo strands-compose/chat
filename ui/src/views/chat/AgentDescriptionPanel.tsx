@@ -10,8 +10,8 @@
 import type { ReactElement } from 'react';
 import { memo, useCallback, useState } from 'react';
 import { LuBot, LuCheck, LuCopy, LuX } from 'react-icons/lu';
-import { useChatStore } from '@/store';
 import { IconButton, Markdown } from '@/components';
+import { useChatStore } from '@/store';
 import styles from './AgentDescriptionPanel.module.css';
 
 const COPIED_RESET_MS = 2000;

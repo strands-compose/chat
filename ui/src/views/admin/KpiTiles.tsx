@@ -1,11 +1,11 @@
 import type { ReactElement } from 'react';
 import { memo } from 'react';
-import type { SummaryOut } from '@/types/analytics';
-import { postSummary } from '@/services/adminApi';
 import { Skeleton } from '@/components';
-import { useAsyncData } from '@/hooks';
 import { formatInt } from '@/components/charts';
+import { useAsyncData } from '@/hooks';
+import { postSummary } from '@/services/adminApi';
 import { toDateParam } from '@/services/utils';
+import type { SummaryOut } from '@/types/analytics';
 import { useAdminFilters } from './hooks/useAdminFilters';
 import styles from './KpiTiles.module.css';
 
@@ -49,6 +49,7 @@ const KpiTilesComponent = (): ReactElement => {
   );
 
   const renderTile = (label: string, value: string): ReactElement => (
+    // biome-ignore lint/a11y/useSemanticElements: a <fieldset> adds browser border and padding to this tile.
     <div className={styles.tile} role="group" aria-label={label}>
       <p className={styles.tileLabel}>{label}</p>
       {renderValue(value)}

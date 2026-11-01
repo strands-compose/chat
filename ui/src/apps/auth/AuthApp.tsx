@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Suspense, lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { AppConfigProvider, ThemeProvider } from '@/contexts';
 
 const AuthView = lazy(() => import('@/views/auth/AuthView'));

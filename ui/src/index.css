@@ -5,7 +5,9 @@
   padding: 0;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
 }
@@ -13,8 +15,8 @@ html, body, #root {
 /* ====== DESIGN TOKENS ====== */
 :root {
   /* Typography */
-  --sc-font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  --sc-font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
+  --sc-font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+  --sc-font-mono: "SF Mono", "Monaco", "Inconsolata", "Fira Code", "Consolas", monospace;
 
   /* Shape */
   --sc-radius-xs: 6px;

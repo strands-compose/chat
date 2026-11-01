@@ -27,7 +27,10 @@ interface AsyncDataResult<T> {
  * @param deps - Dependency list controlling when to refetch.
  * @returns The current data, loading flag, and error.
  */
-export function useAsyncData<T>(fetcher: () => Promise<T>, deps: DependencyList): AsyncDataResult<T> {
+export function useAsyncData<T>(
+  fetcher: () => Promise<T>,
+  deps: DependencyList,
+): AsyncDataResult<T> {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -54,7 +57,8 @@ export function useAsyncData<T>(fetcher: () => Promise<T>, deps: DependencyList)
     };
 
     void run();
-  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+    // biome-ignore lint/correctness/useExhaustiveDependencies: the caller owns `deps`, like useEffect itself.
+  }, deps);
 
   return { data, isLoading, error };
 }

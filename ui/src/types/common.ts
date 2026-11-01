@@ -10,13 +10,7 @@
  * each `type` populates a different subset.
  */
 export interface WorkflowItem {
-  type:
-    | 'text'
-    | 'tool'
-    | 'reasoning'
-    | 'agent_start'
-    | 'agent_stop'
-    | 'handoff';
+  type: 'text' | 'tool' | 'reasoning' | 'agent_start' | 'agent_stop' | 'handoff';
 
   /** Plain text content (for `text` and `reasoning`). */
   content: string;

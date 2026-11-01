@@ -10,12 +10,7 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id
   error?: string;
 }
 
-const TextFieldComponent = ({
-  label,
-  error,
-  className,
-  ...rest
-}: TextFieldProps): ReactElement => {
+const TextFieldComponent = ({ label, error, className, ...rest }: TextFieldProps): ReactElement => {
   // ======================
   // STATE, HOOKS & REFS
   // ======================

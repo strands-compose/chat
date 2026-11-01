@@ -34,7 +34,9 @@
   border-radius: 8px;
   color: var(--sc-text-secondary);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .codeBlockCopy:hover {
@@ -62,23 +64,19 @@
   color: var(--sc-text-primary);
 }
 
-.markdownBody .codeBlockFallback code {
-  background: none !important;
-  padding: 0;
-  border-radius: 0;
-  font-family: inherit;
-  font-size: inherit;
-  color: inherit;
-}
-
 /* ====== PRISM TOKEN COLORS (One Light / One Dark) ======
    Applied to refractor's token spans so theming is pure CSS. */
 .codeTokens :global(.token.comment),
 .codeTokens :global(.token.prolog),
 .codeTokens :global(.token.doctype),
-.codeTokens :global(.token.cdata) { color: #2563a8; font-style: italic; }
+.codeTokens :global(.token.cdata) {
+  color: #2563a8;
+  font-style: italic;
+}
 
-.codeTokens :global(.token.punctuation) { color: #383a42; }
+.codeTokens :global(.token.punctuation) {
+  color: #383a42;
+}
 
 .codeTokens :global(.token.property),
 .codeTokens :global(.token.tag),
@@ -86,36 +84,52 @@
 .codeTokens :global(.token.number),
 .codeTokens :global(.token.constant),
 .codeTokens :global(.token.symbol),
-.codeTokens :global(.token.deleted) { color: #986801; }
+.codeTokens :global(.token.deleted) {
+  color: #986801;
+}
 
 .codeTokens :global(.token.selector),
 .codeTokens :global(.token.attr-name),
 .codeTokens :global(.token.string),
 .codeTokens :global(.token.char),
 .codeTokens :global(.token.builtin),
-.codeTokens :global(.token.inserted) { color: #50a14f; }
+.codeTokens :global(.token.inserted) {
+  color: #50a14f;
+}
 
 .codeTokens :global(.token.operator),
 .codeTokens :global(.token.entity),
-.codeTokens :global(.token.url) { color: #0184bc; }
+.codeTokens :global(.token.url) {
+  color: #0184bc;
+}
 
 .codeTokens :global(.token.atrule),
 .codeTokens :global(.token.attr-value),
-.codeTokens :global(.token.keyword) { color: #a626a4; }
+.codeTokens :global(.token.keyword) {
+  color: #a626a4;
+}
 
 .codeTokens :global(.token.function),
-.codeTokens :global(.token.class-name) { color: #4078f2; }
+.codeTokens :global(.token.class-name) {
+  color: #4078f2;
+}
 
 .codeTokens :global(.token.regex),
 .codeTokens :global(.token.important),
-.codeTokens :global(.token.variable) { color: #e45649; }
+.codeTokens :global(.token.variable) {
+  color: #e45649;
+}
 
 [data-theme="dark"] .codeTokens :global(.token.comment),
 [data-theme="dark"] .codeTokens :global(.token.prolog),
 [data-theme="dark"] .codeTokens :global(.token.doctype),
-[data-theme="dark"] .codeTokens :global(.token.cdata) { color: #6ab0f5; }
+[data-theme="dark"] .codeTokens :global(.token.cdata) {
+  color: #6ab0f5;
+}
 
-[data-theme="dark"] .codeTokens :global(.token.punctuation) { color: #abb2bf; }
+[data-theme="dark"] .codeTokens :global(.token.punctuation) {
+  color: #abb2bf;
+}
 
 [data-theme="dark"] .codeTokens :global(.token.property),
 [data-theme="dark"] .codeTokens :global(.token.tag),
@@ -123,29 +137,41 @@
 [data-theme="dark"] .codeTokens :global(.token.number),
 [data-theme="dark"] .codeTokens :global(.token.constant),
 [data-theme="dark"] .codeTokens :global(.token.symbol),
-[data-theme="dark"] .codeTokens :global(.token.deleted) { color: #d19a66; }
+[data-theme="dark"] .codeTokens :global(.token.deleted) {
+  color: #d19a66;
+}
 
 [data-theme="dark"] .codeTokens :global(.token.selector),
 [data-theme="dark"] .codeTokens :global(.token.attr-name),
 [data-theme="dark"] .codeTokens :global(.token.string),
 [data-theme="dark"] .codeTokens :global(.token.char),
 [data-theme="dark"] .codeTokens :global(.token.builtin),
-[data-theme="dark"] .codeTokens :global(.token.inserted) { color: #98c379; }
+[data-theme="dark"] .codeTokens :global(.token.inserted) {
+  color: #98c379;
+}
 
 [data-theme="dark"] .codeTokens :global(.token.operator),
 [data-theme="dark"] .codeTokens :global(.token.entity),
-[data-theme="dark"] .codeTokens :global(.token.url) { color: #56b6c2; }
+[data-theme="dark"] .codeTokens :global(.token.url) {
+  color: #56b6c2;
+}
 
 [data-theme="dark"] .codeTokens :global(.token.atrule),
 [data-theme="dark"] .codeTokens :global(.token.attr-value),
-[data-theme="dark"] .codeTokens :global(.token.keyword) { color: #c678dd; }
+[data-theme="dark"] .codeTokens :global(.token.keyword) {
+  color: #c678dd;
+}
 
 [data-theme="dark"] .codeTokens :global(.token.function),
-[data-theme="dark"] .codeTokens :global(.token.class-name) { color: #61afef; }
+[data-theme="dark"] .codeTokens :global(.token.class-name) {
+  color: #61afef;
+}
 
 [data-theme="dark"] .codeTokens :global(.token.regex),
 [data-theme="dark"] .codeTokens :global(.token.important),
-[data-theme="dark"] .codeTokens :global(.token.variable) { color: #e06c75; }
+[data-theme="dark"] .codeTokens :global(.token.variable) {
+  color: #e06c75;
+}
 
 /* ====== MARKDOWN PROSE BODY ======
    Shared prose styling for rendered markdown. Owned by the Markdown primitive
@@ -258,6 +284,16 @@
   color: var(--sc-text-primary);
   padding: 2px 6px;
   border-radius: 6px;
+}
+
+/* Code inside the plain fallback block keeps the block's look, not the inline chip. */
+.markdownBody .codeBlockFallback code {
+  background: none !important;
+  padding: 0;
+  border-radius: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
 }
 
 .markdownBody a {

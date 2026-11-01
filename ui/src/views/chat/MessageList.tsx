@@ -5,11 +5,11 @@
 
 import type { ReactElement } from 'react';
 import { memo } from 'react';
-import { useChatStore } from '@/store';
 import { useAutoScroll } from '@/hooks';
 import { cn } from '@/services';
-import { ChatMessage } from './Message';
+import { useChatStore } from '@/store';
 import styles from './ChatView.module.css';
+import { ChatMessage } from './Message';
 
 interface MessageListProps {
   /** Let the message column span the full width instead of the compact 760px. */
@@ -23,9 +23,7 @@ const MessageListComponent = ({ isFullWidth = false }: MessageListProps): ReactE
   // Drive auto-scroll on the streaming tail. Both pieces of data come from the
   // store — no need to pass them down through props.
   const lastMsgId = useChatStore((s) => s.messageOrder[s.messageOrder.length - 1]);
-  const isStreamingTail = useChatStore(
-    (s) => !!(lastMsgId && s.messages[lastMsgId]?.isStreaming),
-  );
+  const isStreamingTail = useChatStore((s) => !!(lastMsgId && s.messages[lastMsgId]?.isStreaming));
 
   const { containerRef, endRef } = useAutoScroll(messageOrder, isStreamingTail);
 

@@ -102,7 +102,7 @@
 
 .providersDivider::before,
 .providersDivider::after {
-  content: '';
+  content: "";
   flex: 1;
   height: 1px;
   background: var(--sc-border-primary);

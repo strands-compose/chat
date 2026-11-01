@@ -9,13 +9,13 @@
 import type { ReactElement } from 'react';
 import { lazy, memo, Suspense, useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useChatStore } from '@/store';
 import { useCollapseContext } from '@/contexts';
 import { cn } from '@/services/utils';
+import { useChatStore } from '@/store';
+import styles from './ChatView.module.css';
+import { ConnectedComposer } from './ConnectedComposer';
 import { ChatControlBar } from './ControlBar';
 import { MessageList } from './MessageList';
-import { ConnectedComposer } from './ConnectedComposer';
-import styles from './ChatView.module.css';
 
 const WelcomeView = lazy(() => import('./WelcomeView'));
 

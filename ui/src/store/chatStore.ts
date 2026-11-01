@@ -7,27 +7,27 @@
  */
 
 import { create } from 'zustand';
-import type { Attachment, Message, TurnTokens, WorkflowItem } from '../types';
+import type { Agent, Session, SessionMessage, SessionUsageSummary } from '../services';
 import {
-  streamChat,
-  fetchSessions,
+  deleteSession as deleteSessionApi,
+  fetchAgents,
   fetchSession,
   fetchSessionMessages,
+  fetchSessions,
   fetchSessionUsage,
-  fetchAgents,
-  renameSession as renameSessionApi,
-  deleteSession as deleteSessionApi,
   isMobileViewport,
+  renameSession as renameSessionApi,
+  streamChat,
 } from '../services';
-import type { Session, Agent, SessionMessage, SessionUsageSummary } from '../services';
-import {
-  dispatchStreamEvent,
-  configureScheduler,
-  scheduleFlush,
-  cancelFlush,
-  resetStreamingState,
-} from './streaming';
+import type { Attachment, Message, TurnTokens, WorkflowItem } from '../types';
 import type { StreamingSideEffects } from './streaming';
+import {
+  cancelFlush,
+  configureScheduler,
+  dispatchStreamEvent,
+  resetStreamingState,
+  scheduleFlush,
+} from './streaming';
 
 // ====== CONSTANTS ======
 
@@ -41,9 +41,10 @@ const SESSIONS_PAGE_SIZE = 50;
 // ====== SHARED LOADERS ======
 
 /** Build a fresh thread (messages map + order) from backend message rows. */
-export function buildThreadFromBackend(
-  msgs: SessionMessage[],
-): { messages: Record<string, Message>; messageOrder: string[] } {
+export function buildThreadFromBackend(msgs: SessionMessage[]): {
+  messages: Record<string, Message>;
+  messageOrder: string[];
+} {
   let counter = 0;
   const messages: Record<string, Message> = {};
   const messageOrder: string[] = [];
@@ -64,7 +65,9 @@ export function buildThreadFromBackend(
 
 /** Map an agent record to the store's selected-agent fields. Single source so a
  *  new selected-agent field is added here once, not at every call site. */
-function agentSelection(agent: Agent): Pick<
+function agentSelection(
+  agent: Agent,
+): Pick<
   ChatStore,
   | 'selectedAgent'
   | 'selectedAgentLabel'
@@ -245,7 +248,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
             // left as the user set it. On mobile the panel takes full width, so
             // close it automatically after the refetch so the chat thread is
             // visible again.
-            selectedWorkflowSeq: lastAssistantSeq >= 0 ? lastAssistantSeq : state.selectedWorkflowSeq,
+            selectedWorkflowSeq:
+              lastAssistantSeq >= 0 ? lastAssistantSeq : state.selectedWorkflowSeq,
             workflowPanelClosed: state.workflowPanelClosed || isMobileViewport(),
             // Remember the just-completed turn so its answer reveals once while
             // restored history renders instantly.
@@ -353,9 +357,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
       try {
         await renameSessionApi(sessionId, title);
         set((state) => ({
-          sessions: state.sessions.map((s) =>
-            s.session_id === sessionId ? { ...s, title } : s
-          ),
+          sessions: state.sessions.map((s) => (s.session_id === sessionId ? { ...s, title } : s)),
         }));
       } catch (err) {
         console.error('[chatStore] renameSession failed:', err);
@@ -391,7 +393,8 @@ export const useChatStore = create<ChatStore>((set, get) => {
       // Request timeout is enforced inside the api layer (fetchWithTimeout).
       try {
         const msgs = await fetchSessionMessages(sessionId);
-        const { messages: newMessages, messageOrder: newMessageOrder } = buildThreadFromBackend(msgs);
+        const { messages: newMessages, messageOrder: newMessageOrder } =
+          buildThreadFromBackend(msgs);
 
         // Fully replace thread and adopt the session id.
         set({
@@ -441,11 +444,13 @@ export const useChatStore = create<ChatStore>((set, get) => {
         }
 
         // Fetch usage summary (tokens + cost) in the background after messages are rendered.
-        fetchSessionUsage(sessionId).then((usage) => {
-          if (get().sessionId === sessionId) set({ sessionUsage: usage });
-        }).catch((err) => {
-          console.error('[chatStore] failed to fetch session usage in background:', err);
-        });
+        fetchSessionUsage(sessionId)
+          .then((usage) => {
+            if (get().sessionId === sessionId) set({ sessionUsage: usage });
+          })
+          .catch((err) => {
+            console.error('[chatStore] failed to fetch session usage in background:', err);
+          });
       } catch (err) {
         // Leave existing state unchanged on failure or timeout.
         set({ restoringSession: false });
@@ -545,7 +550,9 @@ export const useChatStore = create<ChatStore>((set, get) => {
               if (get().sessionId !== completedSessionId) return;
               set({ sessionUsage: usage });
             })
-            .catch(() => { /* leave previous values on transient errors */ });
+            .catch(() => {
+              /* leave previous values on transient errors */
+            });
         }
       }
     },
@@ -578,9 +585,11 @@ export const useChatStore = create<ChatStore>((set, get) => {
     },
 
     setSelectedWorkflowSeq: (seq: number | null): void => {
-      set(seq === null
-        ? { selectedWorkflowSeq: seq }
-        : { selectedWorkflowSeq: seq, workflowPanelClosed: false });
+      set(
+        seq === null
+          ? { selectedWorkflowSeq: seq }
+          : { selectedWorkflowSeq: seq, workflowPanelClosed: false },
+      );
     },
 
     closeWorkflowPanel: (): void => {
@@ -645,7 +654,7 @@ export const useChatStore = create<ChatStore>((set, get) => {
 
     resendMessage: (messageId: string): void => {
       const msg = get().messages[messageId];
-      if (!msg || msg.role !== 'user') return;
+      if (msg?.role !== 'user') return;
       get().sendMessage(msg.content);
     },
 

@@ -85,7 +85,7 @@ export const buildGrid = (
   hasLegend: boolean,
   legendPosition: LegendPosition = 'horizontal',
   rightPad = 10,
-  hasDataZoom = false
+  hasDataZoom = false,
 ) => ({
   top: hasLegend && legendPosition === 'horizontal' ? 30 : 10,
   right: hasLegend && legendPosition === 'vertical' ? VERTICAL_LEGEND_RIGHT_PAD : rightPad,
@@ -119,11 +119,7 @@ export interface LegendOptions {
  *   Long labels are truncated to keep the panel width predictable.
  *   Pair with `buildGrid(hasLegend, 'vertical')` to reserve the matching space.
  */
-export const buildLegend = ({
-  names,
-  colors,
-  position = 'horizontal',
-}: LegendOptions) => {
+export const buildLegend = ({ names, colors, position = 'horizontal' }: LegendOptions) => {
   const baseConfig = {
     data: names,
     textStyle: { color: colors.axisLabel, fontSize: 12 },
@@ -159,8 +155,16 @@ export const buildLegend = ({
 
 /** Palette for multi-series charts. */
 export const SERIES_COLORS = [
-  '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de',
-  '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#5b8dee',
+  '#5470c6',
+  '#91cc75',
+  '#fac858',
+  '#ee6666',
+  '#73c0de',
+  '#3ba272',
+  '#fc8452',
+  '#9a60b4',
+  '#ea7ccc',
+  '#5b8dee',
 ] as const;
 
 // ======================
@@ -249,30 +253,29 @@ const toParamList = (raw: TooltipComponentFormatterCallbackParams): AnyParam[] =
  * Renders a date header (the x-axis label) above each series value.
  * Cost metrics are prefixed with "$"; all others use locale-formatted integers.
  */
-export const buildTimeTooltipFormatter = (
-  colors: ChartColors,
-  isCost: boolean,
-) => (raw: TooltipComponentFormatterCallbackParams): string => {
-  const list = toParamList(raw);
-  if (list.length === 0) return '';
+export const buildTimeTooltipFormatter =
+  (colors: ChartColors, isCost: boolean) =>
+  (raw: TooltipComponentFormatterCallbackParams): string => {
+    const list = toParamList(raw);
+    if (list.length === 0) return '';
 
-  const date = list[0].name;
-  const header = `<span style="color:${colors.axisLabel};font-size:11px">${date}</span>`;
+    const date = list[0].name;
+    const header = `<span style="color:${colors.axisLabel};font-size:11px">${date}</span>`;
 
-  const rows = list.map((p) => {
-    const val = Number(p.value);
-    const valStr = isCost ? `${val.toFixed(2)}` : formatInt(val);
-    if (list.length === 1) {
-      return `<b style="color:${colors.tooltipText}">${valStr}</b>`;
-    }
-    return (
-      `<span style="color:${String(p.color)}">● </span>` +
-      `<span style="color:${colors.tooltipText}">${p.seriesName}: <b>${valStr}</b></span>`
-    );
-  });
+    const rows = list.map((p) => {
+      const val = Number(p.value);
+      const valStr = isCost ? `${val.toFixed(2)}` : formatInt(val);
+      if (list.length === 1) {
+        return `<b style="color:${colors.tooltipText}">${valStr}</b>`;
+      }
+      return (
+        `<span style="color:${String(p.color)}">● </span>` +
+        `<span style="color:${colors.tooltipText}">${p.seriesName}: <b>${valStr}</b></span>`
+      );
+    });
 
-  return `${header}<br/>${rows.join('<br/>')}`;
-};
+    return `${header}<br/>${rows.join('<br/>')}`;
+  };
 
 /**
  * Tooltip formatter for **category-axis** charts (y-axis = label, x = value).
@@ -280,27 +283,26 @@ export const buildTimeTooltipFormatter = (
  * Renders the category label (e.g. a username) as a header above each series
  * value. Cost metrics are prefixed with "$".
  */
-export const buildCategoryTooltipFormatter = (
-  colors: ChartColors,
-  isCost: boolean,
-) => (raw: TooltipComponentFormatterCallbackParams): string => {
-  const list = toParamList(raw);
-  if (list.length === 0) return '';
+export const buildCategoryTooltipFormatter =
+  (colors: ChartColors, isCost: boolean) =>
+  (raw: TooltipComponentFormatterCallbackParams): string => {
+    const list = toParamList(raw);
+    if (list.length === 0) return '';
 
-  const category = list[0].name;
-  const header = `<span style="color:${colors.axisLabel};font-size:11px">${category}</span>`;
+    const category = list[0].name;
+    const header = `<span style="color:${colors.axisLabel};font-size:11px">${category}</span>`;
 
-  const rows = list.map((p) => {
-    const val = Number(p.value);
-    const valStr = isCost ? `${val.toFixed(2)}` : formatInt(val);
-    if (list.length === 1) {
-      return `<b style="color:${colors.tooltipText}">${valStr}</b>`;
-    }
-    return (
-      `<span style="color:${String(p.color)}">● </span>` +
-      `<span style="color:${colors.tooltipText}">${p.seriesName}: <b>${valStr}</b></span>`
-    );
-  });
+    const rows = list.map((p) => {
+      const val = Number(p.value);
+      const valStr = isCost ? `${val.toFixed(2)}` : formatInt(val);
+      if (list.length === 1) {
+        return `<b style="color:${colors.tooltipText}">${valStr}</b>`;
+      }
+      return (
+        `<span style="color:${String(p.color)}">● </span>` +
+        `<span style="color:${colors.tooltipText}">${p.seriesName}: <b>${valStr}</b></span>`
+      );
+    });
 
-  return `${header}<br/>${rows.join('<br/>')}`;
-};
+    return `${header}<br/>${rows.join('<br/>')}`;
+  };

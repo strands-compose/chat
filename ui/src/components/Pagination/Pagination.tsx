@@ -62,7 +62,9 @@ const PaginationComponent = ({
           aria-label="Rows per page"
         >
           {pageSizeOptions.map((n) => (
-            <option key={n} value={n}>{n}</option>
+            <option key={n} value={n}>
+              {n}
+            </option>
           ))}
         </select>
       </div>
@@ -70,7 +72,7 @@ const PaginationComponent = ({
   };
 
   return (
-    <div className={styles.root} role="navigation" aria-label="Pagination">
+    <nav className={styles.root} aria-label="Pagination">
       {renderPageSizeSelector()}
       <span className={styles.info}>
         {start}-{end} of {totalItems}
@@ -98,7 +100,7 @@ const PaginationComponent = ({
           <FiChevronRight size={15} />
         </button>
       </div>
-    </div>
+    </nav>
   );
 };
 

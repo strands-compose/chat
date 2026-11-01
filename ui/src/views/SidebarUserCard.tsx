@@ -20,8 +20,8 @@ import {
   ProgressRing,
 } from '@/components';
 import { useAppConfig, useAuth } from '@/contexts';
-import { useChatStore } from '@/store';
 import { cn, formatCost, formatNextMonthReset } from '@/services/utils';
+import { useChatStore } from '@/store';
 import styles from './SidebarUserCard.module.css';
 
 // Lazy-loaded so the ECharts bundle is only fetched when the user opens the
@@ -91,7 +91,11 @@ const SidebarUserCardComponent = ({ collapsed }: SidebarUserCardProps): ReactEle
         </span>
       </DropdownMenuItem>
       {user.is_superuser && (
-        <DropdownMenuItem onSelect={() => { window.location.href = `${baseUrl}/admin`; }}>
+        <DropdownMenuItem
+          onSelect={() => {
+            window.location.href = `${baseUrl}/admin`;
+          }}
+        >
           <span className={styles.menuItemRow}>
             <LuShield size={15} />
             Admin panel

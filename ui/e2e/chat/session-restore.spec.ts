@@ -1,5 +1,5 @@
-import { test, expect } from '../support/test';
 import { makeAgent, makeExchange, makeSession, makeSessionUsage } from '../support/data';
+import { expect, test } from '../support/test';
 
 const NOW = new Date('2026-07-15T12:00:00Z');
 
@@ -11,12 +11,22 @@ const SESSION_USAGE = makeSessionUsage({
   total_cost: 0.5,
 });
 
-test('opening a session before the agent list has loaded still shows the agent name', async ({ page, backend }) => {
-  const research = makeAgent({ id: 'agent-research', name: 'Research Agent', suggested_questions: [] });
+test('opening a session before the agent list has loaded still shows the agent name', async ({
+  page,
+  backend,
+}) => {
+  const research = makeAgent({
+    id: 'agent-research',
+    name: 'Research Agent',
+    suggested_questions: [],
+  });
   backend.agents = [makeAgent(), research];
   const oslo = makeSession({ title: 'Oslo trip', agent_id: research.id });
   backend.sessions = [oslo];
-  backend.messages[oslo.session_id] = makeExchange('What should I pack for Oslo?', 'Pack layers and a rain jacket.');
+  backend.messages[oslo.session_id] = makeExchange(
+    'What should I pack for Oslo?',
+    'Pack layers and a rain jacket.',
+  );
 
   // Hold the agent list so the session is opened while it is still loading.
   let releaseAgents = (): void => {};
@@ -32,8 +42,15 @@ test('opening a session before the agent list has loaded still shows the agent n
   const agentsRequested = page.waitForRequest('**/api/v1/agents');
   await page.goto('/');
   await agentsRequested;
-  await page.getByRole('region', { name: 'Chat history' }).getByRole('button', { name: 'Oslo trip' }).click();
-  await expect(page.getByRole('article', { name: 'Assistant said' }).getByText('Pack layers and a rain jacket.')).toBeVisible();
+  await page
+    .getByRole('region', { name: 'Chat history' })
+    .getByRole('button', { name: 'Oslo trip' })
+    .click();
+  await expect(
+    page
+      .getByRole('article', { name: 'Assistant said' })
+      .getByText('Pack layers and a rain jacket.'),
+  ).toBeVisible();
 
   releaseAgents();
 
@@ -41,11 +58,18 @@ test('opening a session before the agent list has loaded still shows the agent n
   await expect(page.getByText('agent-research')).toHaveCount(0);
 });
 
-test('restoring a session from the sidebar shows its messages, agent and usage', async ({ page, backend }) => {
+test('restoring a session from the sidebar shows its messages, agent and usage', async ({
+  page,
+  backend,
+}) => {
   await page.clock.setFixedTime(NOW);
   backend.now = () => NOW;
 
-  const research = makeAgent({ id: 'agent-research', name: 'Research Agent', suggested_questions: [] });
+  const research = makeAgent({
+    id: 'agent-research',
+    name: 'Research Agent',
+    suggested_questions: [],
+  });
   backend.agents = [makeAgent(), research];
   backend.sessionUsage = SESSION_USAGE;
 
@@ -54,12 +78,19 @@ test('restoring a session from the sidebar shows its messages, agent and usage',
     last_used_at: '2026-07-15T08:30:00',
     agent_id: backend.agents[0].id,
   });
-  const oslo = makeSession({ title: 'Oslo trip', last_used_at: '2026-07-14T06:00:00', agent_id: research.id });
+  const oslo = makeSession({
+    title: 'Oslo trip',
+    last_used_at: '2026-07-14T06:00:00',
+    agent_id: research.id,
+  });
   const hiring = makeSession({ title: 'Hiring plan', last_used_at: '2026-07-11T12:00:00' });
   const old = makeSession({ title: 'Old notes', last_used_at: '2026-06-20T12:00:00' });
   backend.sessions = [budget, oslo, hiring, old];
   backend.messages[budget.session_id] = makeExchange('How is the budget?', 'Spending is on plan.');
-  backend.messages[oslo.session_id] = makeExchange('What should I pack for Oslo?', 'Pack layers and a rain jacket.');
+  backend.messages[oslo.session_id] = makeExchange(
+    'What should I pack for Oslo?',
+    'Pack layers and a rain jacket.',
+  );
 
   await page.goto('/');
   const history = page.getByRole('region', { name: 'Chat history' });
@@ -73,10 +104,18 @@ test('restoring a session from the sidebar shows its messages, agent and usage',
       'This week',
       'Older',
     ]);
-    await expect(history.getByRole('list', { name: 'Today' }).getByRole('button', { name: 'Budget review' })).toBeVisible();
-    await expect(history.getByRole('list', { name: 'Yesterday' }).getByRole('button', { name: 'Oslo trip' })).toBeVisible();
-    await expect(history.getByRole('list', { name: 'This week' }).getByRole('button', { name: 'Hiring plan' })).toBeVisible();
-    await expect(history.getByRole('list', { name: 'Older' }).getByRole('button', { name: 'Old notes' })).toBeVisible();
+    await expect(
+      history.getByRole('list', { name: 'Today' }).getByRole('button', { name: 'Budget review' }),
+    ).toBeVisible();
+    await expect(
+      history.getByRole('list', { name: 'Yesterday' }).getByRole('button', { name: 'Oslo trip' }),
+    ).toBeVisible();
+    await expect(
+      history.getByRole('list', { name: 'This week' }).getByRole('button', { name: 'Hiring plan' }),
+    ).toBeVisible();
+    await expect(
+      history.getByRole('list', { name: 'Older' }).getByRole('button', { name: 'Old notes' }),
+    ).toBeVisible();
   });
 
   await test.step('clicking a session loads its messages, agent and usage', async () => {
@@ -108,7 +147,11 @@ test('restoring a session from the sidebar shows its messages, agent and usage',
 });
 
 test('a session_id deep link restores that session', async ({ page, backend }) => {
-  const research = makeAgent({ id: 'agent-research', name: 'Research Agent', suggested_questions: [] });
+  const research = makeAgent({
+    id: 'agent-research',
+    name: 'Research Agent',
+    suggested_questions: [],
+  });
   backend.agents = [makeAgent(), research];
   backend.sessionUsage = SESSION_USAGE;
 
@@ -122,9 +165,15 @@ test('a session_id deep link restores that session', async ({ page, backend }) =
   await expect(page.getByText('Summarise Q3')).toBeVisible();
   await expect(page.getByText('Research Agent', { exact: true })).toBeVisible();
   await expect(
-    page.getByRole('group', { name: 'Session usage' }).getByRole('button', { name: /^Tokens\s*1\s500$/ }),
+    page
+      .getByRole('group', { name: 'Session usage' })
+      .getByRole('button', { name: /^Tokens\s*1\s500$/ }),
   ).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Chat history' }).getByRole('button', { name: 'Quarterly report' })).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: 'Chat history' })
+      .getByRole('button', { name: 'Quarterly report' }),
+  ).toBeVisible();
   await expect(page).toHaveURL(new RegExp(`[?&]session_id=${session.session_id}(&|$)`));
 });
 
@@ -132,7 +181,10 @@ test.describe('unknown session id', () => {
   // The store logs the refused restore; the user-visible fallback is asserted below.
   test.use({ consoleErrors: { allow: [/^\[chatStore\] restoreSession failed:/] } });
 
-  test('falls back to the new-chat state and drops the param from the URL', async ({ page, backend }) => {
+  test('falls back to the new-chat state and drops the param from the URL', async ({
+    page,
+    backend,
+  }) => {
     const known = makeSession({ title: 'Quarterly report' });
     backend.sessions = [known];
     backend.messages[known.session_id] = makeExchange('Summarise Q3', 'Revenue grew 12%.');
@@ -142,7 +194,9 @@ test.describe('unknown session id', () => {
     await expect(page.getByRole('heading', { name: /Welcome to/ })).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'Message' })).toBeEnabled();
     await expect(page).not.toHaveURL(/session_id=/);
-    expect(backend.requestsTo('GET', '/api/v1/sessions/ghost-session/messages').length).toBeGreaterThan(0);
+    expect(
+      backend.requestsTo('GET', '/api/v1/sessions/ghost-session/messages').length,
+    ).toBeGreaterThan(0);
     await expect(page.getByText('Revenue grew 12%.')).toHaveCount(0);
   });
 });

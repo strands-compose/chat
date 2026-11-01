@@ -11,7 +11,8 @@ if (!rootElement) {
 }
 
 const baseUrl = readMeta('app-base');
-const title = readMeta('app-title') || (import.meta.env.VITE_CUSTOM_TITLE as string | undefined) || null;
+const title =
+  readMeta('app-title') || (import.meta.env.VITE_CUSTOM_TITLE as string | undefined) || null;
 
 createRoot(rootElement).render(
   <StrictMode>

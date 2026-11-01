@@ -8,9 +8,9 @@
  * calendar grid — no external calendar library.
  */
 
+import * as RadixPopover from '@radix-ui/react-popover';
 import type { ReactElement } from 'react';
 import { memo, useState } from 'react';
-import * as RadixPopover from '@radix-ui/react-popover';
 import { FiCalendar, FiChevronDown, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { cn } from '@/services/utils';
 import styles from './DateRangePicker.module.css';
@@ -31,8 +31,7 @@ const startOfDay = (d: Date): Date => {
   return r;
 };
 
-const addMonths = (d: Date, n: number): Date =>
-  new Date(d.getFullYear(), d.getMonth() + n, 1);
+const addMonths = (d: Date, n: number): Date => new Date(d.getFullYear(), d.getMonth() + n, 1);
 
 const isSameDay = (a: Date, b: Date): boolean =>
   a.getFullYear() === b.getFullYear() &&
@@ -50,9 +49,21 @@ const buildMonth = (year: number, month: number): (Date | null)[] => {
   return cells;
 };
 
-const MONTHS = ['January','February','March','April','May','June',
-                 'July','August','September','October','November','December'];
-const DOW_HEADERS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+const DOW_HEADERS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
 /** Short label used in the trigger button. */
 const fmtShort = (d: Date): string =>
@@ -62,7 +73,10 @@ const fmtShort = (d: Date): string =>
 // PRESETS
 // ======================
 
-interface Preset { label: string; resolve: () => { from: Date; to: Date } }
+interface Preset {
+  label: string;
+  resolve: () => { from: Date; to: Date };
+}
 
 const daysAgo = (n: number): Date => {
   const d = new Date();
@@ -96,12 +110,12 @@ const PRESETS: Preset[] = [
       to: today(),
     }),
   },
-  { label: 'Last 7 days',   resolve: () => ({ from: daysAgo(6),      to: today() }) },
-  { label: 'Last 14 days',  resolve: () => ({ from: daysAgo(13),     to: today() }) },
-  { label: 'Last 30 days',  resolve: () => ({ from: daysAgo(29),     to: today() }) },
-  { label: 'Last 3 months', resolve: () => ({ from: monthsAgo(3),    to: today() }) },
-  { label: 'Last 6 months', resolve: () => ({ from: monthsAgo(6),    to: today() }) },
-  { label: 'Last year',     resolve: () => ({ from: monthsAgo(12),   to: today() }) },
+  { label: 'Last 7 days', resolve: () => ({ from: daysAgo(6), to: today() }) },
+  { label: 'Last 14 days', resolve: () => ({ from: daysAgo(13), to: today() }) },
+  { label: 'Last 30 days', resolve: () => ({ from: daysAgo(29), to: today() }) },
+  { label: 'Last 3 months', resolve: () => ({ from: monthsAgo(3), to: today() }) },
+  { label: 'Last 6 months', resolve: () => ({ from: monthsAgo(6), to: today() }) },
+  { label: 'Last year', resolve: () => ({ from: monthsAgo(12), to: today() }) },
 ];
 
 // ======================
@@ -119,7 +133,13 @@ interface MonthGridProps {
 }
 
 const MonthGrid = ({
-  year, month, rangeStart, rangeEnd, hovered, onDayClick, onDayHover,
+  year,
+  month,
+  rangeStart,
+  rangeEnd,
+  hovered,
+  onDayClick,
+  onDayHover,
 }: MonthGridProps): ReactElement => {
   const cells = buildMonth(year, month);
   const now = new Date();
@@ -137,19 +157,27 @@ const MonthGrid = ({
   };
 
   const isStart = (d: Date): boolean =>
-    !!rangeStart && isSameDay(d, rangeStart <= (effEnd ?? rangeStart) ? rangeStart : (effEnd ?? rangeStart));
+    !!rangeStart &&
+    isSameDay(d, rangeStart <= (effEnd ?? rangeStart) ? rangeStart : (effEnd ?? rangeStart));
 
   const isEnd = (d: Date): boolean =>
     !!effEnd && isSameDay(d, rangeStart && rangeStart <= effEnd ? effEnd : (rangeStart ?? effEnd));
 
   return (
     <div className={styles.monthGrid}>
-      <p className={styles.monthLabel}>{MONTHS[month]} {year}</p>
+      <p className={styles.monthLabel}>
+        {MONTHS[month]} {year}
+      </p>
       <div className={styles.dowRow}>
-        {DOW_HEADERS.map((h) => <span key={h} className={styles.dowCell}>{h}</span>)}
+        {DOW_HEADERS.map((h) => (
+          <span key={h} className={styles.dowCell}>
+            {h}
+          </span>
+        ))}
       </div>
       <div className={styles.daysGrid}>
         {cells.map((d, i) => {
+          // biome-ignore lint/suspicious/noArrayIndexKey: blank leading cells; their grid position is their identity.
           if (!d) return <div key={`e-${i}`} className={styles.dayEmpty} />;
           const isFuture = d > now;
           const start = isStart(d);
@@ -158,7 +186,12 @@ const MonthGrid = ({
           return (
             <div
               key={d.toISOString()}
-              className={cn(styles.dayCell, mid && styles.dayCellInRange, start && styles.dayCellStart, end && styles.dayCellEnd)}
+              className={cn(
+                styles.dayCell,
+                mid && styles.dayCellInRange,
+                start && styles.dayCellStart,
+                end && styles.dayCellEnd,
+              )}
             >
               <button
                 type="button"
@@ -191,7 +224,9 @@ interface DateRangePickerProps {
 const DateRangePickerComponent = ({ from, to, onChange }: DateRangePickerProps): ReactElement => {
   const [open, setOpen] = useState(false);
   /** Cursor = month shown on the LEFT calendar (right shows cursor+1). */
-  const [cursor, setCursor] = useState<Date>(() => new Date(from.getFullYear(), from.getMonth() - 1, 1));
+  const [cursor, setCursor] = useState<Date>(
+    () => new Date(from.getFullYear(), from.getMonth() - 1, 1),
+  );
   /** Pending first click before the range is complete. */
   const [picking, setPicking] = useState<Date | null>(null);
   const [hovered, setHovered] = useState<Date | null>(null);
@@ -199,7 +234,7 @@ const DateRangePickerComponent = ({ from, to, onChange }: DateRangePickerProps):
   const rangeStart = picking ?? from;
   const rangeEnd = picking ? null : to;
 
-  const leftYear  = cursor.getFullYear();
+  const leftYear = cursor.getFullYear();
   const leftMonth = cursor.getMonth();
   const rightDate = addMonths(cursor, 1);
 
@@ -212,9 +247,8 @@ const DateRangePickerComponent = ({ from, to, onChange }: DateRangePickerProps):
     } else {
       const a = picking;
       const b = startOfDay(d);
-      const from2 = a <= b ? a : b;
-      const to2   = a <= b ? new Date(b.getFullYear(), b.getMonth(), b.getDate(), 23, 59, 59, 999)
-                           : new Date(a.getFullYear(), a.getMonth(), a.getDate(), 23, 59, 59, 999);
+      const [from2, last] = a <= b ? [a, b] : [b, a];
+      const to2 = new Date(last.getFullYear(), last.getMonth(), last.getDate(), 23, 59, 59, 999);
       onChange({ from: from2, to: to2 });
       setPicking(null);
       setOpen(false);
@@ -229,8 +263,10 @@ const DateRangePickerComponent = ({ from, to, onChange }: DateRangePickerProps):
 
   const handleOpenChange = (next: boolean): void => {
     setOpen(next);
-    if (!next) { setPicking(null); setHovered(null); }
-    else setCursor(new Date(from.getFullYear(), from.getMonth() - 1, 1));
+    if (!next) {
+      setPicking(null);
+      setHovered(null);
+    } else setCursor(new Date(from.getFullYear(), from.getMonth() - 1, 1));
   };
 
   // ======================
@@ -241,7 +277,9 @@ const DateRangePickerComponent = ({ from, to, onChange }: DateRangePickerProps):
       <RadixPopover.Trigger asChild>
         <button type="button" className={styles.trigger}>
           <FiCalendar size={14} className={styles.triggerIcon} />
-          <span>{fmtShort(from)} - {fmtShort(to)}</span>
+          <span>
+            {fmtShort(from)} - {fmtShort(to)}
+          </span>
           <FiChevronDown size={13} className={styles.triggerChevron} />
         </button>
       </RadixPopover.Trigger>
@@ -249,12 +287,15 @@ const DateRangePickerComponent = ({ from, to, onChange }: DateRangePickerProps):
       <RadixPopover.Portal>
         <RadixPopover.Content className={styles.popover} align="start" sideOffset={6}>
           <div className={styles.panel}>
-
             {/* Preset sidebar */}
             <ul className={styles.presets}>
               {PRESETS.map((p) => (
                 <li key={p.label}>
-                  <button type="button" className={styles.presetBtn} onClick={() => handlePreset(p)}>
+                  <button
+                    type="button"
+                    className={styles.presetBtn}
+                    onClick={() => handlePreset(p)}
+                  >
                     {p.label}
                   </button>
                 </li>
@@ -264,30 +305,44 @@ const DateRangePickerComponent = ({ from, to, onChange }: DateRangePickerProps):
             {/* Calendar area */}
             <div className={styles.calendarArea}>
               <div className={styles.navRow}>
-                <button type="button" className={styles.navBtn} onClick={() => setCursor(addMonths(cursor, -1))} aria-label="Previous month">
+                <button
+                  type="button"
+                  className={styles.navBtn}
+                  onClick={() => setCursor(addMonths(cursor, -1))}
+                  aria-label="Previous month"
+                >
                   <FiChevronLeft size={16} />
                 </button>
-                <button type="button" className={styles.navBtn} onClick={() => setCursor(addMonths(cursor, 1))} aria-label="Next month">
+                <button
+                  type="button"
+                  className={styles.navBtn}
+                  onClick={() => setCursor(addMonths(cursor, 1))}
+                  aria-label="Next month"
+                >
                   <FiChevronRight size={16} />
                 </button>
               </div>
               <div className={styles.months}>
                 <MonthGrid
-                  year={leftYear} month={leftMonth}
-                  rangeStart={rangeStart} rangeEnd={rangeEnd}
+                  year={leftYear}
+                  month={leftMonth}
+                  rangeStart={rangeStart}
+                  rangeEnd={rangeEnd}
                   hovered={hovered}
-                  onDayClick={handleDayClick} onDayHover={setHovered}
+                  onDayClick={handleDayClick}
+                  onDayHover={setHovered}
                 />
                 <MonthGrid
-                  year={rightDate.getFullYear()} month={rightDate.getMonth()}
-                  rangeStart={rangeStart} rangeEnd={rangeEnd}
+                  year={rightDate.getFullYear()}
+                  month={rightDate.getMonth()}
+                  rangeStart={rangeStart}
+                  rangeEnd={rangeEnd}
                   hovered={hovered}
-                  onDayClick={handleDayClick} onDayHover={setHovered}
+                  onDayClick={handleDayClick}
+                  onDayHover={setHovered}
                 />
               </div>
-              {picking && (
-                <p className={styles.hint}>Click a second date to complete the range.</p>
-              )}
+              {picking && <p className={styles.hint}>Click a second date to complete the range.</p>}
             </div>
           </div>
         </RadixPopover.Content>

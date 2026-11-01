@@ -1,6 +1,6 @@
+import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import type { ReactElement } from 'react';
 import { memo } from 'react';
-import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import { FiAlertTriangle } from 'react-icons/fi';
 import { Button } from '../Button';
 import { Dialog } from '../Dialog';
@@ -60,9 +60,7 @@ const ConfirmDialogComponent = ({
       titleIcon={<FiAlertTriangle className={styles.icon} aria-hidden="true" />}
       actions={renderActions()}
     >
-      <AlertDialog.Description className={styles.message}>
-        {message}
-      </AlertDialog.Description>
+      <AlertDialog.Description className={styles.message}>{message}</AlertDialog.Description>
     </Dialog>
   );
 };

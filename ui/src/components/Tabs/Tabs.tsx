@@ -1,6 +1,6 @@
+import * as Radix from '@radix-ui/react-tabs';
 import type { ReactElement, ReactNode } from 'react';
 import { memo } from 'react';
-import * as Radix from '@radix-ui/react-tabs';
 import { cn } from '@/services/utils';
 import styles from './Tabs.module.css';
 

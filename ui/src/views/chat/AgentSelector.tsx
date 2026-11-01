@@ -8,17 +8,17 @@
  */
 
 import type { ReactElement } from 'react';
-import { memo, useEffect, useCallback } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
-import { useChatStore } from '@/store';
-import type { Agent } from '@/services';
 import {
   Button,
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components';
+import type { Agent } from '@/services';
+import { useChatStore } from '@/store';
 import styles from './AgentSelector.module.css';
 
 const AgentSelectorComponent = (): ReactElement => {
@@ -51,11 +51,7 @@ const AgentSelectorComponent = (): ReactElement => {
   // ======================
   // RENDER FUNCTIONS
   // ======================
-  const triggerLabel = loading
-    ? 'Loading…'
-    : error
-      ? 'Error'
-      : selectedAgentLabel || '---';
+  const triggerLabel = loading ? 'Loading…' : error ? 'Error' : selectedAgentLabel || '---';
 
   const renderItems = (): ReactElement[] => {
     if (error) {

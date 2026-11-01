@@ -4,8 +4,8 @@
  * format (see the recorded turn in src/services/demo-fixtures/events.ts).
  */
 
-import type { BackendStreamEvent } from '@/types';
 import { events as recordedTurn } from '@/services/demo-fixtures/events';
+import type { BackendStreamEvent } from '@/types';
 
 const TIMESTAMP = '2026-07-15T09:00:00.000000+00:00';
 
@@ -17,7 +17,11 @@ export function sseBody(events: readonly BackendStreamEvent[]): string {
   return events.map((event) => `data: ${JSON.stringify(event)}\n\n`).join('');
 }
 
-function event(type: string, agentName: string, data: Record<string, unknown> = {}): BackendStreamEvent {
+function event(
+  type: string,
+  agentName: string,
+  data: Record<string, unknown> = {},
+): BackendStreamEvent {
   return { type, agent_name: agentName, timestamp: TIMESTAMP, data };
 }
 
@@ -44,7 +48,11 @@ function toolEvents(agent: string, tools: ToolCall[]): BackendStreamEvent[] {
   return tools.flatMap((tool, i) => {
     const toolUseId = `tooluse_${i + 1}`;
     return [
-      event('tool_start', agent, { tool_name: tool.name, tool_use_id: toolUseId, tool_input: tool.input ?? {} }),
+      event('tool_start', agent, {
+        tool_name: tool.name,
+        tool_use_id: toolUseId,
+        tool_input: tool.input ?? {},
+      }),
       event('tool_end', agent, {
         tool_name: tool.name,
         tool_use_id: toolUseId,
@@ -60,7 +68,12 @@ function toolEvents(agent: string, tools: ToolCall[]): BackendStreamEvent[] {
  * [tools] → tokens → agent_complete → session_end. The fake backend replaces
  * the session id with the request's session.
  */
-export function streamTurn({ text, agent = 'main', tools = [], reasoning }: TurnOptions): BackendStreamEvent[] {
+export function streamTurn({
+  text,
+  agent = 'main',
+  tools = [],
+  reasoning,
+}: TurnOptions): BackendStreamEvent[] {
   const out: BackendStreamEvent[] = [
     event('session_start', agent, { session_id: 'replaced-by-fake-backend' }),
     event('agent_start', agent),

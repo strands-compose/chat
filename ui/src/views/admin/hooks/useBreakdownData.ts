@@ -35,26 +35,23 @@ export const useBreakdownData = (
 ): UseBreakdownDataResult => {
   const { dateRange, userIds, agentIds, groupIds } = useAdminFilters();
 
-  const { data, isLoading, error } = useAsyncData<BreakdownOut>(
-    () => {
-      const filters: { user_ids?: string[]; agent_ids?: string[]; group_ids?: string[] } = {};
-      if (userIds.length > 0) filters.user_ids = userIds;
-      if (agentIds.length > 0) filters.agent_ids = agentIds;
-      if (groupIds.length > 0) filters.group_ids = groupIds;
+  const { data, isLoading, error } = useAsyncData<BreakdownOut>(() => {
+    const filters: { user_ids?: string[]; agent_ids?: string[]; group_ids?: string[] } = {};
+    if (userIds.length > 0) filters.user_ids = userIds;
+    if (agentIds.length > 0) filters.agent_ids = agentIds;
+    if (groupIds.length > 0) filters.group_ids = groupIds;
 
-      return postBreakdown({
-        from: toDateParam(dateRange.from),
-        to: toDateParam(dateRange.to),
-        category,
-        metric,
-        stack_by: stackBy,
-        filters: Object.keys(filters).length > 0 ? filters : undefined,
-        max_items: maxItems,
-        max_series: maxSeries,
-      });
-    },
-    [dateRange, userIds, agentIds, groupIds, category, metric, stackBy, maxItems, maxSeries],
-  );
+    return postBreakdown({
+      from: toDateParam(dateRange.from),
+      to: toDateParam(dateRange.to),
+      category,
+      metric,
+      stack_by: stackBy,
+      filters: Object.keys(filters).length > 0 ? filters : undefined,
+      max_items: maxItems,
+      max_series: maxSeries,
+    });
+  }, [dateRange, userIds, agentIds, groupIds, category, metric, stackBy, maxItems, maxSeries]);
 
   return { data, isLoading, error: error?.message ?? null };
 };

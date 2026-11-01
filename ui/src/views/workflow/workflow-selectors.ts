@@ -5,7 +5,7 @@
  * they're tightly coupled to the view's rendering rules.
  */
 
-import type { WorkflowItem, ChatStore, Message, TurnTokens } from '@/types';
+import type { ChatStore, Message, TurnTokens, WorkflowItem } from '@/types';
 import type { AgentRun, AgentSummary } from './workflow-types';
 
 /** Number of colours in the per-agent palette (`--sc-agent-1` … `--sc-agent-5`). */
@@ -49,8 +49,7 @@ export function buildAgentRuns(items: WorkflowItem[]): AgentRun[] {
   const takePendingCall = (agentKey: string): { run: AgentRun; item: WorkflowItem } | undefined => {
     const queue = pendingCalls.get(agentKey);
     if (!queue) return undefined;
-    while (queue.length > 0) {
-      const call = queue.shift()!;
+    for (let call = queue.shift(); call; call = queue.shift()) {
       if (call.item.toolStatus !== 'error') return call;
     }
     return undefined;
@@ -199,9 +198,7 @@ function resolvePanelTurn(state: ChatStore): { seq: number | null; message: Mess
  * Resolve which trace the panel shows: the live buffer while a turn runs or has
  * just finished, otherwise the stored trace of the turn from `resolvePanelTurn`.
  */
-export function selectWorkflowTrace(
-  state: ChatStore | null | undefined,
-): WorkflowTraceSelection {
+export function selectWorkflowTrace(state: ChatStore | null | undefined): WorkflowTraceSelection {
   if (!state) return { items: [], isStreaming: false };
 
   // While streaming, show the live buffer.

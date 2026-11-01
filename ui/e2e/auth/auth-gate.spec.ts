@@ -1,5 +1,5 @@
-import { test, expect } from '../support/test';
 import { makeExchange, makeSession, makeUser } from '../support/data';
+import { expect, test } from '../support/test';
 
 test('a signed-out visitor is sent to the login page', async ({ page, backend }) => {
   backend.user = null;
@@ -10,7 +10,10 @@ test('a signed-out visitor is sent to the login page', async ({ page, backend })
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
 });
 
-test('logging in follows the returned next URL exactly and restores that session', async ({ page, backend }) => {
+test('logging in follows the returned next URL exactly and restores that session', async ({
+  page,
+  backend,
+}) => {
   const session = makeSession({ title: 'Quarterly report' });
   backend.sessions = [session];
   backend.messages[session.session_id] = makeExchange('Summarise Q3', 'Revenue grew 12%.');
@@ -28,12 +31,16 @@ test('logging in follows the returned next URL exactly and restores that session
 
   await expect(page).toHaveURL(`/?session_id=${session.session_id}`);
   await expect(page.getByText('Revenue grew 12%.')).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Chat history' }).getByText('Quarterly report')).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Chat history' }).getByText('Quarterly report'),
+  ).toBeVisible();
 });
 
 test('a failing session check shows the error dialog and does not redirect', async ({ page }) => {
   // Every attempt fails: StrictMode runs the mount-time session check twice and ignores the first result.
-  await page.route('**/auth/me', (route) => route.fulfill({ status: 500, json: { detail: 'Boom' } }));
+  await page.route('**/auth/me', (route) =>
+    route.fulfill({ status: 500, json: { detail: 'Boom' } }),
+  );
 
   await page.goto('/');
 

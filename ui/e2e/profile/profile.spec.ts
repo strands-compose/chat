@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
-import { test, expect } from '../support/test';
 import { makeUsagePoint, makeUser, makeUserUsage } from '../support/data';
+import { expect, test } from '../support/test';
 
 const FIXED_NOW = new Date('2026-07-15T12:00:00Z');
 
@@ -12,7 +12,10 @@ async function openProfile(page: Page) {
   return dialog;
 }
 
-test('the account form saves only the changed, trimmed fields', { tag: '@smoke' }, async ({ page, backend }) => {
+test('the account form saves only the changed, trimmed fields', { tag: '@smoke' }, async ({
+  page,
+  backend,
+}) => {
   backend.user = makeUser({
     username: 'alice',
     email: 'alice@example.com',
@@ -39,7 +42,10 @@ test('the account form saves only the changed, trimmed fields', { tag: '@smoke' 
     await dialog.getByRole('button', { name: 'Save changes' }).click();
 
     await expect.poll(patches).toBe(before + 1);
-    expect(backend.requestsTo('PATCH', '/auth/me').at(-1)?.body).toEqual({ first_name: 'Alicia', company: 'Acme' });
+    expect(backend.requestsTo('PATCH', '/auth/me').at(-1)?.body).toEqual({
+      first_name: 'Alicia',
+      company: 'Acme',
+    });
   });
 
   await test.step('the dialog shows the saved values', async () => {
@@ -77,15 +83,25 @@ test('a failed save shows the reason and keeps the edits', async ({ page, backen
   await expect(dialog.getByRole('button', { name: 'Save changes' })).toBeEnabled();
 });
 
-test('the usage tab shows the totals and re-requests for another interval', async ({ page, backend }) => {
+test('the usage tab shows the totals and re-requests for another interval', async ({
+  page,
+  backend,
+}) => {
   await page.clock.setFixedTime(FIXED_NOW);
   backend.now = () => FIXED_NOW;
   backend.userUsage = ({ interval }) =>
     interval === 'weekly'
-      ? makeUserUsage(interval, [makeUsagePoint('2026-06-29', { cost: 3, input_tokens: 2000, output_tokens: 500 })])
+      ? makeUserUsage(interval, [
+          makeUsagePoint('2026-06-29', { cost: 3, input_tokens: 2000, output_tokens: 500 }),
+        ])
       : makeUserUsage(interval, [
           makeUsagePoint('2026-07-03', { cost: 1.25, input_tokens: 1000, output_tokens: 200 }),
-          makeUsagePoint('2026-07-10', { cost: 2.5, input_tokens: 3000, output_tokens: 400, cache_read_input_tokens: 500 }),
+          makeUsagePoint('2026-07-10', {
+            cost: 2.5,
+            input_tokens: 3000,
+            output_tokens: 400,
+            cache_read_input_tokens: 500,
+          }),
         ]);
   const usageRequests = (): number => backend.requestsTo('GET', '/api/v1/users/me/usage').length;
 
@@ -104,38 +120,61 @@ test('the usage tab shows the totals and re-requests for another interval', asyn
 
   await test.step('switching to Weekly requests that interval and shows its data', async () => {
     const before = usageRequests();
-    await dialog.getByRole('group', { name: 'Interval' }).getByRole('button', { name: 'Weekly' }).click();
+    await dialog
+      .getByRole('group', { name: 'Interval' })
+      .getByRole('button', { name: 'Weekly' })
+      .click();
 
     await expect.poll(usageRequests).toBe(before + 1);
-    expect(backend.requestsTo('GET', '/api/v1/users/me/usage').at(-1)?.query.interval).toBe('weekly');
+    expect(backend.requestsTo('GET', '/api/v1/users/me/usage').at(-1)?.query.interval).toBe(
+      'weekly',
+    );
     await expect(dialog.getByRole('row', { name: /29 Jun 2026\s*\$3\.00/ })).toBeVisible();
     await expect(dialog.getByRole('button', { name: /Tokens\s*2\s500/ })).toBeVisible();
   });
 
   await test.step('switching to Monthly requests that interval', async () => {
     const before = usageRequests();
-    await dialog.getByRole('group', { name: 'Interval' }).getByRole('button', { name: 'Monthly' }).click();
+    await dialog
+      .getByRole('group', { name: 'Interval' })
+      .getByRole('button', { name: 'Monthly' })
+      .click();
 
     await expect.poll(usageRequests).toBe(before + 1);
-    expect(backend.requestsTo('GET', '/api/v1/users/me/usage').at(-1)?.query.interval).toBe('monthly');
+    expect(backend.requestsTo('GET', '/api/v1/users/me/usage').at(-1)?.query.interval).toBe(
+      'monthly',
+    );
   });
 
   await test.step('Chart mode Tokens lists tokens instead of cost, from the data already loaded', async () => {
-    await dialog.getByRole('group', { name: 'Interval' }).getByRole('button', { name: 'Daily' }).click();
+    await dialog
+      .getByRole('group', { name: 'Interval' })
+      .getByRole('button', { name: 'Daily' })
+      .click();
     await expect(dialog.getByRole('row', { name: /3 Jul 2026\s*\$1\.25/ })).toBeVisible();
     const before = usageRequests();
 
-    await dialog.getByRole('group', { name: 'Chart mode' }).getByRole('button', { name: 'Tokens' }).click();
+    await dialog
+      .getByRole('group', { name: 'Chart mode' })
+      .getByRole('button', { name: 'Tokens' })
+      .click();
 
     await expect(dialog.getByRole('columnheader', { name: 'Cache R' })).toBeVisible();
-    await expect(dialog.getByRole('row', { name: /10 Jul 2026\s*3,000\s*400\s*500/ })).toBeVisible();
+    await expect(
+      dialog.getByRole('row', { name: /10 Jul 2026\s*3,000\s*400\s*500/ }),
+    ).toBeVisible();
     expect(usageRequests()).toBe(before);
   });
 });
 
 test('the agents tab lists the available agents', async ({ page, backend }) => {
   const [first] = backend.agents;
-  const second = { ...first, id: 'agent-reviewer', name: 'Reviewer', description: 'Reviews pull requests.' };
+  const second = {
+    ...first,
+    id: 'agent-reviewer',
+    name: 'Reviewer',
+    description: 'Reviews pull requests.',
+  };
   backend.agents = [first, second];
 
   await page.goto('/');

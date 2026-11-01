@@ -6,63 +6,74 @@
  */
 
 import type { ChatStreamEvent } from '../../types';
-import type { StreamingSideEffects } from './types';
 import {
-  handleSessionStart,
-  handleSessionEnd,
-  handleToken,
-  handleReasoning,
-  handleToolStart,
-  handleToolEnd,
   handleAgentStart,
+  handleComplete,
+  handleError,
+  handleHandoff,
+  handleMultiagentComplete,
   handleMultiagentStart,
   handleNodeStart,
   handleNodeStop,
-  handleHandoff,
-  handleComplete,
-  handleMultiagentComplete,
-  handleError,
+  handleReasoning,
+  handleSessionEnd,
+  handleSessionStart,
+  handleToken,
+  handleToolEnd,
+  handleToolStart,
 } from './handlers';
+import type { StreamingSideEffects } from './types';
 
-export { streamingState, resetStreamingState, makeInitialStreamingState } from './state';
-export { configureScheduler, scheduleFlush, cancelFlush } from './scheduler';
-export type { StreamingState, StreamingSideEffects } from './types';
+export { cancelFlush, configureScheduler, scheduleFlush } from './scheduler';
+export { makeInitialStreamingState, resetStreamingState, streamingState } from './state';
+export type { StreamingSideEffects, StreamingState } from './types';
 
 /** Route a single backend event to the right handler. */
-export function dispatchStreamEvent(
-  event: ChatStreamEvent,
-  effects: StreamingSideEffects,
-): void {
+export function dispatchStreamEvent(event: ChatStreamEvent, effects: StreamingSideEffects): void {
   switch (event.type) {
     case 'session_start':
-      return handleSessionStart(event, effects);
+      handleSessionStart(event, effects);
+      break;
     case 'session_end':
-      return handleSessionEnd(event, effects);
+      handleSessionEnd(event, effects);
+      break;
     case 'token':
-      return handleToken(event, effects);
+      handleToken(event, effects);
+      break;
     case 'reasoning':
-      return handleReasoning(event, effects);
+      handleReasoning(event, effects);
+      break;
     case 'tool_start':
-      return handleToolStart(event, effects);
+      handleToolStart(event, effects);
+      break;
     case 'tool_end':
-      return handleToolEnd(event, effects);
+      handleToolEnd(event, effects);
+      break;
     case 'agent_start':
-      return handleAgentStart(event, effects);
+      handleAgentStart(event, effects);
+      break;
     case 'multiagent_start':
-      return handleMultiagentStart(event, effects);
+      handleMultiagentStart(event, effects);
+      break;
     case 'node_start':
-      return handleNodeStart(event, effects);
+      handleNodeStart(event, effects);
+      break;
     case 'node_stop':
-      return handleNodeStop(event, effects);
+      handleNodeStop(event, effects);
+      break;
     case 'handoff':
-      return handleHandoff(event, effects);
+      handleHandoff(event, effects);
+      break;
     case 'agent_complete':
-      return handleComplete(event, effects);
+      handleComplete(event, effects);
+      break;
     case 'multiagent_complete':
-      return handleMultiagentComplete(event, effects);
+      handleMultiagentComplete(event, effects);
+      break;
     case 'error':
-      return handleError(event, effects);
+      handleError(event, effects);
+      break;
     case 'interrupt':
-      return;
+      break;
   }
 }

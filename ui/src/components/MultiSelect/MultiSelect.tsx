@@ -5,10 +5,10 @@
  * button removes all selections without opening the popover.
  */
 
-import type { ReactElement } from 'react';
-import { memo, useMemo, useRef, useState } from 'react';
 import * as RadixPopover from '@radix-ui/react-popover';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import type { ReactElement } from 'react';
+import { memo, useMemo, useRef, useState } from 'react';
 import { FiCheck, FiChevronDown, FiSearch, FiX } from 'react-icons/fi';
 import { cn } from '@/services/utils';
 import styles from './MultiSelect.module.css';
@@ -69,6 +69,7 @@ const OptionListComponent = ({ options, selectedSet, onToggle }: OptionListProps
   const renderOption = (opt: MultiSelectOption): ReactElement => {
     const checked = selectedSet.has(opt.value);
     return (
+      // biome-ignore lint/a11y/useSemanticElements: a whole-row toggle in a virtualized list, drawn with its own check mark.
       <button
         type="button"
         role="checkbox"
@@ -181,7 +182,10 @@ const MultiSelectComponent = ({
       <button
         type="button"
         className={styles.badgeRemove}
-        onClick={(e) => { e.stopPropagation(); toggleOption(opt.value); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleOption(opt.value);
+        }}
         aria-label={`Remove ${opt.label}`}
       >
         <FiX size={10} />
@@ -201,13 +205,14 @@ const MultiSelectComponent = ({
 
     return (
       <>
-        <div className={styles.badgeList}>
-          {selectedOptions.map(renderBadge)}
-        </div>
+        <div className={styles.badgeList}>{selectedOptions.map(renderBadge)}</div>
         <button
           type="button"
           className={styles.clearAll}
-          onClick={(e) => { e.stopPropagation(); handleClear(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClear();
+          }}
           aria-label="Clear all"
         >
           <FiX size={13} />

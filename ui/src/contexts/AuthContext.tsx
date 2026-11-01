@@ -6,10 +6,10 @@
  * provider never touches tokens directly — it only tracks the resulting user.
  */
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactElement, ReactNode } from 'react';
-import { fetchCurrentUser, logout as logoutRequest } from '@/services';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { CurrentUser } from '@/services';
+import { fetchCurrentUser, logout as logoutRequest } from '@/services';
 
 export interface AuthContextValue {
   /** The authenticated user, or null when signed out. */

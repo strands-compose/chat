@@ -6,33 +6,32 @@
  * etc.) are not re-exported here and remain package-private.
  */
 
-// ── ECharts runtime + React wrapper ─────────────────────────────────────────
-export { echarts, ReactECharts } from './echartsCore';
-export type { ECOption } from './echartsCore';
+// ── Label formatting ─────────────────────────────────────────────────────────
+export { formatBucketLabel } from './bucketLabels';
+export type {
+  BuildLineSeriesOptions,
+  ChartColors,
+  LegendOptions,
+  LegendPosition,
+} from './chartOptions';
 
 // ── Axis / grid / legend / series builders ───────────────────────────────────
 export {
-  cssVar,
-  readChartColors,
   axisDefaults,
-  formatInt,
-  costAxisLabel,
-  intAxisLabel,
+  buildCategoryTooltipFormatter,
   buildGrid,
   buildLegend,
   buildLineSeries,
-  buildTooltipBase,
   buildTimeTooltipFormatter,
-  buildCategoryTooltipFormatter,
+  buildTooltipBase,
+  costAxisLabel,
+  cssVar,
+  formatInt,
+  intAxisLabel,
+  readChartColors,
   SERIES_COLORS,
   VERTICAL_LEGEND_RIGHT_PAD,
 } from './chartOptions';
-export type {
-  ChartColors,
-  LegendPosition,
-  LegendOptions,
-  BuildLineSeriesOptions,
-} from './chartOptions';
-
-// ── Label formatting ─────────────────────────────────────────────────────────
-export { formatBucketLabel } from './bucketLabels';
+export type { ECOption } from './echartsCore';
+// ── ECharts runtime + React wrapper ─────────────────────────────────────────
+export { echarts, ReactECharts } from './echartsCore';

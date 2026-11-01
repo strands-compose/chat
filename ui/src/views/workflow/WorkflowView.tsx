@@ -1,6 +1,5 @@
-import { Fragment, memo, useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import type { CSSProperties, ReactElement } from 'react';
-import { useShallow } from 'zustand/react/shallow';
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   LuArrowDown,
   LuArrowRightLeft,
@@ -12,7 +11,8 @@ import {
   LuWorkflow,
   LuX,
 } from 'react-icons/lu';
-import { useChatStore } from '@/store';
+import { useShallow } from 'zustand/react/shallow';
+import type { ToolBadgeStatus } from '@/components';
 import {
   Collapsible,
   CollapsibleContent,
@@ -24,20 +24,19 @@ import {
   ToolBadge,
   UsagePill,
 } from '@/components';
-import type { ToolBadgeStatus } from '@/components';
 import { cn, formatAgentLabel, formatTokenCount } from '@/services/utils';
+import { useChatStore } from '@/store';
+import type { WorkflowGroupedItems, WorkflowItem } from '@/types';
+import styles from './WorkflowView.module.css';
 import {
   agentNameSet,
   buildAgentRuns,
   selectWorkflowStatus,
-  selectWorkflowTrace,
   selectWorkflowTokens,
+  selectWorkflowTrace,
   summarizeAgents,
 } from './workflow-selectors';
-import styles from './WorkflowView.module.css';
-
 import type { AgentRun, AgentSummary } from './workflow-types';
-import type { WorkflowItem, WorkflowGroupedItems } from '@/types';
 
 // ======================
 // FILE-SCOPE STABLE FALLBACKS
@@ -52,26 +51,30 @@ const STICK_THRESHOLD = 40;
 // BLOCK COMPONENTS (only used here)
 // ======================
 
-const InlineReasoning = memo(({ content }: { content: string }): ReactElement => (
-  <Collapsible defaultOpen className={styles.reasoning}>
-    <CollapsibleTrigger asChild>
-      <button type="button" className={styles.reasoningLabel} title="Show or hide thinking">
-        <LuBrain size={13} />
-        Thinking
-        <LuChevronDown size={13} className={styles.reasoningChevron} aria-hidden="true" />
-      </button>
-    </CollapsibleTrigger>
-    <CollapsibleContent asChild>
-      <p className={styles.reasoningText}>{content}</p>
-    </CollapsibleContent>
-  </Collapsible>
-));
+const InlineReasoning = memo(
+  ({ content }: { content: string }): ReactElement => (
+    <Collapsible defaultOpen className={styles.reasoning}>
+      <CollapsibleTrigger asChild>
+        <button type="button" className={styles.reasoningLabel} title="Show or hide thinking">
+          <LuBrain size={13} />
+          Thinking
+          <LuChevronDown size={13} className={styles.reasoningChevron} aria-hidden="true" />
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent asChild>
+        <p className={styles.reasoningText}>{content}</p>
+      </CollapsibleContent>
+    </Collapsible>
+  ),
+);
 
-const StreamingTextBox = memo(({ content, live }: { content: string; live: boolean }): ReactElement => (
-  <Markdown className={cn(styles.streamingTextBox, live && styles.streamingTextLive)}>
-    {content}
-  </Markdown>
-));
+const StreamingTextBox = memo(
+  ({ content, live }: { content: string; live: boolean }): ReactElement => (
+    <Markdown className={cn(styles.streamingTextBox, live && styles.streamingTextLive)}>
+      {content}
+    </Markdown>
+  ),
+);
 
 const Handoff = memo(({ targets }: { targets: string[] | undefined }): ReactElement => {
   const label = targets?.length ? targets.map(formatAgentLabel).join(', ') : 'next agent';
@@ -88,7 +91,10 @@ const Handoff = memo(({ targets }: { targets: string[] | undefined }): ReactElem
 // ======================
 
 /** Tool status to show: the recorded one, or success when output exists without a status. */
-const resolveToolStatus = (item: WorkflowItem, isStreaming: boolean): ToolBadgeStatus | undefined => {
+const resolveToolStatus = (
+  item: WorkflowItem,
+  isStreaming: boolean,
+): ToolBadgeStatus | undefined => {
   if (item.toolStatus === 'running') return isStreaming ? 'running' : undefined;
   if (item.toolStatus) return item.toolStatus;
   return item.toolOutput ? 'success' : undefined;
@@ -108,13 +114,7 @@ const WorkflowViewComponent = (): ReactElement => {
   // STORE SELECTORS
   // ======================
 
-  const {
-    workflowItems,
-    isStreaming,
-    resolvedMessageId,
-    isSuccess,
-    tokens,
-  } = useChatStore(
+  const { workflowItems, isStreaming, resolvedMessageId, isSuccess, tokens } = useChatStore(
     useShallow((s) => {
       const trace = selectWorkflowTrace(s);
       const status = selectWorkflowStatus(s);
@@ -246,7 +246,12 @@ const WorkflowViewComponent = (): ReactElement => {
             title="Tokens for this turn"
           />
         </span>
-        <IconButton size="lg" onClick={handleClose} title="Close workflow panel" aria-label="Close workflow panel">
+        <IconButton
+          size="lg"
+          onClick={handleClose}
+          title="Close workflow panel"
+          aria-label="Close workflow panel"
+        >
           <LuX size={18} />
         </IconButton>
       </>
@@ -329,12 +334,15 @@ const WorkflowViewComponent = (): ReactElement => {
       }
       case 'tool':
         return group.items.map((item, i) => renderTool(item, run, `${groupKey}-${i}`));
+      // Trace items carry no ids and are only ever appended, so their position is a stable key.
       case 'handoff':
         return group.items.map((item, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: append-only trace items (see above).
           <Handoff key={`${groupKey}-${i}`} targets={item.handoffTargets} />
         ));
       default:
         return group.items.map((item, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: append-only trace items (see above).
           <span key={`${groupKey}-${i}`} className={styles.workflowText}>
             {item.content}
           </span>
@@ -353,7 +361,9 @@ const WorkflowViewComponent = (): ReactElement => {
     if (!run.agentName) {
       return (
         <div key={run.key} className={styles.runBody}>
-          {run.groups.map((group, i) => renderGroup(group, run, `${run.key}-${i}`, i === run.groups.length - 1))}
+          {run.groups.map((group, i) =>
+            renderGroup(group, run, `${run.key}-${i}`, i === run.groups.length - 1),
+          )}
         </div>
       );
     }
@@ -386,7 +396,9 @@ const WorkflowViewComponent = (): ReactElement => {
           <div className={styles.runBodyCollapsed} />
         ) : (
           <div className={styles.runBody}>
-            {run.groups.map((group, i) => renderGroup(group, run, `${run.key}-${i}`, i === run.groups.length - 1))}
+            {run.groups.map((group, i) =>
+              renderGroup(group, run, `${run.key}-${i}`, i === run.groups.length - 1),
+            )}
           </div>
         )}
         {run.hasEnded && (

@@ -26,6 +26,7 @@ export interface ConsoleErrorPolicy {
 interface Fixtures {
   backend: FakeBackend;
   consoleErrors: ConsoleErrorPolicy;
+  // biome-ignore lint/suspicious/noConfusingVoidType: Playwright types a value-less fixture as void, so `use()` takes no argument.
   consoleGuard: void;
 }
 
@@ -61,7 +62,8 @@ export const test = base.extend<Fixtures>({
         // Every backend URL is answered (or reported) by the fail-closed fake,
         // so the browser's own line for a mocked error status is not a finding.
         const source = message.location().url;
-        if (text.startsWith('Failed to load resource') && source && isBackendUrl(new URL(source))) return;
+        if (text.startsWith('Failed to load resource') && source && isBackendUrl(new URL(source)))
+          return;
         check(text);
       });
       page.on('pageerror', (error) => check(`Uncaught: ${error.message}`));

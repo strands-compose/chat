@@ -1,9 +1,11 @@
-import { test, expect } from '../support/test';
+import { expect, test } from '../support/test';
 
 test.describe('light system preference', () => {
   test.use({ colorScheme: 'light' });
 
-  test('the first load is light, the toggle flips it and the choice survives a reload', async ({ page }) => {
+  test('the first load is light, the toggle flips it and the choice survives a reload', async ({
+    page,
+  }) => {
     await page.goto('/');
     const root = page.locator('html');
 

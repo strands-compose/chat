@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent, RefObject } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 interface SplitterApi {
   /** Left panel percentage (30 — 90). */

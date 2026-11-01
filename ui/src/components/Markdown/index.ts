@@ -1,2 +1,2 @@
 export { Markdown } from './Markdown';
-export { REMARK_PLUGINS, REHYPE_PLUGINS } from './plugins';
+export { REHYPE_PLUGINS, REMARK_PLUGINS } from './plugins';

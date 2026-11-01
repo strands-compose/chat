@@ -46,7 +46,7 @@
 }
 
 .userRow:hover,
-.userRow[data-state='open'] {
+.userRow[data-state="open"] {
   background: var(--sc-bg-hover);
 }
 
@@ -80,7 +80,7 @@
   transition: transform 0.15s;
 }
 
-.userRow[data-state='open'] .chevron {
+.userRow[data-state="open"] .chevron {
   transform: rotate(180deg);
 }
 

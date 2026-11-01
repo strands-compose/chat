@@ -27,9 +27,7 @@ interface AgentsListProps {
 }
 
 /** Map an agent's kind to a human-readable badge label. */
-const kindLabel = (agentKind: string): string => (
-  agentKind.replaceAll("_", " ").toUpperCase()
-)
+const kindLabel = (agentKind: string): string => agentKind.replaceAll('_', ' ').toUpperCase();
 
 // ======================
 // AGENT ROW
@@ -56,9 +54,7 @@ const AgentRow = ({ agent }: AgentRowProps): ReactElement => {
       </CollapsibleTrigger>
       <CollapsibleContent className={styles.rowBody}>
         {agent.description ? (
-          <Markdown className={styles.description}>
-            {agent.description}
-          </Markdown>
+          <Markdown className={styles.description}>{agent.description}</Markdown>
         ) : (
           <p className={styles.noDescription}>No description provided.</p>
         )}
@@ -73,7 +69,7 @@ const AgentRow = ({ agent }: AgentRowProps): ReactElement => {
 
 const AgentsListComponent = ({ agents }: AgentsListProps): ReactElement => {
   if (agents.length === 0) {
-    return <p className={styles.emptyState}>No agents available</p>
+    return <p className={styles.emptyState}>No agents available</p>;
   }
 
   return (

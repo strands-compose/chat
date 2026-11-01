@@ -2,8 +2,8 @@
  * App-wide static configuration: context object, consumer hook, and provider.
  */
 
-import { createContext, useContext, useMemo } from 'react';
 import type { ReactElement, ReactNode } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 
 export interface AppConfig {
   /** Custom app title. `null` means "use the default branding". */
@@ -26,10 +26,7 @@ interface AppConfigProviderProps {
   config?: Partial<AppConfig>;
 }
 
-const AppConfigProviderComponent = ({
-  children,
-  config,
-}: AppConfigProviderProps): ReactElement => {
+const AppConfigProviderComponent = ({ children, config }: AppConfigProviderProps): ReactElement => {
   const value = useMemo<AppConfig>(
     () => ({
       title: config?.title ?? null,

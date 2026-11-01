@@ -1,7 +1,9 @@
-import { test, expect } from '../support/test';
 import { errorTurn, streamTurn } from '../support/sse';
+import { expect, test } from '../support/test';
 
-test('an invocation refused with Problem Details shows its detail as a failed turn', async ({ page }) => {
+test('an invocation refused with Problem Details shows its detail as a failed turn', async ({
+  page,
+}) => {
   await page.route(
     '**/api/v1/invocations',
     (route) =>
@@ -22,7 +24,10 @@ test('an invocation refused with Problem Details shows its detail as a failed tu
   await expect(composer).toBeEnabled();
 });
 
-test('a refused follow-up turn does not show the previous turn as its workflow', async ({ page, backend }) => {
+test('a refused follow-up turn does not show the previous turn as its workflow', async ({
+  page,
+  backend,
+}) => {
   backend.reply = streamTurn({
     text: 'It is sunny today.',
     tools: [{ name: 'get_weather', input: { day: 'today' }, result: 'sunny' }],

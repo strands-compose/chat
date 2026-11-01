@@ -6,13 +6,13 @@
 import type { ReactElement } from 'react';
 import { memo, useEffect, useState } from 'react';
 import { LuPanelLeftClose, LuPanelLeftOpen, LuPencil, LuSquarePen, LuTrash2 } from 'react-icons/lu';
-import { useChatStore } from '@/store';
+import { ConfirmDialog, ErrorDialog, IconButton, RenameSessionDialog } from '@/components';
 import { useAppConfig } from '@/contexts';
-import { cn, isMobileViewport } from '@/services/utils';
 import type { Session } from '@/services/api';
-import { IconButton, ConfirmDialog, ErrorDialog, RenameSessionDialog } from '@/components';
-import { SidebarUserCard } from './SidebarUserCard';
+import { cn, isMobileViewport } from '@/services/utils';
+import { useChatStore } from '@/store';
 import styles from './Sidebar.module.css';
+import { SidebarUserCard } from './SidebarUserCard';
 
 // ====== TIME BUCKET HELPERS ======
 
@@ -27,7 +27,12 @@ function getBucket(date: Date): Bucket {
 }
 
 function groupSessions(sessions: Session[]): Array<{ label: Bucket; items: Session[] }> {
-  const buckets: Record<Bucket, Session[]> = { Today: [], Yesterday: [], 'This week': [], Older: [] };
+  const buckets: Record<Bucket, Session[]> = {
+    Today: [],
+    Yesterday: [],
+    'This week': [],
+    Older: [],
+  };
   for (const s of sessions) {
     buckets[getBucket(new Date(s.last_used_at))].push(s);
   }
@@ -56,12 +61,14 @@ const HistoryGroup = ({
 }: HistoryGroupProps): ReactElement => (
   <div className={styles.historyGroup}>
     <div className={styles.historyGroupLabel}>{label}</div>
-    <div role="list" aria-label={label}>
+    <ul className={styles.historyList} aria-label={label}>
       {items.map((s) => (
-        <div
+        <li
           key={s.session_id}
-          role="listitem"
-          className={cn(styles.historyRow, s.session_id === activeSessionId && styles.historyRowActive)}
+          className={cn(
+            styles.historyRow,
+            s.session_id === activeSessionId && styles.historyRowActive,
+          )}
         >
           <button
             className={styles.historyItem}
@@ -95,9 +102,9 @@ const HistoryGroup = ({
               <LuTrash2 size={15} />
             </IconButton>
           </div>
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   </div>
 );
 
@@ -109,7 +116,9 @@ const SidebarComponent = (): ReactElement => {
   // ======================
   // Collapsed by default on mobile viewports; expanded on larger screens.
   const [expanded, setExpanded] = useState(() => !isMobileViewport());
-  const [renameTarget, setRenameTarget] = useState<{ sessionId: string; title: string } | null>(null);
+  const [renameTarget, setRenameTarget] = useState<{ sessionId: string; title: string } | null>(
+    null,
+  );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [actionError, setActionError] = useState<{ title: string; message: string } | null>(null);
 
@@ -128,28 +137,37 @@ const SidebarComponent = (): ReactElement => {
   const deleteSession = useChatStore((s) => s.deleteSession);
 
   // Load sessions on mount.
-  useEffect(() => { loadSessions(); }, [loadSessions]);
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
 
   // ======================
   // HANDLERS
   // ======================
   const toggleSidebar = (): void => setExpanded((prev) => !prev);
-  const handleNewChat = (): void => guardInterrupt(() => {
-    clearChat();
-    if (isMobileViewport()) setExpanded(false);
-  });
-  const handleSelectSession = (sid: string): void => guardInterrupt(() => {
-    restoreSession(sid);
-    if (isMobileViewport()) setExpanded(false);
-  });
+  const handleNewChat = (): void =>
+    guardInterrupt(() => {
+      clearChat();
+      if (isMobileViewport()) setExpanded(false);
+    });
+  const handleSelectSession = (sid: string): void =>
+    guardInterrupt(() => {
+      restoreSession(sid);
+      if (isMobileViewport()) setExpanded(false);
+    });
 
   const showActionError = (errorTitle: string, err: unknown): void => {
-    setActionError({ title: errorTitle, message: err instanceof Error ? err.message : 'Unexpected error.' });
+    setActionError({
+      title: errorTitle,
+      message: err instanceof Error ? err.message : 'Unexpected error.',
+    });
   };
 
   const handleRenameSession = (newTitle: string): void => {
     if (!renameTarget) return;
-    renameSession(renameTarget.sessionId, newTitle).catch((err: unknown) => showActionError('Rename failed', err));
+    renameSession(renameTarget.sessionId, newTitle).catch((err: unknown) =>
+      showActionError('Rename failed', err),
+    );
     setRenameTarget(null);
   };
 
@@ -191,7 +209,11 @@ const SidebarComponent = (): ReactElement => {
 
   const renderHistory = (): ReactElement => {
     if (sessionsLoading && sessions.length === 0) {
-      return <div className={styles.historyLoading} aria-busy="true">Loading…</div>;
+      return (
+        <div className={styles.historyLoading} aria-busy="true">
+          Loading…
+        </div>
+      );
     }
     if (sessions.length === 0) {
       return <div className={styles.historyEmpty}>No history yet</div>;
@@ -205,7 +227,9 @@ const SidebarComponent = (): ReactElement => {
             items={items}
             activeSessionId={sessionId}
             onSelect={handleSelectSession}
-            onRenameClick={(sid, sessionTitle) => setRenameTarget({ sessionId: sid, title: sessionTitle })}
+            onRenameClick={(sid, sessionTitle) =>
+              setRenameTarget({ sessionId: sid, title: sessionTitle })
+            }
             onDeleteClick={(sid) => setDeleteTarget(sid)}
           />
         ))}
@@ -220,7 +244,9 @@ const SidebarComponent = (): ReactElement => {
       <button
         className={styles.loadMore}
         type="button"
-        onClick={() => { loadMoreSessions(); }}
+        onClick={() => {
+          loadMoreSessions();
+        }}
         disabled={loadingMoreSessions}
         aria-busy={loadingMoreSessions}
       >
@@ -259,7 +285,9 @@ const SidebarComponent = (): ReactElement => {
   );
 
   return (
-    <div className={cn(styles.sidebar, expanded ? styles.sidebarExpanded : styles.sidebarCollapsed)}>
+    <div
+      className={cn(styles.sidebar, expanded ? styles.sidebarExpanded : styles.sidebarCollapsed)}
+    >
       <nav className={styles.navSection} aria-label="Chat navigation">
         {renderHead()}
         {renderNewChat()}

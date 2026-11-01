@@ -13,8 +13,8 @@
  */
 
 import type { ChatStreamEvent, WorkflowItem } from '../../types';
-import { streamingState, resetStreamingState } from './state';
 import { cancelFlush } from './scheduler';
+import { resetStreamingState, streamingState } from './state';
 import type { StreamingSideEffects } from './types';
 
 // ====== FINALIZE ======
@@ -27,10 +27,7 @@ import type { StreamingSideEffects } from './types';
  * a `session_end` (or multiple `error` events precede `session_end`): only
  * the first finalization wins.
  */
-function finalizeMessage(
-  _event: ChatStreamEvent,
-  effects: StreamingSideEffects,
-): void {
+function finalizeMessage(_event: ChatStreamEvent, effects: StreamingSideEffects): void {
   if (streamingState.isFinalized) return;
   streamingState.isFinalized = true;
   cancelFlush();
@@ -207,7 +204,7 @@ export function handleToolEnd(event: ChatStreamEvent, effects: StreamingSideEffe
     if (!isMatch) continue;
 
     item.toolOutput =
-      event.status === 'error' ? event.output ?? 'Unknown error' : event.output ?? undefined;
+      event.status === 'error' ? (event.output ?? 'Unknown error') : (event.output ?? undefined);
     item.toolStatus = event.status === 'error' ? 'error' : 'success';
     break;
   }
@@ -269,7 +266,10 @@ export function handleComplete(event: ChatStreamEvent, effects: StreamingSideEff
   handleCompleteLike(event, effects, false, input + output + cacheRead + cacheWrite);
 }
 
-export function handleMultiagentComplete(event: ChatStreamEvent, effects: StreamingSideEffects): void {
+export function handleMultiagentComplete(
+  event: ChatStreamEvent,
+  effects: StreamingSideEffects,
+): void {
   handleCompleteLike(event, effects, true);
 }
 

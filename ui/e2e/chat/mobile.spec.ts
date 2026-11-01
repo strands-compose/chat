@@ -1,9 +1,12 @@
-import { test, expect } from '../support/test';
 import { makeExchange, makeSession } from '../support/data';
+import { expect, test } from '../support/test';
 
 test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
-test('the sidebar starts collapsed and picking a session returns to the chat', async ({ page, backend }) => {
+test('the sidebar starts collapsed and picking a session returns to the chat', async ({
+  page,
+  backend,
+}) => {
   const budget = makeSession({ title: 'Budget review' });
   backend.sessions = [budget];
   backend.messages[budget.session_id] = makeExchange('How is the budget?', 'Spending is on plan.');
@@ -39,13 +42,18 @@ test('the welcome screen has no agent description control', async ({ page, backe
 
   await page.goto('/');
   // The agent has loaded once its suggested questions are listed.
-  await expect(page.getByRole('button', { name: agent.suggested_questions?.[0] ?? '' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: agent.suggested_questions?.[0] ?? '' }),
+  ).toBeVisible();
 
   await expect(page.getByRole('button', { name: 'Show agent description' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Hide agent description' })).toHaveCount(0);
 });
 
-test('when a turn completes the workflow panel closes and the answer is visible', async ({ page, backend }) => {
+test('when a turn completes the workflow panel closes and the answer is visible', async ({
+  page,
+  backend,
+}) => {
   const gate = backend.holdReply();
 
   await page.goto('/');
@@ -64,7 +72,9 @@ test('when a turn completes the workflow panel closes and the answer is visible'
     gate.release();
 
     await expect(workflow).toBeHidden();
-    await expect(page.getByRole('article', { name: 'Assistant said' }).getByText('Done.')).toBeVisible();
+    await expect(
+      page.getByRole('article', { name: 'Assistant said' }).getByText('Done.'),
+    ).toBeVisible();
     await expect(composer).toBeEnabled();
   });
 });

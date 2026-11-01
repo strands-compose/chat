@@ -1,10 +1,15 @@
-import { test, expect } from '../support/test';
 import { makeProviders } from '../support/data';
+import { expect, test } from '../support/test';
 
-test('signing in with good credentials posts them once and navigates to next', async ({ page, backend }) => {
+test('signing in with good credentials posts them once and navigates to next', async ({
+  page,
+  backend,
+}) => {
   backend.loginNext = '/welcome-back';
   // The page navigates to `next`; the fake has no such page, so serve a stub.
-  await page.route('**/welcome-back', (route) => route.fulfill({ contentType: 'text/html', body: '<h1>Welcome back</h1>' }));
+  await page.route('**/welcome-back', (route) =>
+    route.fulfill({ contentType: 'text/html', body: '<h1>Welcome back</h1>' }),
+  );
 
   await page.goto('/login');
   await page.getByLabel('Username').fill('alice');
@@ -17,7 +22,10 @@ test('signing in with good credentials posts them once and navigates to next', a
   expect(logins[0].body).toEqual({ username: 'alice', password: 'correct-horse' }); // pragma: allowlist secret
 });
 
-test('bad credentials show the server detail and keep what was typed', async ({ page, backend }) => {
+test('bad credentials show the server detail and keep what was typed', async ({
+  page,
+  backend,
+}) => {
   await page.goto('/login');
   const username = page.getByLabel('Username');
   const password = page.getByLabel('Password');
@@ -49,7 +57,10 @@ test('OIDC providers render as buttons and start the provider login', async ({ p
   await expect(page.getByRole('heading', { name: 'Sign in with okta' })).toBeVisible();
 });
 
-test('OIDC-only configuration shows the provider buttons without the local form', async ({ page, backend }) => {
+test('OIDC-only configuration shows the provider buttons without the local form', async ({
+  page,
+  backend,
+}) => {
   backend.providers = makeProviders({
     local_signin_enabled: false,
     providers: [{ id: 'okta', display_name: 'Okta' }],
@@ -76,7 +87,9 @@ test('with registration enabled, sign-up rejects mismatched passwords then creat
   backend.providers = makeProviders({ registration_enabled: true });
   backend.credentials = { username: 'newbie', password: 'brand-new-pass' }; // pragma: allowlist secret
   backend.loginNext = '/welcome-back';
-  await page.route('**/welcome-back', (route) => route.fulfill({ contentType: 'text/html', body: '<h1>Welcome back</h1>' }));
+  await page.route('**/welcome-back', (route) =>
+    route.fulfill({ contentType: 'text/html', body: '<h1>Welcome back</h1>' }),
+  );
 
   await page.goto('/login');
   await page.getByRole('button', { name: 'Sign up' }).click();

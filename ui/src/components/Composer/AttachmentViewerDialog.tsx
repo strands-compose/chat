@@ -88,9 +88,7 @@ const AttachmentViewerDialogComponent = ({
   const renderBody = (): ReactElement | null => {
     if (!attachment) return null;
     if (mode === 'image') {
-      return fileUrl ? (
-        <img src={fileUrl} alt={attachment.name} className={styles.image} />
-      ) : null;
+      return fileUrl ? <img src={fileUrl} alt={attachment.name} className={styles.image} /> : null;
     }
     if (mode === 'pdf') {
       return fileUrl ? (

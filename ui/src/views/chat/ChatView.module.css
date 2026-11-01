@@ -25,7 +25,9 @@
   user-select: none;
   /* Smoothly return to sharp/opaque when the restoring class clears, so a
    * switched-to session fades in instead of hard-swapping. */
-  transition: filter 0.28s ease, opacity 0.28s ease;
+  transition:
+    filter 0.28s ease,
+    opacity 0.28s ease;
 }
 
 /* While a session's thread is being fetched: lightly blur and dim the outgoing

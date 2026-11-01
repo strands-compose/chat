@@ -11,24 +11,23 @@
 
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { useAuth } from '@/contexts';
-import { useTheme } from '@/contexts';
-import { formatCost } from '@/services/utils';
-import { Spinner, ProgressBar } from '@/components';
-import {
-  echarts,
-  ReactECharts,
-  cssVar,
-  readChartColors,
-  buildTooltipBase,
-  buildTimeTooltipFormatter,
-  buildLineSeries,
-  formatBucketLabel,
-} from '@/components/charts';
+import { ProgressBar, Spinner } from '@/components';
 import type { ECOption } from '@/components/charts';
+import {
+  buildLineSeries,
+  buildTimeTooltipFormatter,
+  buildTooltipBase,
+  cssVar,
+  echarts,
+  formatBucketLabel,
+  ReactECharts,
+  readChartColors,
+} from '@/components/charts';
+import { useAuth, useTheme } from '@/contexts';
+import { formatCost } from '@/services/utils';
 import type { MeUsagePoint } from '@/types/analytics';
-import { pointTotalTokens } from './usage-points';
 import styles from './CurrentMonthPanel.module.css';
+import { pointTotalTokens } from './usage-points';
 
 // ======================
 // TYPES
@@ -88,9 +87,7 @@ function buildLineOption(
       splitLine: { lineStyle: { color: axisColor, type: 'dashed' } },
       minInterval: 1,
     },
-    series: [
-      buildLineSeries({ data: yData, lineColor, areaColor }),
-    ],
+    series: [buildLineSeries({ data: yData, lineColor, areaColor })],
     tooltip: {
       ...buildTooltipBase(colors),
       formatter: buildTimeTooltipFormatter(colors, isCost),
@@ -114,40 +111,23 @@ const CurrentMonthPanelComponent = ({
   const usage = user?.usage ?? 0;
 
   // Build x-axis labels — human-readable daily format ("23 Jun 2026")
-  const xLabels = useMemo(
-    () => points.map((p) => formatBucketLabel(p.label, 'daily')),
-    [points],
-  );
+  const xLabels = useMemo(() => points.map((p) => formatBucketLabel(p.label, 'daily')), [points]);
 
   const tokenSeries = useMemo(() => points.map(pointTotalTokens), [points]);
 
-  const costSeries = useMemo(
-    () => points.map((p) => p.cost),
-    [points],
-  );
+  const costSeries = useMemo(() => points.map((p) => p.cost), [points]);
 
   // Re-derive chart options whenever theme changes (isDark drives recalculation).
   const tokensOption = useMemo<ECOption>(
     () =>
-      buildLineOption(
-        xLabels,
-        tokenSeries,
-        cssVar('--sc-accent'),
-        cssVar('--sc-accent'),
-        false,
-      ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      buildLineOption(xLabels, tokenSeries, cssVar('--sc-accent'), cssVar('--sc-accent'), false),
     [xLabels, tokenSeries, isDark],
   );
 
-  const costOption = useMemo<ECOption>(
-    () => {
-      const okColor = cssVar('--sc-status-ok');
-      return buildLineOption(xLabels, costSeries, okColor, okColor, true);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [xLabels, costSeries, isDark],
-  );
+  const costOption = useMemo<ECOption>(() => {
+    const okColor = cssVar('--sc-status-ok');
+    return buildLineOption(xLabels, costSeries, okColor, okColor, true);
+  }, [xLabels, costSeries, isDark]);
 
   const isEmpty = points.length === 0;
 
@@ -162,19 +142,13 @@ const CurrentMonthPanelComponent = ({
         <h4 className={styles.sectionTitle}>This Month Usage</h4>
 
         <div className={styles.spendRow}>
-          <span className={styles.spendLabel}>
-            {formatCost(usage)}
-          </span>
+          <span className={styles.spendLabel}>{formatCost(usage)}</span>
           <span className={styles.budgetLabel}>
             {budget ? `/ ${formatCost(budget)}` : '/ no budget'}
           </span>
         </div>
 
-        <ProgressBar
-          value={usage}
-          max={budget ?? 0}
-          ariaLabel="Budget usage"
-        />
+        <ProgressBar value={usage} max={budget ?? 0} ariaLabel="Budget usage" />
       </div>
 
       {/* ── Daily tokens chart ── */}

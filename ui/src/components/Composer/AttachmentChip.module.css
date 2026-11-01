@@ -85,7 +85,10 @@
   color: var(--sc-bg-primary);
   cursor: pointer;
   opacity: 0.9;
-  transition: background 0.15s, color 0.15s, opacity 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    opacity 0.15s;
 }
 
 .remove:hover {

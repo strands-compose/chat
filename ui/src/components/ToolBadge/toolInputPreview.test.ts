@@ -1,15 +1,9 @@
-import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
+import { describe, expect, it } from 'vitest';
 import { toolInputPreview } from './toolInputPreview';
 
 describe('toolInputPreview', () => {
-  it.each([
-    [undefined],
-    [null],
-    [''],
-    [{}],
-    ['{}'],
-  ])('shows "no arguments" for %j', (input) => {
+  it.each([[undefined], [null], [''], [{}], ['{}']])('shows "no arguments" for %j', (input) => {
     expect(toolInputPreview(input)).toBe('no arguments');
   });
 

@@ -1,25 +1,25 @@
-import { useState, useCallback, memo } from 'react';
 import type { ReactElement } from 'react';
+import { memo, useCallback, useState } from 'react';
 import {
   LuBot,
+  LuCheck,
   LuChevronDown,
   LuCircleAlert,
   LuCopy,
-  LuCheck,
   LuFileText,
   LuImage,
   LuRefreshCw,
   LuUser,
   LuWorkflow,
 } from 'react-icons/lu';
-import { useChatStore } from '@/store';
-import { useContentReveal } from '@/hooks';
-import { Avatar, Markdown, IconButton } from '@/components';
+import { Avatar, IconButton, Markdown } from '@/components';
 import { useCollapseContext } from '@/contexts';
-import { cn } from '@/services/utils';
+import { useContentReveal } from '@/hooks';
 import { formatFileSize } from '@/services';
-import { selectLiveActivity } from './live-activity';
+import { cn } from '@/services/utils';
+import { useChatStore } from '@/store';
 import type { LiveActivity } from './live-activity';
+import { selectLiveActivity } from './live-activity';
 import styles from './Message.module.css';
 
 // ======================
@@ -36,9 +36,7 @@ interface ChatMessageProps {
   messageId: string;
 }
 
-const ChatMessageComponent = ({
-  messageId,
-}: ChatMessageProps): ReactElement | null => {
+const ChatMessageComponent = ({ messageId }: ChatMessageProps): ReactElement | null => {
   // ======================
   // STORE SELECTORS (subscribe to this message only)
   // ======================
@@ -137,8 +135,11 @@ const ChatMessageComponent = ({
         {visible.map((attachment, index) => {
           const isImage = attachment.type === 'image';
           return (
+            // biome-ignore lint/suspicious/noArrayIndexKey: a sent message's attachments never reorder; names can repeat.
             <span key={`${attachment.filename}-${index}`} className={styles.fileChip}>
-              <span className={cn(styles.fileIcon, isImage ? styles.fileIconImage : styles.fileIconDoc)}>
+              <span
+                className={cn(styles.fileIcon, isImage ? styles.fileIconImage : styles.fileIconDoc)}
+              >
                 {isImage ? <LuImage size={16} /> : <LuFileText size={16} />}
               </span>
               <span className={styles.fileMeta}>
@@ -221,13 +222,16 @@ const ChatMessageComponent = ({
         </div>
       );
     }
-    return (
-      <div className={cn(styles.content, isRevealing && styles.revealing)}>{markdown}</div>
-    );
+    return <div className={cn(styles.content, isRevealing && styles.revealing)}>{markdown}</div>;
   };
 
   const renderCollapsedPreview = (): ReactElement => (
-    <button type="button" className={styles.collapsedRow} onClick={handleToggleCollapse} title="Expand message">
+    <button
+      type="button"
+      className={styles.collapsedRow}
+      onClick={handleToggleCollapse}
+      title="Expand message"
+    >
       <span className={styles.collapsedText}>
         {previewLine(message.content) || (message.isStreaming ? 'Working on it…' : '')}
       </span>
@@ -236,27 +240,32 @@ const ChatMessageComponent = ({
   );
 
   const renderUserMessage = (): ReactElement => (
-    <div className={styles.userMessage} role="article" aria-label="You said">
+    <article className={styles.userMessage} aria-label="You said">
       <div className={styles.userStack}>
         <div className={styles.userBlock}>
-        <div className={styles.userHead}>
-          <div className={styles.userActions}>
-            {renderCopyButton()}
-            <IconButton onClick={handleResend} title="Resend message" aria-label="Resend message">
-              <LuRefreshCw size={15} />
-            </IconButton>
+          <div className={styles.userHead}>
+            <div className={styles.userActions}>
+              {renderCopyButton()}
+              <IconButton onClick={handleResend} title="Resend message" aria-label="Resend message">
+                <LuRefreshCw size={15} />
+              </IconButton>
+            </div>
+            <span className={styles.senderLabel}>You</span>
           </div>
-          <span className={styles.senderLabel}>You</span>
-        </div>
-        {renderAttachments()}
-        {collapsed ? (
-          <button type="button" className={cn(styles.bubble, styles.bubbleCollapsed)} onClick={handleToggleCollapse} title="Expand message">
-            <span className={styles.collapsedText}>{message.content}</span>
-            <LuChevronDown size={16} className={styles.collapsedChevron} />
-          </button>
-        ) : (
-          <div className={styles.bubble}>{message.content}</div>
-        )}
+          {renderAttachments()}
+          {collapsed ? (
+            <button
+              type="button"
+              className={cn(styles.bubble, styles.bubbleCollapsed)}
+              onClick={handleToggleCollapse}
+              title="Expand message"
+            >
+              <span className={styles.collapsedText}>{message.content}</span>
+              <LuChevronDown size={16} className={styles.collapsedChevron} />
+            </button>
+          ) : (
+            <div className={styles.bubble}>{message.content}</div>
+          )}
         </div>
       </div>
       <Avatar
@@ -267,13 +276,13 @@ const ChatMessageComponent = ({
         ariaLabel={collapseTitle}
         ariaExpanded={!collapsed}
       />
-    </div>
+    </article>
   );
 
   const renderAssistantMessage = (): ReactElement => {
     const showCopy = !message.isStreaming && !isRevealing && !!message.content;
     return (
-      <div className={styles.assistantMessage} role="article" aria-label="Assistant said">
+      <article className={styles.assistantMessage} aria-label="Assistant said">
         <Avatar
           icon={<LuBot size={17} />}
           tone="accent"
@@ -292,7 +301,7 @@ const ChatMessageComponent = ({
           </div>
           {collapsed ? renderCollapsedPreview() : renderAssistantContent()}
         </div>
-      </div>
+      </article>
     );
   };
 

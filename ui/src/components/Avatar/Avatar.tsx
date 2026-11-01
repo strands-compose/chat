@@ -70,8 +70,10 @@ const AvatarComponent = ({
     );
   }
 
+  // A label makes the avatar an image to assistive tech; without one it is decoration.
+  const imageProps = ariaLabel ? { role: 'img' as const, 'aria-label': ariaLabel } : {};
   return (
-    <span className={classes} title={title} aria-label={ariaLabel} role={ariaLabel ? 'img' : undefined}>
+    <span className={classes} title={title} {...imageProps}>
       {icon}
     </span>
   );

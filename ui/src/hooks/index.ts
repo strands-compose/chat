@@ -1,5 +1,5 @@
-export { useAutoScroll } from './useAutoScroll';
 export { useAsyncData } from './useAsyncData';
+export { useAutoScroll } from './useAutoScroll';
 export { useColorMode } from './useColorMode';
 export { useContentReveal } from './useContentReveal';
 export { useFetchOnce } from './useFetchOnce';

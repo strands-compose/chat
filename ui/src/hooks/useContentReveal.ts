@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface ContentReveal {
   /** The full text to render (parsed by ReactMarkdown once). */

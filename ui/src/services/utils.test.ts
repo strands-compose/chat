@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
 import fc from 'fast-check';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   endOfCurrentMonth,
   formatAgentLabel,
@@ -177,7 +177,8 @@ describe('validateAttachments', () => {
         fc.nat({ max: 20000 }),
         (sizes, maxFile, maxTotal) => {
           const files = sizes.map((size, i) => file(`f${i}`, size));
-          const fits = sizes.every((s) => s <= maxFile) && sizes.reduce((a, b) => a + b, 0) <= maxTotal;
+          const fits =
+            sizes.every((s) => s <= maxFile) && sizes.reduce((a, b) => a + b, 0) <= maxTotal;
           expect(validateAttachments(files, maxFile, maxTotal).ok).toBe(fits);
         },
       ),
@@ -187,12 +188,42 @@ describe('validateAttachments', () => {
 
 describe('month boundaries', () => {
   it.each([
-    ['mid month', new Date(2026, 5, 15), new Date(2026, 5, 1), new Date(2026, 5, 30, 23, 59, 59, 999)],
-    ['31-day month end', new Date(2026, 0, 31), new Date(2026, 0, 1), new Date(2026, 0, 31, 23, 59, 59, 999)],
-    ['non-leap February', new Date(2026, 1, 10), new Date(2026, 1, 1), new Date(2026, 1, 28, 23, 59, 59, 999)],
-    ['leap February', new Date(2028, 1, 10), new Date(2028, 1, 1), new Date(2028, 1, 29, 23, 59, 59, 999)],
-    ['December year end', new Date(2026, 11, 31), new Date(2026, 11, 1), new Date(2026, 11, 31, 23, 59, 59, 999)],
-    ['January year start', new Date(2027, 0, 1), new Date(2027, 0, 1), new Date(2027, 0, 31, 23, 59, 59, 999)],
+    [
+      'mid month',
+      new Date(2026, 5, 15),
+      new Date(2026, 5, 1),
+      new Date(2026, 5, 30, 23, 59, 59, 999),
+    ],
+    [
+      '31-day month end',
+      new Date(2026, 0, 31),
+      new Date(2026, 0, 1),
+      new Date(2026, 0, 31, 23, 59, 59, 999),
+    ],
+    [
+      'non-leap February',
+      new Date(2026, 1, 10),
+      new Date(2026, 1, 1),
+      new Date(2026, 1, 28, 23, 59, 59, 999),
+    ],
+    [
+      'leap February',
+      new Date(2028, 1, 10),
+      new Date(2028, 1, 1),
+      new Date(2028, 1, 29, 23, 59, 59, 999),
+    ],
+    [
+      'December year end',
+      new Date(2026, 11, 31),
+      new Date(2026, 11, 1),
+      new Date(2026, 11, 31, 23, 59, 59, 999),
+    ],
+    [
+      'January year start',
+      new Date(2027, 0, 1),
+      new Date(2027, 0, 1),
+      new Date(2027, 0, 31, 23, 59, 59, 999),
+    ],
   ])('%s', (_label, now, expectedStart, expectedEnd) => {
     vi.useFakeTimers();
     vi.setSystemTime(now);
@@ -203,7 +234,12 @@ describe('month boundaries', () => {
   it('start of month is local midnight', () => {
     freezeNow(2026, 5, 15, 17);
     const start = startOfCurrentMonth();
-    expect([start.getHours(), start.getMinutes(), start.getSeconds(), start.getMilliseconds()]).toEqual([0, 0, 0, 0]);
+    expect([
+      start.getHours(),
+      start.getMinutes(),
+      start.getSeconds(),
+      start.getMilliseconds(),
+    ]).toEqual([0, 0, 0, 0]);
   });
 });
 

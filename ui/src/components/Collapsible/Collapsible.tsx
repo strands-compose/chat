@@ -1,6 +1,6 @@
+import * as Radix from '@radix-ui/react-collapsible';
 import type { ReactElement, ReactNode } from 'react';
 import { memo } from 'react';
-import * as Radix from '@radix-ui/react-collapsible';
 
 // ======================
 // ROOT + TRIGGER + CONTENT (thin re-exports)

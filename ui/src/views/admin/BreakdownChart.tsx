@@ -1,31 +1,31 @@
 import type { ReactElement } from 'react';
-import { memo, useState, useCallback, useId, useMemo } from 'react';
+import { memo, useCallback, useId, useMemo, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
-import { useTheme } from '@/contexts';
 import {
-  Spinner,
-  Segmented,
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
+  Segmented,
+  Spinner,
 } from '@/components';
+import type { ECOption } from '@/components/charts';
 import {
-  echarts,
-  ReactECharts,
-  readChartColors,
   axisDefaults,
+  buildCategoryTooltipFormatter,
   buildGrid,
   buildLegend,
   buildTooltipBase,
-  buildCategoryTooltipFormatter,
   costAxisLabel,
+  echarts,
   intAxisLabel,
+  ReactECharts,
+  readChartColors,
   SERIES_COLORS,
 } from '@/components/charts';
-import type { ECOption } from '@/components/charts';
-import { useBreakdownData } from './hooks/useBreakdownData';
+import { useTheme } from '@/contexts';
 import styles from './BreakdownChart.module.css';
+import { useBreakdownData } from './hooks/useBreakdownData';
 
 // ======================
 // TYPES
@@ -81,7 +81,13 @@ const BreakdownChartComponent = (): ReactElement => {
   const [maxItems, setMaxItems] = useState<TopN>(DEFAULT_MAX_ITEMS);
   const [maxSeries, setMaxSeries] = useState<MaxSeries>(DEFAULT_MAX_SERIES);
 
-  const { data, isLoading, error } = useBreakdownData(category, metric, stackBy, maxItems, maxSeries);
+  const { data, isLoading, error } = useBreakdownData(
+    category,
+    metric,
+    stackBy,
+    maxItems,
+    maxSeries,
+  );
   const { isDark } = useTheme();
   const titleId = useId();
 
@@ -133,7 +139,9 @@ const BreakdownChartComponent = (): ReactElement => {
         name: s.name,
         type: 'bar' as const,
         data: [...s.values].reverse(),
-        itemStyle: { color: s.name === 'Other' ? colors.axisLabel : SERIES_COLORS[i % SERIES_COLORS.length] },
+        itemStyle: {
+          color: s.name === 'Other' ? colors.axisLabel : SERIES_COLORS[i % SERIES_COLORS.length],
+        },
         ...(stackBy !== 'none' ? { stack: 'total' } : {}),
       })),
     } as ECOption;
@@ -145,10 +153,12 @@ const BreakdownChartComponent = (): ReactElement => {
 
   const renderControls = (): ReactElement => (
     <div className={styles.controls}>
-      <span id={titleId} className={styles.chartTitle}>Top Breakdown</span>
+      <span id={titleId} className={styles.chartTitle}>
+        Top Breakdown
+      </span>
       <div className={styles.spacer} />
       <span className={styles.chartControl}>Select</span>
-       <DropdownMenu>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button type="button" className={styles.stackTrigger}>
             <span>Top: {maxItems}</span>
@@ -164,19 +174,35 @@ const BreakdownChartComponent = (): ReactElement => {
         </DropdownMenuContent>
       </DropdownMenu>
       <span className={styles.chartControl}>of</span>
-      <Segmented options={CATEGORY_OPTIONS} active={category} onSelect={handleCategoryChange} label="Category" />
+      <Segmented
+        options={CATEGORY_OPTIONS}
+        active={category}
+        onSelect={handleCategoryChange}
+        label="Category"
+      />
       <span className={styles.chartControl}>by</span>
-      <Segmented options={METRIC_OPTIONS} active={metric} onSelect={handleMetricChange} label="Metric" />
+      <Segmented
+        options={METRIC_OPTIONS}
+        active={metric}
+        onSelect={handleMetricChange}
+        label="Metric"
+      />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button type="button" className={styles.stackTrigger}>
-            <span>Stack by: {STACK_BY_OPTIONS.find((o) => o.value === stackBy)?.label ?? 'None'}</span>
+            <span>
+              Stack by: {STACK_BY_OPTIONS.find((o) => o.value === stackBy)?.label ?? 'None'}
+            </span>
             <FiChevronDown size={14} className={styles.stackChevron} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           {STACK_BY_OPTIONS.map((opt) => (
-            <DropdownMenuItem key={opt.value} isChecked={opt.value === stackBy} onSelect={() => handleStackByChange(opt.value)}>
+            <DropdownMenuItem
+              key={opt.value}
+              isChecked={opt.value === stackBy}
+              onSelect={() => handleStackByChange(opt.value)}
+            >
               {opt.label}
             </DropdownMenuItem>
           ))}
@@ -192,7 +218,11 @@ const BreakdownChartComponent = (): ReactElement => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             {MAX_SERIES_OPTIONS.map((n) => (
-              <DropdownMenuItem key={n} isChecked={n === maxSeries} onSelect={() => setMaxSeries(n)}>
+              <DropdownMenuItem
+                key={n}
+                isChecked={n === maxSeries}
+                onSelect={() => setMaxSeries(n)}
+              >
                 {n}
               </DropdownMenuItem>
             ))}
@@ -206,7 +236,8 @@ const BreakdownChartComponent = (): ReactElement => {
     if (stackBy !== 'group' && category !== 'group') return null;
     return (
       <div className={styles.note}>
-        Group totals may exceed the grand total because a single usage record can belong to multiple groups.
+        Group totals may exceed the grand total because a single usage record can belong to multiple
+        groups.
       </div>
     );
   };
@@ -219,7 +250,13 @@ const BreakdownChartComponent = (): ReactElement => {
     if (!option) return null;
     return (
       <div className={styles.chart}>
-        <ReactECharts echarts={echarts} option={option} style={{ height: '100%', width: '100%' }} notMerge lazyUpdate={false} />
+        <ReactECharts
+          echarts={echarts}
+          option={option}
+          style={{ height: '100%', width: '100%' }}
+          notMerge
+          lazyUpdate={false}
+        />
       </div>
     );
   };
@@ -229,7 +266,11 @@ const BreakdownChartComponent = (): ReactElement => {
       {renderControls()}
       {renderNote()}
       <div className={styles.chartWrapper}>
-        {isLoading && <div className={styles.overlay}><Spinner /></div>}
+        {isLoading && (
+          <div className={styles.overlay}>
+            <Spinner />
+          </div>
+        )}
         {renderChart()}
       </div>
     </section>
