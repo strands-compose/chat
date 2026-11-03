@@ -58,7 +58,7 @@ sequenceDiagram
     C->>C: save messages, manifest, token usage
 ```
 
-- **Runtime agents** use `AgentCoreClient` from `strands-compose-agentcore`, which calls the AWS `InvokeAgentRuntime` API through boto3. The chat keeps **one client per runtime** (ARN plus region) for the life of the process and shares it between users. Changing the ARN or region in the admin builds a new client on the next call.
+- **Runtime agents** use `AgentCoreClient` from `strands-compose-agentcore`, which calls the AWS `InvokeAgentRuntime` API through boto3. The chat keeps **one client per runtime** (ARN plus region) for the life of the process and shares it between users. Changing the ARN or region in the admin builds a new client on the next call. The client keeps its idle connections alive with TCP keepalive, which works on AWS only when the host's keepalive time is lowered ([Chapter 12](Chapter_12.md#idle-connections-to-agentcore)).
 - **Local agents** get a fresh HTTP client per turn (5 s connect timeout, 300 s read timeout).
 - The AgentCore session id looks like `<uuid>_<EMAIL-IN-CAPS>`, so you can find a person's sessions in AgentCore logs. The agent receives the chat username as its `user_id`.
 - If the browser disconnects mid-stream (tab closed, **Stop**), the chat asks AgentCore to stop that runtime session. A failure there is logged and ignored.

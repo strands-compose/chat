@@ -78,6 +78,11 @@ docker compose down -v             # stop and delete the database volume
   }],
   "volumes": [{ "name": "tmp" }]
   ```
+- **TCP keepalive.** `docker-compose.yaml` sets `net.ipv4.tcp_keepalive_time`
+  to 60 s, so idle connections to AgentCore survive AWS NAT gateways and VPC
+  endpoints, which drop them after 350 s. On ECS set the same value with a
+  `systemControls` entry in the task definition
+  ([Chapter 12](../../docs/Chapter_12.md#idle-connections-to-agentcore)).
 - **Deploying to a real server?** Set `APP_ENV=prod`, set `TRUSTED_HOSTS`,
   `CORS_ALLOWED_ORIGINS`, and (if using SSO) `OIDC_REDIRECT_URI` to your public
   domain, and serve over HTTPS behind a reverse proxy. In `prod` the session

@@ -80,6 +80,16 @@ You can run the container with a read-only root filesystem (ECS `readonlyRootFil
 
 Python bytecode is precompiled during the build, so the app itself writes nothing else. On Fargate use a task volume, not `tmpfs` ([Chapter 12](Chapter_12.md)).
 
+## TCP Keepalive
+
+Set the kernel parameter `net.ipv4.tcp_keepalive_time` to `60` in the container. On AWS, NAT gateways and VPC endpoints drop connections that are idle for 350 s, and without this setting the first message after a quiet period waits more than a minute for AgentCore ([Chapter 12](Chapter_12.md#idle-connections-to-agentcore)). The Compose file sets it with `sysctls:`. With plain Docker, pass `--sysctl`:
+
+```bash
+docker run --sysctl net.ipv4.tcp_keepalive_time=60 -p 8000:8000 --env-file .env strands-compose-chat:0.8.0
+```
+
+On ECS it is a `systemControls` entry in the task definition.
+
 ## Logs and Health
 
 - All logs go to stdout and stderr. Set `LOG_FORMAT=json` so the app's lines are structured ([Chapter 13](Chapter_13.md#logs)). Gunicorn's own lines stay plain text.

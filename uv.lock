@@ -2383,7 +2383,7 @@ wheels = [
 
 [[package]]
 name = "strands-compose-agentcore"
-version = "0.12.0"
+version = "0.12.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bedrock-agentcore" },
@@ -2391,14 +2391,14 @@ dependencies = [
     { name = "strands-compose" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/53/3d/94d55a325124f3a34d339a126acc59039d55cca40da0082d8a685ff90c6b/strands_compose_agentcore-0.12.0.tar.gz", hash = "sha256:7a2f6a0f140d8ee030103689f62a5e2d51be6312e7ad59130c55d01b432f6dc4", size = 388643, upload-time = "2026-10-31T22:53:09.691Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c6/13/e583543ff6bc95e1aacf35fdbbeb4bad137c8b33caa530861f8954ed1b86/strands_compose_agentcore-0.12.1.tar.gz", hash = "sha256:aa218acec0416be8effb39837838f5a8c172e7db0b5f536dbef79a2567747b47", size = 390124, upload-time = "2026-11-03T22:19:12.07Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/54/f07f87f92e88f222bdd0c520ba5328db011282bbf9adbf07327df9ddc8a2/strands_compose_agentcore-0.12.0-py3-none-any.whl", hash = "sha256:f97999f9530865f68dfd5c3dd9e895ce44546711d38309d49fa199a79ecf9e9c", size = 45393, upload-time = "2026-10-31T22:53:08.299Z" },
+    { url = "https://files.pythonhosted.org/packages/85/a6/b3ab799180492a4fae5ea6ba13efcba281dd0ca673eb91494f5a530ded15/strands_compose_agentcore-0.12.1-py3-none-any.whl", hash = "sha256:8ea3a87a9235e458146486fd10d615b725b24fe5d20c5943b697728b23c69964", size = 45638, upload-time = "2026-11-03T22:19:10.747Z" },
 ]
 
 [[package]]
 name = "strands-compose-chat"
-version = "0.7.0"
+version = "0.8.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiosqlite" },
@@ -2465,7 +2465,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.14,<3.0" },
     { name = "sqladmin", specifier = ">=0.31,<1.0" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0,<2.1" },
-    { name = "strands-compose-agentcore", specifier = ">=0.12.0,<1.0.0" },
+    { name = "strands-compose-agentcore", specifier = ">=0.12.1,<1.0.0" },
     { name = "structlog", specifier = ">=26.1" },
     { name = "uvicorn", specifier = ">=0.49,<1.0" },
     { name = "uvicorn-worker", specifier = ">=0.4,<1.0" },

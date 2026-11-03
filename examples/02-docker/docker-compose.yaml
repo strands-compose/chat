@@ -26,6 +26,10 @@ services:
       - .env
     ports:
       - "8000:8000"
+    # Send TCP keepalive probes before AWS NAT gateways and VPC endpoints drop
+    # idle connections to AgentCore (350 s). The Linux default is 7200 s.
+    sysctls:
+      net.ipv4.tcp_keepalive_time: 60
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8000/health"]
       interval: 15s

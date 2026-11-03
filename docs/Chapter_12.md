@@ -51,6 +51,7 @@ The task role needs nothing else: the app does not call S3, Secrets Manager or a
 | `stopTimeout` | `60` to `120` (default 30, max 120) | Time for running streams to finish on deploy. Set `GUNICORN_GRACEFUL_TIMEOUT` to a little less |
 | Health check | `curl` on `/health` | See the snippet |
 | Logs | `awslogs` driver, one log group | Stdout and stderr go to CloudWatch |
+| `systemControls` | `net.ipv4.tcp_keepalive_time` = `60` | See [Idle Connections to AgentCore](#idle-connections-to-agentcore) |
 
 ```json
 {
@@ -63,6 +64,7 @@ The task role needs nothing else: the app does not call S3, Secrets Manager or a
     "readonlyRootFilesystem": true,
     "mountPoints": [{ "sourceVolume": "tmp", "containerPath": "/tmp" }],
     "stopTimeout": 90,
+    "systemControls": [{ "namespace": "net.ipv4.tcp_keepalive_time", "value": "60" }],
     "environment": [
       { "name": "APP_ENV", "value": "prod" },
       { "name": "LOG_FORMAT", "value": "json" },
@@ -93,6 +95,12 @@ The task role needs nothing else: the app does not call S3, Secrets Manager or a
 ```
 
 The image contains `curl`, so the `CMD-SHELL` check works without changes.
+
+### Idle Connections to AgentCore
+
+The AgentCore client reuses its connections to AWS. NAT gateways and VPC endpoints forget a connection after 350 s without traffic. Without keepalive, the first message after a quiet period goes out on a dead connection: the reply starts more than a minute late.
+
+The client turns TCP keepalive on, but Linux sends the first probe only after `tcp_keepalive_time`, 7200 s by default. The `systemControls` entry lowers it to 60 s for the task. It affects only sockets that ask for keepalive. Fargate supports it from platform version 1.4.0. Details are in the [strands-compose-agentcore docs](https://github.com/strands-compose/bedrock-agentcore/blob/main/docs/Chapter_08.md#idle-connections-on-aws).
 
 ## Environment and Secrets
 
@@ -164,6 +172,7 @@ In real use about 25 users per task works well, so 100 to 125 users run on 4 to 
 - [ ] `GUNICORN_MAX_REQUESTS` and `GUNICORN_KEEPALIVE` set as in Chapter 11
 - [ ] RDS backups on, deletion protection on
 - [ ] Task role limited to the runtime ARNs
+- [ ] `systemControls` sets `net.ipv4.tcp_keepalive_time` to `60`
 - [ ] Alarm on unhealthy hosts and on task memory
 
 ## Next
